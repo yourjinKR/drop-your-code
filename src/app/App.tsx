@@ -1,5 +1,6 @@
 import { useCallback, useReducer } from 'react';
 import { EditorSurface } from '../editor/EditorSurface';
+import { detectPlatform } from '../editor/keymaps';
 import { createInitialWorkspace, workspaceReducer } from '../state/workspace';
 
 export function App() {
@@ -8,6 +9,14 @@ export function App() {
     dispatch({ type: 'codeChanged', code });
   }, [dispatch]);
   const lineCount = workspace.document.code.split('\n').length;
+  const isMac = detectPlatform() === 'macos';
+  const keymapHint = isMac
+    ? workspace.settings.keymap === 'intellij'
+      ? 'In the editor, Cmd+Backspace deletes a line. Cmd+Shift+Z is Redo.'
+      : 'In the editor, Cmd+Shift+K deletes a line. Cmd+Shift+Z is Redo.'
+    : workspace.settings.keymap === 'intellij'
+      ? 'In the editor, Ctrl+Y deletes a line. Ctrl+Shift+Z is Redo.'
+      : 'In the editor, Ctrl+Y is Redo.';
 
   return (
     <>
@@ -30,6 +39,24 @@ export function App() {
         <section className="editor-panel" aria-labelledby="editor-heading">
           <div className="panel-header">
             <h2 id="editor-heading">Editor</h2>
+            <div className="keymap-control">
+              <label htmlFor="keymap">Keymap</label>
+              <select
+                id="keymap"
+                name="keymap"
+                value={workspace.settings.keymap}
+                aria-describedby="keymap-help"
+                onChange={(event) => {
+                  const preset = event.currentTarget.value;
+                  if (preset === 'vscode' || preset === 'intellij') {
+                    dispatch({ type: 'keymapChanged', preset });
+                  }
+                }}
+              >
+                <option value="vscode">VS Code</option>
+                <option value="intellij">IntelliJ</option>
+              </select>
+            </div>
           </div>
           <EditorSurface
             code={workspace.document.code}
@@ -39,6 +66,9 @@ export function App() {
         </section>
         <p className="editor-help" id="editor-help">
           Tab indents. Press Escape, then Tab to leave the editor.
+        </p>
+        <p className="keymap-help" id="keymap-help">
+          {keymapHint} Browser and system shortcuts may take priority.
         </p>
       </main>
 

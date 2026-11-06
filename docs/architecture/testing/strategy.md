@@ -1,8 +1,8 @@
 # 검증 전략
 
-상태: 작업 1~3 검증 기반·순수 상태·실제 편집기 입력 검증 구현, 후속 기능은 검증 설계 · 2026-11-07
+상태: 작업 1~4 검증 기반·상태·입력·키맵 검증 구현, 후속 기능은 검증 설계 · 2026-11-07
 
-기준은 [PRD](../../product/PRD.md)이며 책임 경계는 [아키텍처](../overview.md), 화면 동작은 [UI 명세](../design/ui-spec.md), 기술 선택과 실험은 [ADR 0001](../decisions/0001-foundation.md)을 따른다. Phase 1의 작업별 검증은 [구현 계획](../../plans/phase-1-editor-foundation.md)에 연결한다. 작업 1에서 검증 환경과 셸 smoke 테스트를 추가했다. 작업 2는 Node 환경에서 순수 상태와 readonly 타입을, 작업 3은 실제 EditorView의 동기화·수명과 Chromium 입력을 검증한다. 실제 결과는 [작업 1](../../verification/task-1-static-app.md), [작업 2](../../verification/task-2-workspace-state.md), [작업 3 보고서](../../verification/task-3-editor-input.md)에 기록하며 후속 키맵·언어·렌더링·출력 검증은 해당 기능이 구현된 뒤 수행한다.
+기준은 [PRD](../../product/PRD.md)이며 책임 경계는 [아키텍처](../overview.md), 화면 동작은 [UI 명세](../design/ui-spec.md), 기술 선택과 실험은 [ADR 0001](../decisions/0001-foundation.md)을 따른다. Phase 1 검증은 [구현 계획](../../plans/phase-1-editor-foundation.md)에 연결한다. 작업 1의 검증 환경, 작업 2의 순수 상태, 작업 3의 실제 입력/수명에 이어 작업 4는 명령·키맵 전환·focus/composition·native clipboard·빠른 줄 편집 Undo를 검증한다. 실제 결과는 [작업 1](../../verification/task-1-static-app.md), [작업 2](../../verification/task-2-workspace-state.md), [작업 3](../../verification/task-3-editor-input.md), [작업 4 보고서](../../verification/task-4-keymaps.md)에 기록한다. 언어·렌더링·출력 검증은 해당 구현 뒤 수행한다.
 
 ## 검증 수준과 역할
 
