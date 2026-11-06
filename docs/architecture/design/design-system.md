@@ -1,10 +1,10 @@
 # Design System — Minimal Developer Workspace
 
-작성일: 2026-11-07 · 상태: **사용자 리뷰를 위한 디자인 제안, 미적용**
+작성일: 2026-11-07 · 상태: **공통 토큰·전체 셸은 작업 6 적용 대상, 작업 3 기본 입력만 구현**
 
 앱은 코드를 편집하고 이미지로 만드는 작은 개발 도구다. 코드 창을 시각적 중심으로 두고, 주변은 중립적인 면·1px 경계·작은 컨트롤로 정돈한다. 대형 제목, 설명 카드, 온보딩, 마케팅 섹션, 장식용 그라데이션은 사용하지 않는다. 스냅샷 배경의 선택적 그라데이션(FR-STYLE-03)은 이 UI 원칙과 별개이며 채택 시 Phase 2에서 검증한다.
 
-기능 계약은 [UI 명세](ui-spec.md), 배치는 [와이어프레임](wireframes.md), 적용 순서는 [Phase 1 계획](../../plans/phase-1-editor-foundation.md)을 따른다. PRD가 우선하며 아래 수치는 제품 요구를 구체화한 제안이다. 이번 변경은 문서에 한정된다.
+기능 계약은 [UI 명세](ui-spec.md), 배치는 [와이어프레임](wireframes.md), 적용 순서는 [Phase 1 계획](../../plans/phase-1-editor-foundation.md)을 따른다. PRD가 우선하며 아래 수치는 제품 요구를 구체화한 설계 기준이다. 현재 기본 입력의 구현·검증과 전체 디자인 적용을 구분한다.
 
 ## 1. 색과 면의 계층
 
@@ -138,8 +138,8 @@ CSS viewport 기준 wide≥1440, desktop1024–1439, tablet768–1023, mobile320
 | `src/app/tokens.css` (작업6 제안) | 위 semantic 색·spacing·radius·치수, `[data-ui-theme]` 값 |
 | `src/components/ui/`의 작은 control (필요한 시점) | Button/IconButton/Field 정도부터. 한 번 쓰는 모든 영역을 Primitive로 추출하지 않음 |
 | `src/app/App.tsx`, `app.css` | 영역 조합·layout preference·패널/모달/포커스. 레이아웃용 작은 React state로 충분 |
-| `src/state/workspace.ts` (작업2 계획) | 문서·revision·기존 EditorSettings. 기존 `themeId`는 Syntax theme 의미를 유지 |
-| `src/editor/` | 입력·IME·키맵·선택·Undo; 토큰 적용 때문에 EditorView를 재마운트하지 않음 |
+| `src/state/workspace.ts` (작업2 구현) | 문서·revision·기존 EditorSettings. 기존 `themeId`는 Syntax theme 의미를 유지 |
+| `src/editor/` (작업3 기본 입력 구현) | 입력·선택·Undo 수명. IDE 키맵·언어·테마 확장은 작업4~6. 토큰 적용 때문에 EditorView를 재마운트하지 않음 |
 | `src/theme/basicThemes.ts` (작업6 계획) | 코드 배경·글자·구문 색 데이터. UI CSS token과 분리 |
 | `src/snapshot/`, `src/export/` (Phase2 계획) | 전체 코드·프레젠테이션으로 모델/파일 생성. React UI·CSS viewport·패널에 의존하지 않음 |
 
@@ -154,4 +154,4 @@ Phase 1은 메모리 UI state, Phase 3은 검증된 로컬 preference 저장을 
 - [Web Interface Guidelines](https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md): 2026-11-07 확인. 의미 요소·포커스·reduced motion 등 관련 항목을 검토했다. URL 상태 동기화·외부 font preconnect는 개인정보·정적 로컬 자산 정책에 맞춰 채택하지 않는다.
 - [Lucide](https://lucide.dev/): UI icon 시스템. 배포 시 해당 소스의 ISC 라이선스 고지를 유지한다.
 
-토큰의 수학적 대비 검토는 [이번 검증 기록](../../verification/ui-ux-design-system.md)에 남긴다. 실제 렌더링의 대비·Light mode·키보드·스크린리더·터치·폰트 및 출력 일치는 아직 구현·검증되지 않았다.
+토큰의 수학적 대비 검토는 [디자인 검증 기록](../../verification/ui-ux-design-system.md)에 남긴다. 작업 3의 기본 입력·키보드·좁은 화면 검증은 [작업 3 보고서](../../verification/task-3-editor-input.md)로 구분한다. 전체 토큰/Light mode·스크린리더·터치·폰트 및 출력 일치는 아직 구현·검증되지 않았다.

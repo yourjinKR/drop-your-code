@@ -1,8 +1,8 @@
 # 검증 전략
 
-상태: 작업 1 검증 기반·작업 2 순수 상태 단위 검증 구현, 후속 기능은 검증 설계 · 2026-11-07
+상태: 작업 1~3 검증 기반·순수 상태·실제 편집기 입력 검증 구현, 후속 기능은 검증 설계 · 2026-11-07
 
-기준은 [PRD](../../product/PRD.md)이며 책임 경계는 [아키텍처](../overview.md), 화면 동작은 [UI 명세](../design/ui-spec.md), 기술 선택과 실험은 [ADR 0001](../decisions/0001-foundation.md)을 따른다. Phase 1의 작업별 검증은 [구현 계획](../../plans/phase-1-editor-foundation.md)에 연결한다. 작업 1에서 strict 타입 검사·Vitest/Testing Library/jsdom·Playwright 실행 환경과 셸 smoke 테스트를 추가했다. 작업 2는 Node 환경에서 순수 workspace state·snapshot 입력과 readonly 타입 계약을 검증한다. 실제 결과는 [작업 1 보고서](../../verification/task-1-static-app.md)와 [작업 2 보고서](../../verification/task-2-workspace-state.md)에 기록하며, 아래 편집·렌더링·출력 검증은 해당 기능이 구현된 뒤 수행한다.
+기준은 [PRD](../../product/PRD.md)이며 책임 경계는 [아키텍처](../overview.md), 화면 동작은 [UI 명세](../design/ui-spec.md), 기술 선택과 실험은 [ADR 0001](../decisions/0001-foundation.md)을 따른다. Phase 1의 작업별 검증은 [구현 계획](../../plans/phase-1-editor-foundation.md)에 연결한다. 작업 1에서 검증 환경과 셸 smoke 테스트를 추가했다. 작업 2는 Node 환경에서 순수 상태와 readonly 타입을, 작업 3은 실제 EditorView의 동기화·수명과 Chromium 입력을 검증한다. 실제 결과는 [작업 1](../../verification/task-1-static-app.md), [작업 2](../../verification/task-2-workspace-state.md), [작업 3 보고서](../../verification/task-3-editor-input.md)에 기록하며 후속 키맵·언어·렌더링·출력 검증은 해당 기능이 구현된 뒤 수행한다.
 
 ## 검증 수준과 역할
 
@@ -96,7 +96,7 @@ PRD 목표는 NFR-01 초기 로딩 2초, NFR-04 200줄 이미지 생성 2초, NF
 
 초기 제안으로 입력→다음 시각 갱신 p95 50ms 이하, 스타일 변경→다음 시각 갱신 p95 100ms 이하를 실험 기준으로 사용한다. 이는 PRD 확정 수치가 아니며 실제 기기 측정 후 이유와 함께 조정한다. 300줄 타이핑/붙여넣기, 언어·테마 전환, 후속 감지·저장 동시 실행을 각각 측정한다. 번들 크기는 PRD에 절대 상한이 없으므로 최초 production 빌드의 초기/지연 청크 크기를 기준선으로 기록하고 증가 이유를 리뷰한다.
 
-다음 명령의 스크립트는 작업 1에서 구현했다. `npm run test`는 한 번 실행 후 종료하며 `tests/unit`·`tests/integration`만 수집한다. 현재 순수 workspace 상태 단위 테스트와 통합 셸 테스트가 있다. 상태 테스트는 Node 환경을 사용하고 readonly의 잘못된 대입은 `npm run typecheck`로 함께 확인한다. Playwright는 기본적으로 build 후 `127.0.0.1:4173`의 production preview를 자동 시작·정리한다. `PLAYWRIGHT_SERVER_MODE=dev`이면 개발 서버를 검사한다. Chromium·Firefox·WebKit 프로젝트를 구분하며 설치한 브라우저에 한해 실행한다. Foundation 테스트는 루트 로드, 이름 있는 셸 영역, 키보드 진입, 화면 폭별 배치, CSS zoom과 페이지 진입 전부터 외부 HTTP/WebSocket·실패 요청·HTTP 오류·전송 본문·콘솔/런타임 오류를 확인한다. 실제 브라우저 확대·IME·OS 단축키의 수동 검증은 별개다.
+다음 명령의 스크립트는 작업 1에서 구현했다. `npm run test`는 한 번 실행 후 종료하며 `tests/unit`·`tests/integration`만 수집한다. 현재 순수 workspace 상태, 실제 EditorView 수명/동기화, App 연결 테스트가 있다. 상태 테스트는 Node 환경을 사용하고 readonly 대입은 typecheck로 확인한다. 편집기 통합 테스트는 jsdom에서 실제 CodeMirror를 사용하며 브라우저 동작은 Playwright로 구분한다. Playwright는 기본적으로 build 후 `127.0.0.1:4173`의 production preview를 자동 시작·정리한다. `PLAYWRIGHT_SERVER_MODE=dev`이면 개발 서버를 검사한다. Chromium·Firefox·WebKit 프로젝트를 구분하며 설치한 브라우저에 한해 실행한다. Foundation은 영어 영역·키보드 진입·폭별 배치·CSS zoom·네트워크 오류를 확인한다. editor-input은 가상화된 화면 밖 텍스트까지 Ctrl+A/C의 실제 copy data로 확인하고, Clipboard API와 Ctrl+V/C 경로도 검증한다. 경계 입력의 합성 paste는 OS 클립보드 검증과 구분한다. 실제 OS 브라우저 확대·한글 IME·다른 브라우저의 권한 동선은 별도 수동 검증이다.
 
 | 명령 | 기대 결과 |
 |---|---|
