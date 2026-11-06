@@ -1,6 +1,6 @@
 # 아키텍처 개요
 
-기준: [PRD v1.0](../product/PRD.md), [AGENTS.md](../../AGENTS.md). Phase 1 작업 1에서 React·TypeScript strict·Vite의 정적 앱 셸과 검증 기반을 구현했다. 현재 `src/main.tsx`가 `src/app/App.tsx`를 마운트하며 `dist/`의 정적 자산만으로 동작한다. 선택 버전과 실제 검증은 [작업 1 보고서](../verification/task-1-static-app.md)에 기록한다. 아래 편집기·상태·렌더링 설계는 후속 작업의 계약이며 아직 구현하지 않았다. CodeMirror 6은 호환성만 확인하고 편집기 구현 시 설치한다.
+기준: [PRD v1.0](../product/PRD.md), [AGENTS.md](../../AGENTS.md). Phase 1 작업 1에서 React·TypeScript strict·Vite의 정적 앱 셸과 검증 기반을 구현했다. 현재 `src/main.tsx`가 `src/app/App.tsx`를 마운트하며 `dist/`의 정적 자산만으로 동작한다. 작업 2에서 `src/state/workspace.ts`의 순수 문서·설정 reducer와 전체 코드의 `SnapshotInput` 투영을 구현했다. 아직 App에 연결하지 않았으며 편집기·렌더러·출력·저장은 후속 작업이다. 실제 검증은 [작업 1 보고서](../verification/task-1-static-app.md)와 [작업 2 보고서](../verification/task-2-workspace-state.md)에 기록한다. CodeMirror 6은 호환성만 확인하고 편집기 구현 시 설치한다.
 
 ## 경계와 책임
 
@@ -14,6 +14,10 @@
 | 로컬 저장 | 검증된 설정과 최대 20개 스니펫의 읽기·쓰기·복원·삭제. 저장 오류를 결과로 반환 | UI와 편집을 중단시키거나 외부로 데이터를 보내지 않음. Phase 3 |
 
 시작은 React state/reducer와 직접 연결한 CodeMirror 어댑터로 충분하다는 제안이다. 별도 전역 상태 라이브러리, React용 편집기 래퍼, Worker, 서비스 워커는 초기 필수 의존성으로 두지 않는다. 필요성과 측정 근거가 생기면 별도 결정한다.
+
+작업 2의 상태 계약은 초기 코드 `''`·revision0, VS Code, 수동 Plain Text, Dark syntax, 줄 번호/wrap off다. `codeChanged`와 외부 교체용 `codeReplaced`는 원문이 다를 때만 revision을 증가시키고 동일 값은 기존 상태를 반환한다. 설정 변경은 코드/revision을 보존한다. 상태는 중첩 값까지 readonly이며 함수는 이전 상태를 수정하지 않는다. 코드 문자열의 개행·공백을 정규화하지 않는다. CodeMirror 연결 시의 LF 정규화 정책은 작업 3에서 검증한다.
+
+`SnapshotInput`은 `code`, `revision`, `languageId`, `themeId`, `lineNumbers`, `wrap`만 가진 새 평면 객체다. readonly는 TypeScript 계약이며 runtime freeze를 제공하지 않는다. 모든 값이 primitive이므로 원본의 중첩 가변 객체를 공유하지 않는다. `themeId`는 Syntax theme이고 UI theme·패널·Zoom·키맵·커서·Undo·저장 상태는 출력 입력에 포함하지 않는다. 설정 변경의 렌더 경합은 아래 요청 ID 계약으로 구분하며 코드 revision만으로 최신 렌더를 판단하지 않는다.
 
 ## 데이터 흐름
 

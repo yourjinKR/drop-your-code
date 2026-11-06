@@ -12,10 +12,10 @@
 
 ## 현재 기준과 작업 경계
 
-- 최초 계획의 시작점은 `cac5e906a23fc31d02875526927f822aacb6dbe3` (`init project`)였다. **2026-11-07 디자인 명세 갱신 기준으로 작업 1 정적 앱 셸과 기본 검증 환경은 구현되어 있고 작업 2~6은 미구현이다.** 현재 `src/app/App.tsx`와 `src/app/app.css`는 한국어 준비 안내를 표시하는 초기 셸이다. 후속 구현 시작 때 Git·의존성·실제 구현 상태를 다시 확인해 사용자 변경을 보존한다.
+- 최초 계획의 시작점은 `cac5e906a23fc31d02875526927f822aacb6dbe3` (`init project`)였다. **2026-11-07 현재 작업 1 정적 앱 셸·검증 기반과 작업 2 순수 문서/설정 상태·SnapshotInput 투영을 구현했다. 작업 3~6은 미구현이다.** 작업 2 모듈은 아직 App에 연결하지 않았고 `src/app/App.tsx`와 `src/app/app.css`는 한국어 준비 안내를 표시하는 초기 셸이다. 후속 구현 시작 때 Git·의존성·실제 구현 상태를 다시 확인해 사용자 변경을 보존한다.
 - PRD §9의 Phase 1 다섯 항목을 구현한다. 렌더링·자동 크기 조절·이미지 출력은 Phase 2, 저장·히스토리·자동 언어 감지·완성된 반응형·단축키 안내는 Phase 3, 최적화·최종 호환성·배포는 Phase 4이다.
 - PRD §7은 후보 목록이다. 확정 제약과 설계 제안·미검증 가정을 구분한다. 의존성 도입 시 역할과 실제 선택 버전을 기록하며 최신 버전을 추정해 고정하지 않는다.
-- 최초 계획은 `writing-plans`, `verification-before-completion`을 사용했다. 이번 디자인 명세는 해당 계획의 적용 시점만 갱신하며 앱 구현·스킬 설치를 수행하지 않는다. 실행 스킬 부재를 구현의 필수 장애물로 삼지 않는다.
+- 최초 계획과 작업 2는 `writing-plans`, `verification-before-completion`을 사용했다. 디자인 명세 PR은 적용 시점만 정리했고 작업 2는 아래 순수 상태 범위만 구현했다. 실행 스킬 부재를 구현의 필수 장애물로 삼지 않는다.
 
 ## Global Constraints
 
@@ -26,11 +26,11 @@
 - 후속 MVP는 PNG·SVG·JPG·WebP를 지원하고, 외부 배경이 투명해도 코드 창 자체는 불투명하게 유지한다.
 - 모든 제품 UI 텍스트·접근성 이름·피드백은 영어다. `Editor`, `Properties`, `Copy Image`, `Export`를 사용한다. 문서의 한국어 설명과 사용자 코드 원문은 이 정책의 대상이 아니다.
 - 승인 후 UI 작업은 Neutral Dark 기반의 공통 CSS 토큰과 Light 대응값을 사용한다. 셸의 UI theme와 코드의 Syntax theme를 독립적으로 취급하며, Lucide만 UI 아이콘으로 사용한다. 이번에는 라이브러리를 설치하지 않는다.
-- 최초 계획 작성 시 앱 코드·초기화·의존성 설치·커밋·푸시·배포를 수행하지 않았다. 문서의 PR 제출과 이후 구현은 각각 요청된 범위에서 진행한다. 아래 명령은 전부 **후속 구현 후 실행할 명령**이며 현재 성공 기록이 아니다.
+- 최초 계획 작성 시 앱 코드·초기화·의존성 설치·커밋·푸시·배포를 수행하지 않았다. 이후 구현과 PR 제출은 각각 요청된 범위에서 진행한다. 아래 명령은 작업별 검증 계약이며 실제 결과는 해당 작업 보고서에서 확인한다.
 
 ## 작업 단위별 PR 흐름
 
-1. 최초 기반 문서와 작업 1 PR은 병합된 상태다. **이번 디자인 명세는 별도 `codex/` 브랜치의 문서 PR로 제출하고 병합하지 않는다.** 사용자 리뷰·디자인 승인 후 후속 구현을 진행한다. 이 문서 변경만으로 작업 2~6을 시작하지 않는다.
+1. 기반 문서·작업 1·디자인 명세 PR #3은 병합된 상태다. 다음 작업 진행 요청에 따라 `main`을 갱신하고 작업 2만 별도 `codex/` 브랜치에서 구현한다. 작업 2 PR은 제출 후 사용자 리뷰를 기다리고 병합·배포·작업 3 구현은 진행하지 않는다.
 2. 작업 1~6은 각각 독립 브랜치 `codex/phase-1-<작업명>`와 `main` 대상 PR 하나로 진행한다. 현재 PR이 병합되기 전에는 다음 구현 작업을 시작하지 않는다.
 3. 각 작업의 완료 조건을 확인한 뒤 [PR 템플릿](../../.github/pull_request_template.md)에 작업 번호·PRD 연결·실행 검증·미실행 항목·남은 제한을 기록한다. 문서 전용 변경은 앱 검증을 해당 없음으로 설명한다.
 4. 병합 후 원격 `main`을 받아 로컬 기준을 갱신하고 다음 브랜치를 만든다. 기존 사용자 변경은 보존하며 `main`에 직접 커밋하지 않는다. 커밋·푸시·병합·배포는 요청된 범위에서만 수행한다.
@@ -121,9 +121,11 @@ Desktop/Tablet/Mobile 목표는 [와이어프레임](../architecture/design/wire
 
 **입출력:** 위 계약의 초기값·reducer·`selectSnapshotInput`을 제공한다. 편집기·스토리지·DOM을 import하지 않는다. 코드 교체 action은 후속 복원의 진입점이며 저장 어댑터를 만들지 않는다.
 
-- [ ] `workspace.test.ts`에 `code_change_increments_revision`, `same_code_is_noop`, `settings_preserve_code`, `projection_keeps_full_text_and_final_newline`, `projection_excludes_keymap_and_does_not_mutate_source`를 먼저 작성한다. 빈 코드·300줄·긴 행·HTML/script 문자열을 포함한다.
-- [ ] `npm run test -- tests/unit/workspace.test.ts`로 구현 전 기대 동작 부재를 확인한 뒤 타입·초기값·reducer·불변 입력 투영을 구현한다.
-- [ ] 모든 상태 전환과 투영을 같은 명령으로 확인한다. 이미지 치수·토큰·SVG·Blob·저장 스키마를 미리 만들지 않는다.
+- [x] `workspace.test.ts`에 `code_change_increments_revision`, `same_code_is_noop`, `settings_preserve_code`, `projection_keeps_full_text_and_final_newline`, `projection_excludes_keymap_and_does_not_mutate_source`를 먼저 작성한다. 빈 코드·300줄·긴 행·HTML/script 문자열을 포함한다.
+- [x] `npm run test -- tests/unit/workspace.test.ts`로 구현 전 기대 동작 부재를 확인한 뒤 타입·초기값·reducer·불변 입력 투영을 구현한다.
+- [x] 모든 상태 전환과 투영을 같은 명령으로 확인한다. 이미지 치수·토큰·SVG·Blob·저장 스키마를 미리 만들지 않는다.
+
+**구현 결과 (2026-11-07):** [작업 2 실행 계획](task-2-workspace-state.md)과 [실제 검증 보고서](../verification/task-2-workspace-state.md)를 추가했다. 동일 코드 전달/교체와 같은 설정은 기존 상태를 반환하고 설정 변경은 코드 revision을 유지한다. 상태는 중첩 readonly, 투영은 여섯 primitive의 읽기 전용 새 객체다. UI·편집기·렌더러·저장소에는 아직 연결하지 않았다.
 
 **독립 완료 조건:** 해당 단위 테스트와 `npm run typecheck` 성공. 테마/키맵을 바꿔도 코드 revision이 증가하지 않으며, 입력 투영에는 스크롤과 무관한 전체 코드가 있다. 투영 결과를 변경할 수 없는 타입으로 제공하고 원본과 중첩 가변 객체를 공유하지 않는다.
 
@@ -232,4 +234,4 @@ Desktop/Tablet/Mobile 목표는 [와이어프레임](../architecture/design/wire
 
 작성 시 PRD §9의 Phase 1 다섯 항목을 작업 1/3/4/5/6에, 공통 상태를 작업 2에 연결했다. 타입·파일·명령의 이름을 맞추고 P1 겹침과 §8 후속 항목을 위 표로 추적했다. 문서 검증과 실제 구현의 테스트 성공 기록을 분리한다.
 
-다음 구현 작업은 **작업 2: 공통 문서·설정과 후속 스냅샷 입력**이다. 디자인 승인 후 별도 구현 요청을 받으면 현재 Git 상태와 실제 선택 버전부터 재확인한다. 이번 문서 PR의 제출 권한은 앱 구현·의존성 설치·병합·배포 권한을 뜻하지 않는다. 디자인 값의 문서 검증은 구현·접근성·출력 품질의 실제 통과 기록과 구분한다.
+다음 구현 작업은 **작업 3: CodeMirror 입력과 React 상태 연결**이다. 작업 2 PR이 병합되고 다음 구현 요청을 받으면 현재 Git 상태와 실제 선택 버전부터 재확인한다. 현재 작업의 제출 권한은 병합·배포·다음 작업 구현 권한을 뜻하지 않는다. 순수 상태 테스트 통과는 실제 편집기·키맵·접근성·출력 품질 검증과 구분한다.

@@ -1,15 +1,15 @@
 # 검증 전략
 
-상태: 작업 1 검증 기반 구현, 후속 기능은 검증 설계 · 2026-11-07
+상태: 작업 1 검증 기반·작업 2 순수 상태 단위 검증 구현, 후속 기능은 검증 설계 · 2026-11-07
 
-기준은 [PRD](../../product/PRD.md)이며 책임 경계는 [아키텍처](../overview.md), 화면 동작은 [UI 명세](../design/ui-spec.md), 기술 선택과 실험은 [ADR 0001](../decisions/0001-foundation.md)을 따른다. Phase 1의 작업별 검증은 [구현 계획](../../plans/phase-1-editor-foundation.md)에 연결한다. 작업 1에서 strict 타입 검사·Vitest/Testing Library/jsdom·Playwright 실행 환경과 셸 smoke 테스트를 추가했다. 실제 결과는 [작업 1 보고서](../../verification/task-1-static-app.md)에 기록하며, 아래 편집·렌더링·출력 검증은 해당 기능이 구현된 뒤 수행한다.
+기준은 [PRD](../../product/PRD.md)이며 책임 경계는 [아키텍처](../overview.md), 화면 동작은 [UI 명세](../design/ui-spec.md), 기술 선택과 실험은 [ADR 0001](../decisions/0001-foundation.md)을 따른다. Phase 1의 작업별 검증은 [구현 계획](../../plans/phase-1-editor-foundation.md)에 연결한다. 작업 1에서 strict 타입 검사·Vitest/Testing Library/jsdom·Playwright 실행 환경과 셸 smoke 테스트를 추가했다. 작업 2는 Node 환경에서 순수 workspace state·snapshot 입력과 readonly 타입 계약을 검증한다. 실제 결과는 [작업 1 보고서](../../verification/task-1-static-app.md)와 [작업 2 보고서](../../verification/task-2-workspace-state.md)에 기록하며, 아래 편집·렌더링·출력 검증은 해당 기능이 구현된 뒤 수행한다.
 
 ## 검증 수준과 역할
 
 | 수준 | 검증 대상 | 한계 및 도구 제안 |
 |---|---|---|
 | 정적 검사 | TypeScript strict, 모듈 경계, 정적 빌드 결과, 외부 의존성 및 네트워크 호출 경로 | 타입 검사는 실제 키 입력·렌더링 품질을 보장하지 않는다. React·TypeScript strict·Vite·CodeMirror 6을 우선 검토한다. |
-| 단위 | 설정 기본값·검증, 키맵 매핑, 상태 전이, 스냅샷 변환, 크기 계산, 저장 정책 | DOM·OS 동작을 흉내 내어 성공했다고 간주하지 않는다. Vitest 도입을 제안한다. |
+| 단위 | 설정 기본값·검증, 키맵 매핑, 상태 전이, 스냅샷 변환, 크기 계산, 저장 정책 | Vitest로 순수 상태를 검증한다. DOM·OS 동작을 흉내 내어 성공했다고 간주하지 않는다. 후속 변환·저장 정책은 해당 구현 시 추가한다. |
 | 통합 | 편집기와 공통 상태 동기화, 재설정 시 문서·선택·Undo 유지, 언어 로딩 경합, 저장 실패 복구 | React Testing Library 등을 검토한다. 실제 브라우저에서만 가능한 동작은 아래 수준으로 보낸다. |
 | 브라우저 | 실제 입력·붙여넣기·포커스·IME, 스크롤, 비동기 로딩, 다운로드·클립보드·오프라인 | Playwright를 검토한다. 자동화로 증명하지 못하는 OS 예약 키와 권한 흐름은 실제 기기에서 수동 확인한다. |
 | 이미지 출력 | 네 포맷의 실제 파일, 모든 줄·색·크기·폰트·투명도·벡터 구조 | 픽셀 비교와 SVG 구조 검사를 함께 사용한다. 화면 스크린샷만으로 출력 성공을 판정하지 않는다. |
@@ -96,7 +96,7 @@ PRD 목표는 NFR-01 초기 로딩 2초, NFR-04 200줄 이미지 생성 2초, NF
 
 초기 제안으로 입력→다음 시각 갱신 p95 50ms 이하, 스타일 변경→다음 시각 갱신 p95 100ms 이하를 실험 기준으로 사용한다. 이는 PRD 확정 수치가 아니며 실제 기기 측정 후 이유와 함께 조정한다. 300줄 타이핑/붙여넣기, 언어·테마 전환, 후속 감지·저장 동시 실행을 각각 측정한다. 번들 크기는 PRD에 절대 상한이 없으므로 최초 production 빌드의 초기/지연 청크 크기를 기준선으로 기록하고 증가 이유를 리뷰한다.
 
-다음 명령의 스크립트는 작업 1에서 구현했다. `npm run test`는 한 번 실행 후 종료하며 `tests/unit`·`tests/integration`만 수집한다. 현재 통합 셸 테스트가 하나 있고 순수 상태 단위 테스트는 작업 2에서 추가한다. Playwright는 기본적으로 build 후 `127.0.0.1:4173`의 production preview를 자동 시작·정리한다. `PLAYWRIGHT_SERVER_MODE=dev`이면 개발 서버를 검사한다. Chromium·Firefox·WebKit 프로젝트를 구분하며 설치한 브라우저에 한해 실행한다. Foundation 테스트는 루트 로드, 이름 있는 셸 영역, 키보드 진입, 화면 폭별 배치, CSS zoom과 페이지 진입 전부터 외부 HTTP/WebSocket·실패 요청·HTTP 오류·전송 본문·콘솔/런타임 오류를 확인한다. 실제 브라우저 확대·IME·OS 단축키의 수동 검증은 별개다.
+다음 명령의 스크립트는 작업 1에서 구현했다. `npm run test`는 한 번 실행 후 종료하며 `tests/unit`·`tests/integration`만 수집한다. 현재 순수 workspace 상태 단위 테스트와 통합 셸 테스트가 있다. 상태 테스트는 Node 환경을 사용하고 readonly의 잘못된 대입은 `npm run typecheck`로 함께 확인한다. Playwright는 기본적으로 build 후 `127.0.0.1:4173`의 production preview를 자동 시작·정리한다. `PLAYWRIGHT_SERVER_MODE=dev`이면 개발 서버를 검사한다. Chromium·Firefox·WebKit 프로젝트를 구분하며 설치한 브라우저에 한해 실행한다. Foundation 테스트는 루트 로드, 이름 있는 셸 영역, 키보드 진입, 화면 폭별 배치, CSS zoom과 페이지 진입 전부터 외부 HTTP/WebSocket·실패 요청·HTTP 오류·전송 본문·콘솔/런타임 오류를 확인한다. 실제 브라우저 확대·IME·OS 단축키의 수동 검증은 별개다.
 
 | 명령 | 기대 결과 |
 |---|---|
