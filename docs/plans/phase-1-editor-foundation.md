@@ -6,16 +6,16 @@
 
 **Architecture:** CodeMirror 상호작용 상태와 React의 공통 문서·설정을 어댑터로 연결한다. 후속 렌더러에는 전체 코드의 불변 입력을 제공하며 편집기 DOM을 출력 계약으로 사용하지 않는다.
 
-**Tech Stack:** React·TypeScript strict·Vite·CodeMirror 6 우선 검토. CSS로 기본 스타일을 구성한다. Vitest·Testing Library·Playwright는 검증을 위한 도입 제안이며 현재 설치되지 않았다.
+**Tech Stack:** React·TypeScript strict·Vite·CSS. 작업 1에서 Vitest·Testing Library·Playwright 검증 기반을 설치했다. CodeMirror 6은 작업 3에서 검토·도입한다. 이 문서 갱신에서는 의존성을 추가하지 않는다.
 
-**Spec:** [PRD §§4·6·8·9](../product/PRD.md), [아키텍처](../architecture/overview.md), [UI 명세](../architecture/design/ui-spec.md), [테스트 전략](../architecture/testing/strategy.md), [ADR 0001](../architecture/decisions/0001-foundation.md).
+**Spec:** [PRD §§4·6·8·9](../product/PRD.md), [아키텍처](../architecture/overview.md), [UI 명세](../architecture/design/ui-spec.md), [디자인 시스템](../architecture/design/design-system.md), [와이어프레임](../architecture/design/wireframes.md), [테스트 전략](../architecture/testing/strategy.md), [ADR 0001](../architecture/decisions/0001-foundation.md).
 
 ## 현재 기준과 작업 경계
 
-- 문서 작업 시작점: `main`, `cac5e906a23fc31d02875526927f822aacb6dbe3` (`init project`), 작업 트리 변경 없음. `src/`, `tests/`, `docs/plans/`는 기존 디렉터리이며 앱·package.json은 없다. 실제 구현 시작 때 상태를 다시 확인해 이후 사용자 변경을 보존한다.
+- 최초 계획의 시작점은 `cac5e906a23fc31d02875526927f822aacb6dbe3` (`init project`)였다. **2026-11-07 디자인 명세 갱신 기준으로 작업 1 정적 앱 셸과 기본 검증 환경은 구현되어 있고 작업 2~6은 미구현이다.** 현재 `src/app/App.tsx`와 `src/app/app.css`는 한국어 준비 안내를 표시하는 초기 셸이다. 후속 구현 시작 때 Git·의존성·실제 구현 상태를 다시 확인해 사용자 변경을 보존한다.
 - PRD §9의 Phase 1 다섯 항목을 구현한다. 렌더링·자동 크기 조절·이미지 출력은 Phase 2, 저장·히스토리·자동 언어 감지·완성된 반응형·단축키 안내는 Phase 3, 최적화·최종 호환성·배포는 Phase 4이다.
 - PRD §7은 후보 목록이다. 확정 제약과 설계 제안·미검증 가정을 구분한다. 의존성 도입 시 역할과 실제 선택 버전을 기록하며 최신 버전을 추정해 고정하지 않는다.
-- `skills-lock.json`의 6개 항목은 모두 로컬 `SKILL.md`가 존재한다. 추가 로컬 `snapshot-export-validation`도 있으나 lock에는 없다. 이번에는 `writing-plans`, `verification-before-completion`만 읽고 적용했다. 나머지 스킬·lock 파일은 변경하지 않았다. 실행 스킬 부재를 구현의 필수 장애물로 삼지 않는다.
+- 최초 계획은 `writing-plans`, `verification-before-completion`을 사용했다. 이번 디자인 명세는 해당 계획의 적용 시점만 갱신하며 앱 구현·스킬 설치를 수행하지 않는다. 실행 스킬 부재를 구현의 필수 장애물로 삼지 않는다.
 
 ## Global Constraints
 
@@ -24,14 +24,36 @@
 - TypeScript strict를 사용한다. 편집기 상호작용, 스냅샷 렌더링, 이미지 내보내기와 React UI의 책임을 분리한다.
 - IntelliJ와 VS Code 프리셋 동작을 보존한다. Windows 우선이며 macOS도 대응한다. 편집기 포커스 안에서만 편집 단축키를 처리한다.
 - 후속 MVP는 PNG·SVG·JPG·WebP를 지원하고, 외부 배경이 투명해도 코드 창 자체는 불투명하게 유지한다.
+- 모든 제품 UI 텍스트·접근성 이름·피드백은 영어다. `Editor`, `Properties`, `Copy Image`, `Export`를 사용한다. 문서의 한국어 설명과 사용자 코드 원문은 이 정책의 대상이 아니다.
+- 승인 후 UI 작업은 Neutral Dark 기반의 공통 CSS 토큰과 Light 대응값을 사용한다. 셸의 UI theme와 코드의 Syntax theme를 독립적으로 취급하며, Lucide만 UI 아이콘으로 사용한다. 이번에는 라이브러리를 설치하지 않는다.
 - 최초 계획 작성 시 앱 코드·초기화·의존성 설치·커밋·푸시·배포를 수행하지 않았다. 문서의 PR 제출과 이후 구현은 각각 요청된 범위에서 진행한다. 아래 명령은 전부 **후속 구현 후 실행할 명령**이며 현재 성공 기록이 아니다.
 
 ## 작업 단위별 PR 흐름
 
-1. 현재 설계 문서·계획·PR 템플릿 정리를 하나의 문서 작업 PR로 제출하고 `main`에 병합한다. 이 병합 전에는 작업 1 구현을 시작하지 않는다.
+1. 최초 기반 문서와 작업 1 PR은 병합된 상태다. **이번 디자인 명세는 별도 `codex/` 브랜치의 문서 PR로 제출하고 병합하지 않는다.** 사용자 리뷰·디자인 승인 후 후속 구현을 진행한다. 이 문서 변경만으로 작업 2~6을 시작하지 않는다.
 2. 작업 1~6은 각각 독립 브랜치 `codex/phase-1-<작업명>`와 `main` 대상 PR 하나로 진행한다. 현재 PR이 병합되기 전에는 다음 구현 작업을 시작하지 않는다.
 3. 각 작업의 완료 조건을 확인한 뒤 [PR 템플릿](../../.github/pull_request_template.md)에 작업 번호·PRD 연결·실행 검증·미실행 항목·남은 제한을 기록한다. 문서 전용 변경은 앱 검증을 해당 없음으로 설명한다.
 4. 병합 후 원격 `main`을 받아 로컬 기준을 갱신하고 다음 브랜치를 만든다. 기존 사용자 변경은 보존하며 `main`에 직접 커밋하지 않는다. 커밋·푸시·병합·배포는 요청된 범위에서만 수행한다.
+
+## 디자인 적용 시점과 범위
+
+이번 변경은 명세만 제공한다. 작업 2~6의 순서·기능·기존 완료 조건을 유지하고, 아래의 디자인 적용을 해당 기능을 실제로 제공하는 PR 안에서 검증한다. 전체 목표 화면을 한 PR에 구현하거나, 미구현 기능을 disabled/`Coming soon` 버튼으로 미리 노출하지 않는다.
+
+| 작업 / 시점 | 적용할 디자인과 파일 경계 | 해당 PR의 추가 확인 |
+|---|---|---|
+| 2 — 순수 상태 계약 | 기존 `src/state/workspace.ts` 계약 유지. `themeId`는 코드 Syntax theme이며 UI palette가 아니다. 패널·모드·줌은 코드·설정 또는 `SnapshotInput`에 넣지 않음 | 기존 reducer·투영 테스트로 전체 코드와 편집 설정만 전달하며 DOM·셸 상태가 섞이지 않는지 확인 |
+| 3 — 실제 입력 도입 | `src/app/App.tsx`의 편집 영역을 `Editor`로 명명하고, 입력이 제공되면 해당 영역의 한국어 준비 안내를 제거. `EditorSurface`는 레이아웃·장식과 분리 | 기존 입력 브라우저 검증에서 영어 접근성 이름, skip link와 편집기 탈출 경로 확인. 아직 `Preview` 탭·export/history를 표시하지 않음 |
+| 4 — 키맵 선택 도입 | 작업면 헤더에 `Keymap` 선택 배치. 설정 필드와 editor transaction을 분리하고 현재 프리셋을 명확히 표시 | 기존 키맵 테스트와 함께 selector 포커스에서 편집 명령이 개입하지 않고 문서·선택·Undo가 보존되는지 확인 |
+| 5 — 수동 언어 도입 | `Properties`의 `Code` 그룹에 `Language` 배치. 언어 선택을 헤더에도 중복하지 않으며 status에는 읽기 전용 값만 표시 | 기존 연속 선택·실패 복구 테스트에서 영어 label·로딩·오류·`Retry` 및 입력 지속을 확인 |
+| 6 — 기본 창과 셸 시각 적용 | `src/app/app.css`와 공통 UI 스타일에 디자인 토큰 적용. `src/components/`의 기존 창/설정을 조합해 좁은 toolbar, activity bar, `Properties`, status와 접기/복원 배치를 구성. 기본 코드 창·Syntax theme 데이터는 별도 유지 | 기본 창·편집 설정 검증에 UI Dark/Light와 Syntax Dark/Light 교차 조합, Properties 접기/복원 시 코드·선택·Undo 유지, 영어 UI, focus·contrast·좁은 폭 입력 확인을 추가 |
+
+작업 6의 공통 UI 파일은 실제 재사용이 생긴 경우 `src/components/ui/`에 작은 버튼·필드·섹션 단위로 둔다. CSS token 정의는 `src/app/tokens.css`를 제안하며 `app.css`에서 사용한다. 이름·배치는 구현 PR에서 기존 구조에 맞게 결정하고 테스트 경로도 함께 갱신한다. 범용 도킹 엔진·전역 상태 라이브러리·새 UI 프레임워크를 도입하지 않는다. Lucide 패키지가 필요하면 작업 6 PR에서 아이콘 일관성·트리 셰이킹을 근거로 선택 버전을 기록한다.
+
+셸 UI theme·패널 열림·accordion은 React의 작은 UI state로 충분하다. 작업 2의 문서 reducer에 필드를 추가하거나 `themeChanged`의 의미를 UI theme로 바꾸지 않는다. 저장·설정 복원은 Phase 3의 책임이다. 편집기·렌더러·내보내기 경계는 [아키텍처](../architecture/overview.md)를 유지한다.
+
+목표 화면 중 `Preview`, 창 크기 자동 계산, 줌/`Fit`, `Window`·`Background`·`Typography` 편집, `Copy Image`·`Export`는 Phase 2에서 기능과 함께 표시한다. 출력 배율 선택·언어 자동 감지·History/Recent snippets·Shortcuts·로컬 저장 상태·정식 반응형 drawer는 Phase 3에 표시한다. 지원 포맷은 실제 지원이 완료된 순서대로 노출하고 최종 MVP에서는 네 형식을 모두 검증한다. Phase 1에는 실제 동작하는 `Code` 설정과 기본 창만 제공하며, `Saved locally`나 미지원 버튼을 표시하지 않는다.
+
+Desktop/Tablet/Mobile 목표는 [와이어프레임](../architecture/design/wireframes.md)을 따른다. 작업 6은 데스크톱 기본 셸과 좁은 화면의 접근 가능한 입력·설정 동선까지만 확인한다. Phase 3의 responsive task는 breakpoint별 drawer 전환·터치·가상 키보드·200% 확대를 완성·검증하며 앞당겨 완료로 표시하지 않는다.
 
 ## Review Focus
 
@@ -52,6 +74,7 @@
 | `package.json`, 앱 잠금 파일, `index.html`, `tsconfig.json`, `vite.config.ts` | 정적 앱·명령·strict 설정 / 1 |
 | `vitest.config.ts`, `playwright.config.ts`, `tests/setup.ts` | 단위/통합/브라우저 검증 구성 / 1 |
 | `src/main.tsx`, `src/app/App.tsx`, `src/app/app.css` | 마운트, 공통 상태 소유, 헤더/설정/편집기 조합 / 1·3~6 |
+| `src/app/tokens.css`, 실제 재사용이 생긴 `src/components/ui/`의 작은 primitive | UI 전용 Dark/Light semantic tokens와 버튼·필드·섹션 스타일 / 6. 문서·Syntax theme·렌더러의 값과 분리 |
 | `src/state/workspace.ts` | 타입·초기값·reducer·SnapshotInput 투영 / 2 |
 | `src/editor/EditorSurface.tsx`, `src/editor/createEditor.ts` | React 수명과 CodeMirror 트랜잭션 어댑터 / 3 |
 | `src/editor/keymaps.ts` | OS·프리셋별 명령 구성 / 4 |
@@ -62,6 +85,7 @@
 작업 2에서 내보낼 계약:
 
 - `KeymapPreset = 'intellij' | 'vscode'`, `EditorThemeId = 'dark' | 'light'`.
+- `EditorThemeId` / `EditorSettings.themeId` / `themeChanged`는 Syntax theme를 뜻한다. 향후 UI theme 설정은 별도 이름·소유자로 두며 `SnapshotInput`에 포함하지 않는다. 타입 이름을 바꾸려면 후속 구현 PR에서 모든 소비자·테스트를 함께 변경한다.
 - `LanguageId`: `plaintext`, `java`, `kotlin`, `javascript`, `typescript`, `python`, `sql`, `json`, `yaml`, `html`, `css`, `xml`, `shell`, `markdown`.
 - `EditorSettings`: `keymap`, `language: { mode: 'manual'; languageId: LanguageId }`, `themeId`, `lineNumbers: boolean`, `wrap: boolean`. 자동 감지 모드는 Phase 3에서 명시적으로 확장한다.
 - `WorkspaceState`: `document: { code: string; revision: number }`, `settings: EditorSettings`.
@@ -165,10 +189,11 @@
 
 **입출력:** `getBasicTheme(id: EditorThemeId): BasicThemeTokens`는 창 배경·글자·구문 색상 값의 공유 원천이다. `BasicThemeTokens`는 후속 렌더러가 DOM 없이 읽을 수 있는 데이터로 둔다. `CodeWindow({ title, languageId, children })`는 기본 창 장식과 편집기를 조합한다. 실제 크기 모델·SVG는 만들지 않는다.
 
-- [ ] 참조 이미지가 없으므로 PRD 텍스트 기준으로 어두운 불투명 코드 창·빨강/노랑/초록 장식·상단 중앙 제목·언어 아이콘·라운딩·여백·강조를 구성한다. 세부 제안값은 [UI 명세](../architecture/design/ui-spec.md)를 사용한다. 장식 버튼은 비상호작용 요소로 처리한다.
+- [ ] 제공된 목표 와이어프레임과 [디자인 시스템](../architecture/design/design-system.md)·[UI 명세](../architecture/design/ui-spec.md)를 기준으로 어두운 불투명 코드 창·빨강/노랑/초록 장식·상단 중앙 제목·언어 아이콘·라운딩·여백·강조를 구성한다. 이미지의 예제 코드·치수·`Dark+` 이름을 고정 계약으로 오인하지 않는다. 장식 버튼은 비상호작용 요소로 처리한다.
 - [ ] 작은 기본 Dark/Light 테마 2개와 줄 번호·wrap 설정을 구현한다. 테마·줄 번호·wrap 변경은 Compartment로 적용해 코드·선택·Undo를 보존한다. 추가 테마의 지연 로딩은 후속 확장점이다.
 - [ ] `theme-settings.test.tsx`에 `theme_preserves_document_history`, `line_numbers_and_wrap_change_only_presentation`을 작성한다. `editor-window.spec.ts`는 기본 장식·중앙 제목·언어 아이콘, 불투명 코드 창, 긴 행/wrap·스크롤·설정 라벨을 검증한다. 출력 이미지의 픽셀 일치 검증으로 혼동하지 않는다.
 - [ ] `phase-1.spec.ts`에 입력→키맵 전환→언어 선택→테마·줄 번호·wrap→Undo의 핵심 흐름과 악성 HTML/script 문자열 무실행·외부 요청 없음을 검증한다. 300줄 지연, 초기 로딩, 청크 분리·총량을 기록하고 미검증 환경을 남긴다.
+- [ ] 셸에 공통 semantic token·영어 label·Lucide 규칙을 적용하고 초기 한국어 준비 안내·큰 작업면 제목·설명 카드·설명 footer를 제거한다. `theme-settings.test.tsx`에서 `ui_theme_does_not_change_syntax_or_snapshot_input`을, `editor-window.spec.ts`에서 `properties_toggle_preserves_editor_state`, `all_visible_controls_have_english_names`, keyboard focus 및 Dark/Light 교차 조합을 확인한다. UI theme 변경은 코드·Syntax theme·출력 설정을 바꾸지 않는다.
 
 **독립 완료 조건:** `npm run test -- tests/integration/theme-settings.test.tsx`, `npm run test:browser -- tests/browser/editor-window.spec.ts tests/browser/phase-1.spec.ts --project=chromium`, 이어서 `npm run typecheck`, `npm run test`, `npm run build`, `npm run test:browser -- --project=chromium` 성공. 기본 편집 경험을 완성하되 Phase 1 완료를 MVP 인수 완료라고 보고하지 않는다.
 
@@ -207,4 +232,4 @@
 
 작성 시 PRD §9의 Phase 1 다섯 항목을 작업 1/3/4/5/6에, 공통 상태를 작업 2에 연결했다. 타입·파일·명령의 이름을 맞추고 P1 겹침과 §8 후속 항목을 위 표로 추적했다. 문서 검증과 실제 구현의 테스트 성공 기록을 분리한다.
 
-다음 구현의 첫 작업은 **작업 1: 실행 가능한 정적 앱과 검증 기반**이다. 구현 요청을 받으면 현재 Git 상태와 실제 선택 버전부터 재확인한다. 이 문서 작성만으로 초기화·설치·테스트·실행 스킬 전환·커밋을 시작하지 않는다.
+다음 구현 작업은 **작업 2: 공통 문서·설정과 후속 스냅샷 입력**이다. 디자인 승인 후 별도 구현 요청을 받으면 현재 Git 상태와 실제 선택 버전부터 재확인한다. 이번 문서 PR의 제출 권한은 앱 구현·의존성 설치·병합·배포 권한을 뜻하지 않는다. 디자인 값의 문서 검증은 구현·접근성·출력 품질의 실제 통과 기록과 구분한다.

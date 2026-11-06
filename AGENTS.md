@@ -21,9 +21,19 @@ Read relevant documentation based on the task:
 - Architecture changes: `docs/architecture/overview.md`
 - Important technical decisions: `docs/architecture/decisions/`
 - UI work: `docs/architecture/design/ui-spec.md`
+- Visual tokens and UI primitives: `docs/architecture/design/design-system.md`
+- Layout, panels, and responsive behavior: `docs/architecture/design/wireframes.md`
 - Testing: `docs/architecture/testing/strategy.md`
 
 Do not read every document for unrelated changes.
+
+## UI
+- Follow the Minimal Developer Workspace direction: compact controls, editor-first layout, and collapsible panels.
+- Write all application-provided UI text, errors, tooltips, and accessibility labels in English. Preserve user-authored code and titles.
+- Use Lucide as the sole UI icon system. Snapshot language artwork may follow the separate design-system rules.
+- Keep the application UI theme independent from the code syntax theme and snapshot output.
+- Show controls only when their behavior is implemented; do not show coming-soon buttons, empty feature sections, or fabricated success states.
+- The design documents are proposals pending user review. Apply them in separately authorized implementation tasks according to the Phase 1 plan.
 
 ## Engineering
 - Use TypeScript with strict type checking.
