@@ -1,8 +1,13 @@
 import { Annotation, Compartment, EditorState } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
-import { history, historyKeymap, indentWithTab, standardKeymap } from '@codemirror/commands';
+import { history, isolateHistory } from '@codemirror/commands';
 import { indentUnit } from '@codemirror/language';
 import type { EditorSettings } from '../state/workspace';
+import { buildKeymap, detectPlatform } from './keymaps';
+
+const lineEditEvents = [
+  'delete.line', 'delete.cut', 'move.line', 'input.copyline', 'indent', 'input.indent', 'delete.dedent',
+];
 
 export type EditorSurfaceProps = {
   code: string;
@@ -32,9 +37,13 @@ export function createEditor(
       doc: props.code,
       extensions: [
         history(),
+        EditorState.transactionExtender.of((transaction) => (
+          transaction.docChanged && lineEditEvents.some((event) => transaction.isUserEvent(event))
+            ? { annotations: isolateHistory.of('full') }
+            : null
+        )),
         indentUnit.of('  '),
-        // Keep Escape unbound so CodeMirror's Escape-then-Tab exit always works.
-        compartments.keymap.of(keymap.of([indentWithTab, ...historyKeymap, ...standardKeymap])),
+        compartments.keymap.of(keymap.of(buildKeymap(props.settings.keymap, detectPlatform()))),
         // Later tasks reconfigure these slots; no unsupported controls are exposed.
         compartments.language.of([]),
         compartments.theme.of([]),

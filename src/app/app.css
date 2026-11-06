@@ -86,6 +86,11 @@ p {
 }
 
 .panel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 12px 16px;
   color: #243444;
   background: #fff;
@@ -96,6 +101,25 @@ p {
   font-size: 15px;
   line-height: 20px;
   font-weight: 600;
+}
+
+.keymap-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.keymap-control select {
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 1px solid #707783;
+  border-radius: 6px;
+  color: #243444;
+  background: #fff;
+  font: inherit;
 }
 
 .editor-surface,
@@ -138,11 +162,16 @@ p {
   background: #384e72;
 }
 
-.editor-help {
+.editor-help,
+.keymap-help {
   margin-top: 12px;
   color: #526779;
   font-size: 12px;
   line-height: 20px;
+}
+
+.keymap-help {
+  margin-top: 4px;
 }
 
 .app-footer {
@@ -165,5 +194,11 @@ p {
 
   .header-content {
     padding-block: 18px;
+  }
+}
+
+@media (pointer: coarse) {
+  .keymap-control select {
+    min-height: 44px;
   }
 }

@@ -1,6 +1,6 @@
 # 아키텍처 개요
 
-기준: [PRD v1.0](../product/PRD.md), [AGENTS.md](../../AGENTS.md). Phase 1 작업 1에서 React·TypeScript strict·Vite의 정적 앱 셸과 검증 기반을, 작업 2에서 순수 문서·설정 reducer와 전체 코드의 `SnapshotInput` 투영을 구현했다. 작업 3에서 CodeMirror 6의 Plain Text 입력과 App reducer를 연결했다. 현재 `src/main.tsx`가 App을 마운트하며 `dist/`의 정적 자산만으로 동작한다. IDE 프리셋·언어 선택·기본 코드 창/테마 UI·렌더러·출력·저장은 후속 작업이다. 실제 검증은 [작업 1](../verification/task-1-static-app.md), [작업 2](../verification/task-2-workspace-state.md), [작업 3 보고서](../verification/task-3-editor-input.md)에 기록한다.
+기준: [PRD v1.0](../product/PRD.md), [AGENTS.md](../../AGENTS.md). Phase 1 작업 1의 정적 셸·검증 기반, 작업 2의 순수 상태·SnapshotInput, 작업 3의 CodeMirror/App 입력 연결에 이어 작업 4는 IntelliJ/VS Code 주요 편집 키맵과 선택 UI를 제공한다. 현재 `src/main.tsx`가 App을 마운트하며 `dist/`의 정적 자산만으로 동작한다. 언어 선택·기본 코드 창/테마 UI·렌더러·출력·저장은 후속 작업이다. 실제 검증은 [작업 1](../verification/task-1-static-app.md), [작업 2](../verification/task-2-workspace-state.md), [작업 3](../verification/task-3-editor-input.md), [작업 4 보고서](../verification/task-4-keymaps.md)에 기록한다.
 
 ## 경계와 책임
 
@@ -21,11 +21,15 @@
 
 ### 현재 편집기 어댑터
 
-`src/editor/createEditor.ts`는 기본 history·standard keymap·Tab 들여쓰기·변경 listener를 구성한다. `src/editor/EditorSurface.tsx`는 mount/cleanup에서 view를 생성/정리하고 최신 commit의 callback을 참조한다. App은 lazy reducer와 안정적인 callback으로 변경을 반영한다. 키 입력·부모 echo·callback 교체 때문에 view를 다시 만들지 않는다.
+`src/editor/createEditor.ts`는 history·선택한 preset keymap·Tab 들여쓰기·변경 listener를 구성한다. `src/editor/EditorSurface.tsx`는 mount/cleanup에서 view를 생성/정리하고 최신 commit의 callback을 참조한다. App은 lazy reducer와 안정적인 callback으로 변경을 반영한다. 키 입력·부모 echo·callback 교체 때문에 view를 다시 만들지 않는다.
 
 외부 교체는 다른 문서일 때 한 transaction에 `externalCodeChange` annotation을 붙이고 selection의 anchor/head를 새 길이에 맞춘다. listener는 이 변경을 다시 onCodeChange로 보내지 않는다. 현재 외부 교체는 기본 history에 들어가며 인접 편집과 묶일 수 있다. Phase 3의 History 복원 Undo 정책을 이미 확정한 것으로 보지 않는다.
 
-keymap/language/theme/lineNumbers/wrap Compartment는 생성 시 한 번 등록한다. 현재는 기본 keymap만 적용하고 나머지는 비어 있으며 작업 4~6에서 같은 view를 유지하며 reconfigure할 연결 지점이다. 기본 standard keymap에는 Escape를 바인딩하지 않아 선택이 있는 경우에도 내장 Escape 다음 Tab 탈출을 사용한다. IDE 프리셋 완성품이라고 표시하지 않는다.
+keymap/language/theme/lineNumbers/wrap Compartment는 생성 시 한 번 등록한다. keymap은 preset 변경 때 그 slot만 reconfigure하고 같은 view·문서·선택·Undo를 유지한다. 이미 적용한 preset은 다시 구성하지 않는다. 나머지 slot은 비어 있으며 작업 5~6의 연결 지점이다. Escape는 바인딩하지 않아 선택이 있는 경우에도 내장 Escape 다음 Tab 탈출을 사용한다.
+
+`src/editor/keymaps.ts`는 Windows PRD 목표와 별도로 조사한 macOS 조합을 구성한다. `other`는 Windows 목표 fallback이다. 공통 historyKeymap을 덧붙이지 않아 IntelliJ Ctrl+Y가 Redo로 fall through하지 않는다. preset과 기본 탐색 명령 모두 editor focus·composition 상태를 확인하고 처리하지 않은 키의 default 동작을 강제로 막지 않는다. Cut/Copy는 native clipboard handler를 유지한다. 전역 키 listener·키맵 저장은 없다.
+
+줄 삭제·잘라내기·이동·복제·들여쓰기/내어쓰기 transaction은 `isolateHistory('full')`로 타이핑 그룹과 분리한다. 빠른 입력 직후 줄 삭제/내어쓰기를 Undo해도 입력 원문이 복원된다. 이 정책은 문서가 바뀐 특정 userEvent에만 적용하며 preset/selection 변경·일반 타이핑·외부 문서 복원 정책을 바꾸지 않는다. 언어 주석 이력은 작업 5의 언어 통합에서 별도로 검증한다.
 
 ## 데이터 흐름
 
