@@ -20,8 +20,8 @@ Read relevant documentation based on the task:
 - Product features: `docs/product/PRD.md`
 - Architecture changes: `docs/architecture/overview.md`
 - Important technical decisions: `docs/architecture/decisions/`
-- UI work: `docs/design/ui-spec.md`
-- Testing: `docs/testing/strategy.md`
+- UI work: `docs/architecture/design/ui-spec.md`
+- Testing: `docs/architecture/testing/strategy.md`
 
 Do not read every document for unrelated changes.
 
@@ -44,4 +44,7 @@ Do not read every document for unrelated changes.
 - For substantial features, create a focused plan in `docs/plans/`.
 - Keep each implementation task independently testable.
 - Update relevant documentation when behavior or architecture changes.
-- Do not commit, push, or deploy unless requested.
+- Use one `codex/` branch and one pull request targeting `main` per independently testable task. Do not commit directly to `main`.
+- Use `.github/pull_request_template.md` and include the task, related PRD requirements, actual verification results, and remaining limitations.
+- Merge the current task's PR into `main` and update the local base before starting the next implementation task.
+- Do not commit, push, merge, or deploy unless requested.
