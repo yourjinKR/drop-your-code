@@ -1,6 +1,6 @@
 # UI 명세
 
-작성일: 2026-11-07 · 상태: **작업 1 앱 셸만 구현, 새 디자인은 사용자 리뷰를 위한 제안**
+작성일: 2026-11-07 · 상태: **작업 3 Plain Text 편집기 연결, 전체 디자인 셸은 작업 6 적용 대상**
 
 기준은 [PRD](../../product/PRD.md) §4–6 및 §8이다. 이번에 제공된 `desktop-wireframe.png`, `.svg`, `design-reference.md`를 Desktop 방향으로 사용한다. 이전의 참조 이미지 부재 상태는 해소되었다. 첨부 문서의 전달용 예시 프롬프트는 실행 지시가 아니다. 배치·초기값은 PRD의 확정 요구와 구분되는 설계 제안이며, 사용자 리뷰 후 각 기능 단계에서 적용·검증한다.
 
@@ -27,9 +27,9 @@ PRD §5.1의 Header / Main / Settings Panel을 다음 역할로 세분화한다.
 
 Phase 1은 편집 창, 키맵·수동 언어·기본 Syntax theme 선택, 줄 번호·줄 바꿈의 기초를 제공한다. 작업6에서 디자인 토큰·독립 UI Dark/Light·기본 Properties 접기를 적용한다. 이미지 미리보기·복사·내보내기·히스토리는 후속 단계이며 준비 중 버튼·빈 섹션·가짜 저장 성공을 표시하지 않는다. 이 문서의 전체 화면 정의가 Phase 1 작업 2~6의 기능 범위 확대를 뜻하지 않는다.
 
-작업 1의 현재 화면은 서비스 Header, 이름이 있는 `작업 공간` Main, `설정` 영역과 키보드 건너뛰기 링크만 제공한다. 아직 입력할 수 없는 코드 영역과 설정은 준비 상태를 설명하며, 편집·키맵·언어·테마·출력·히스토리 컨트롤은 표시하지 않는다. 시스템 글꼴과 로컬 favicon만 사용하고 넓은 화면에서는 우측 설정 영역, 좁은 화면에서는 세로 배치를 사용한다. 코드 창 프리셋은 작업 6에서 구현한다.
+작업 3의 현재 화면은 Brand, 이름 있는 `Editor` main과 `Code editor` 입력, 짧은 Tab 탈출 도움말, 실제 `Plain Text`/행 수 상태를 제공한다. 빈 Properties·준비 안내·상시 개인정보 설명·큰 작업면 제목은 제거했다. 영어 metadata/noscript/오류와 시스템 글꼴·로컬 favicon을 사용한다. 초기 outer shell은 Light이며 입력 면만 고정된 불투명 Dark다. UI theme 전환·전체 토큰·Toolbar/rail/panel·macOS 코드 창 프리셋은 작업 6에서 적용한다.
 
-이 현재 상태는 목표 UI와 구분한다. 앱 코드는 이번 문서 PR에서 변경하지 않는다. 작업3의 Editor 연결과 작업6의 셸 적용에서 한국어 안내·큰 제목·카드형 배치를 제거하고 기존 접근성 테스트의 이름도 갱신한다. 상세 이행 목록은 §8을 따른다.
+이 현재 상태는 최종 목표 UI와 구분한다. 작업 3에서는 실제 입력 연결과 영어 copy에 필요한 범위만 변경했다. Keymap/Language/Syntax theme/줄 번호/wrap의 사용자 제어는 작업 4/5/6이며 미리 버튼으로 표시하지 않는다. 상세 이행 목록은 §8을 따른다.
 
 ## 2. 기본 코드 창
 
@@ -129,7 +129,7 @@ Tab 들여쓰기와 키보드로 편집 영역을 벗어나는 경로를 함께 
 
 앱이 작성하는 표시 텍스트·오류·tooltip·accessible name·dialog·noscript·metadata는 영어로 통일한다. 사용자 코드·제목·History 내용은 번역하거나 영문으로 제한하지 않는다. 문서 설명은 한국어를 유지할 수 있다. 주요 동작 `Copy Image`/`Export` 표기는 고정하고 일반 label은 sentence case로 쓴다.
 
-| 현재 텍스트/표현 | 후속 적용 |
+| 초기 셸 텍스트/표현 | 적용 규칙 |
 |---|---|
 | `Workspace`, `작업 공간` | `Editor`; 큰 페이지 제목은 제거, 이름 있는 main은 보존 |
 | 속성 패널 `Settings`, `설정` | `Properties` |
@@ -140,9 +140,9 @@ Tab 들여쓰기와 키보드로 편집 영역을 벗어나는 경로를 함께 
 | `편집과 이미지 내보내기는 다음 업데이트에서 사용할 수 있습니다.` | 제거 |
 | `편집기가 제공되면 언어와 스타일을 여기에서 설정할 수 있습니다.` | 제거하고 구현된 필드만 표시 |
 | `브라우저 안에서만 작업`, 상시 하단 개인정보 설명 | 상시 문구 제거; 필요한 로컬 데이터 한계는 History에서 영어 안내 |
-| `index.html`의 `lang="ko"`, 한국어 metadata/noscript | `lang="en"` 및 영어 문구. 디자인을 적용하는 구현 PR에서 변경 |
+| `index.html`의 `lang="ko"`, 한국어 metadata/noscript | 작업 3에서 `lang="en"` 및 영어 문구로 변경 |
 
-작업3에서 실제 Editor 연결 시 해당 안내를 걷어내고 작업4–5의 새 컨트롤은 처음부터 영어로 작성한다. 작업6에서 전체 셸·document language·남은 copy와 접근성 이름 테스트를 확인한다. 현재 소스는 이 문서 PR에서 그대로 유지한다.
+작업 3에서 초기 안내와 한국어 UI를 제거하고 실제 Editor/skip link/상태의 영어 접근성 이름을 검증했다. 작업 4–5의 새 컨트롤도 영어로 작성하고 작업 6에서 전체 셸·남은 copy를 재확인한다. 새로 표시할 Properties 이름 등은 해당 기능 도입 때 적용한다.
 
 | 상황 | 예시 / 제약 |
 |---|---|
@@ -168,4 +168,4 @@ Tab 들여쓰기와 키보드로 편집 영역을 벗어나는 경로를 함께 
 | 반응형 원칙만 제안 | 1440/1024/768 경계·단일 모달·320px·200% 동선 구체화 |
 | 기본14px/1.5·padding24·radius12·줄 번호/wrap off | 유지. 이미지의16/24px·줄 번호on은 예시 |
 
-영향 파일은 셸 CSS·영어 copy·index metadata·작은 UI Primitive·focus 관리와 해당 테스트다. 공통 문서·편집 어댑터·keymap 명령은 시각 변경과 분리한다. SnapshotInput에는 UI 설정을 넣지 않는다. renderer/export/persistence는 원래 단계에 구현한다. 실제 적용 여부는 사용자 리뷰 후 결정하며 이번 변경은 앱 코드·의존성·PRD를 수정하지 않는다. 이번 문서 검증과 미검증 항목은 [검증 기록](../../verification/ui-ux-design-system.md)에 남긴다.
+영향 파일은 셸 CSS·영어 copy·index metadata·작은 UI Primitive·focus 관리와 해당 테스트다. 공통 문서·편집 어댑터·keymap 명령은 시각 변경과 분리한다. SnapshotInput에는 UI 설정을 넣지 않는다. renderer/export/persistence는 원래 단계에 구현한다. 디자인 명세 자체의 검증은 [디자인 검증 기록](../../verification/ui-ux-design-system.md), 실제 입력 연결은 [작업 3 검증 기록](../../verification/task-3-editor-input.md)에 구분한다. PRD 기능 요구는 변경하지 않는다.

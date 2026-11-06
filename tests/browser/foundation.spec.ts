@@ -77,17 +77,20 @@ const test = base.extend<{ audit: BrowserIssues }>({
   ],
 });
 
-test('opens the static root with named shell regions and no unsupported actions', async ({ page }) => {
+test('opens the static root with an English editor and no unsupported actions', async ({ page }) => {
   const response = await page.goto('/');
 
   expect(response?.status()).toBe(200);
   await expect(page).toHaveTitle(/Drop Your Code/);
   await expect(page.getByRole('banner')).toBeVisible();
   await expect(page.getByRole('heading', { level: 1, name: 'Drop Your Code' })).toBeVisible();
-  await expect(page.getByRole('main', { name: '작업 공간' })).toBeVisible();
-  await expect(page.getByRole('complementary', { name: '설정' })).toBeVisible();
+  await expect(page.getByRole('main', { name: 'Editor' })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'Code editor' })).toBeVisible();
+  await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('1 line');
+  await expect(page.getByRole('complementary')).toHaveCount(0);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(
-    page.getByRole('button', { name: /복사|내보내기|히스토리|copy|export|history/i }),
+    page.getByRole('button', { name: /copy|export|history|preview/i }),
   ).toHaveCount(0);
   await page.waitForLoadState('networkidle');
 });
@@ -95,21 +98,23 @@ test('opens the static root with named shell regions and no unsupported actions'
 test('lets keyboard users skip directly to the workspace', async ({ page }) => {
   await page.goto('/');
   await page.keyboard.press('Tab');
-  const skipLink = page.getByRole('link', { name: '작업 공간으로 건너뛰기' });
+  const skipLink = page.getByRole('link', { name: 'Skip to editor' });
   await expect(skipLink).toBeFocused();
   await expect(skipLink).toBeInViewport();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('main', { name: '작업 공간' })).toBeFocused();
+  await expect(page.getByRole('main', { name: 'Editor' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('textbox', { name: 'Code editor' })).toBeFocused();
 });
 
 for (const width of [360, 768, 1280]) {
   test(`keeps the shell reachable at ${width}px without horizontal overflow`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    await expect(page.getByRole('main', { name: '작업 공간' })).toBeVisible();
-    const settings = page.getByRole('complementary', { name: '설정' });
-    await settings.scrollIntoViewIfNeeded();
-    await expect(settings).toBeInViewport();
+    await expect(page.getByRole('main', { name: 'Editor' })).toBeVisible();
+    const editor = page.getByRole('textbox', { name: 'Code editor' });
+    await editor.scrollIntoViewIfNeeded();
+    await expect(editor).toBeInViewport();
     const fitsViewport = await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
     );
@@ -118,16 +123,19 @@ for (const width of [360, 768, 1280]) {
 }
 
 // CSS zoom exercises scaling and reflow; this does not replace native browser zoom QA.
-test('preserves access to workspace and settings with 200% CSS zoom', async ({ page }) => {
+test('preserves access to the editor and status with 200% CSS zoom', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/');
   await page.evaluate(() => {
     document.documentElement.style.zoom = '2';
   });
-  await expect(page.getByRole('main', { name: '작업 공간' })).toBeVisible();
-  const settings = page.getByRole('complementary', { name: '설정' });
-  await settings.scrollIntoViewIfNeeded();
-  await expect(settings).toBeInViewport();
+  await expect(page.getByRole('main', { name: 'Editor' })).toBeVisible();
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  await editor.scrollIntoViewIfNeeded();
+  await expect(editor).toBeInViewport();
+  const status = page.getByRole('status', { name: 'Editor status' });
+  await status.scrollIntoViewIfNeeded();
+  await expect(status).toBeInViewport();
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
   ).toBe(true);

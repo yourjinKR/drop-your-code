@@ -1,0 +1,3 @@
+  const message = "Hello, 한글 😀";
+	const literal = "<script>window.__codeExecuted = true</script>";
+  const address = "https://example.com/do-not-request";

@@ -1,6 +1,6 @@
 # 아키텍처 개요
 
-기준: [PRD v1.0](../product/PRD.md), [AGENTS.md](../../AGENTS.md). Phase 1 작업 1에서 React·TypeScript strict·Vite의 정적 앱 셸과 검증 기반을 구현했다. 현재 `src/main.tsx`가 `src/app/App.tsx`를 마운트하며 `dist/`의 정적 자산만으로 동작한다. 작업 2에서 `src/state/workspace.ts`의 순수 문서·설정 reducer와 전체 코드의 `SnapshotInput` 투영을 구현했다. 아직 App에 연결하지 않았으며 편집기·렌더러·출력·저장은 후속 작업이다. 실제 검증은 [작업 1 보고서](../verification/task-1-static-app.md)와 [작업 2 보고서](../verification/task-2-workspace-state.md)에 기록한다. CodeMirror 6은 호환성만 확인하고 편집기 구현 시 설치한다.
+기준: [PRD v1.0](../product/PRD.md), [AGENTS.md](../../AGENTS.md). Phase 1 작업 1에서 React·TypeScript strict·Vite의 정적 앱 셸과 검증 기반을, 작업 2에서 순수 문서·설정 reducer와 전체 코드의 `SnapshotInput` 투영을 구현했다. 작업 3에서 CodeMirror 6의 Plain Text 입력과 App reducer를 연결했다. 현재 `src/main.tsx`가 App을 마운트하며 `dist/`의 정적 자산만으로 동작한다. IDE 프리셋·언어 선택·기본 코드 창/테마 UI·렌더러·출력·저장은 후속 작업이다. 실제 검증은 [작업 1](../verification/task-1-static-app.md), [작업 2](../verification/task-2-workspace-state.md), [작업 3 보고서](../verification/task-3-editor-input.md)에 기록한다.
 
 ## 경계와 책임
 
@@ -13,11 +13,19 @@
 | 내보내기 | 확정된 동일 revision의 모델 → SVG 또는 PNG/JPG/WebP Blob. 다운로드와 PNG 클립보드 동작은 별도 어댑터 | React UI·편집기 DOM에 의존하지 않음. Phase 2; 배율 UI는 Phase 3 |
 | 로컬 저장 | 검증된 설정과 최대 20개 스니펫의 읽기·쓰기·복원·삭제. 저장 오류를 결과로 반환 | UI와 편집을 중단시키거나 외부로 데이터를 보내지 않음. Phase 3 |
 
-시작은 React state/reducer와 직접 연결한 CodeMirror 어댑터로 충분하다는 제안이다. 별도 전역 상태 라이브러리, React용 편집기 래퍼, Worker, 서비스 워커는 초기 필수 의존성으로 두지 않는다. 필요성과 측정 근거가 생기면 별도 결정한다.
+현재는 React reducer와 직접 연결한 CodeMirror 어댑터를 사용한다. 별도 전역 상태 라이브러리, React용 편집기 래퍼, Worker, 서비스 워커는 도입하지 않았다. 필요성과 측정 근거가 생기면 별도 결정한다.
 
-작업 2의 상태 계약은 초기 코드 `''`·revision0, VS Code, 수동 Plain Text, Dark syntax, 줄 번호/wrap off다. `codeChanged`와 외부 교체용 `codeReplaced`는 원문이 다를 때만 revision을 증가시키고 동일 값은 기존 상태를 반환한다. 설정 변경은 코드/revision을 보존한다. 상태는 중첩 값까지 readonly이며 함수는 이전 상태를 수정하지 않는다. 코드 문자열의 개행·공백을 정규화하지 않는다. CodeMirror 연결 시의 LF 정규화 정책은 작업 3에서 검증한다.
+작업 2의 상태 계약은 초기 코드 `''`·revision0, VS Code, 수동 Plain Text, Dark syntax, 줄 번호/wrap off다. `codeChanged`와 외부 교체용 `codeReplaced`는 원문이 다를 때만 revision을 증가시키고 동일 값은 기존 상태를 반환한다. 설정 변경은 코드/revision을 보존한다. 상태는 중첩 값까지 readonly이며 함수는 이전 상태를 수정하지 않는다. reducer는 개행·공백을 정규화하지 않는다. CodeMirror 입력은 CRLF/CR을 LF로 정규화하고 마지막 빈 줄을 유지한다. 외부 props는 `state.toText(code)`와 `doc.eq`로 비교해 같은 문서를 반복 dispatch하지 않으며, 정규화만을 이유로 부모 props를 다시 쓰는 callback은 보내지 않는다.
 
 `SnapshotInput`은 `code`, `revision`, `languageId`, `themeId`, `lineNumbers`, `wrap`만 가진 새 평면 객체다. readonly는 TypeScript 계약이며 runtime freeze를 제공하지 않는다. 모든 값이 primitive이므로 원본의 중첩 가변 객체를 공유하지 않는다. `themeId`는 Syntax theme이고 UI theme·패널·Zoom·키맵·커서·Undo·저장 상태는 출력 입력에 포함하지 않는다. 설정 변경의 렌더 경합은 아래 요청 ID 계약으로 구분하며 코드 revision만으로 최신 렌더를 판단하지 않는다.
+
+### 현재 편집기 어댑터
+
+`src/editor/createEditor.ts`는 기본 history·standard keymap·Tab 들여쓰기·변경 listener를 구성한다. `src/editor/EditorSurface.tsx`는 mount/cleanup에서 view를 생성/정리하고 최신 commit의 callback을 참조한다. App은 lazy reducer와 안정적인 callback으로 변경을 반영한다. 키 입력·부모 echo·callback 교체 때문에 view를 다시 만들지 않는다.
+
+외부 교체는 다른 문서일 때 한 transaction에 `externalCodeChange` annotation을 붙이고 selection의 anchor/head를 새 길이에 맞춘다. listener는 이 변경을 다시 onCodeChange로 보내지 않는다. 현재 외부 교체는 기본 history에 들어가며 인접 편집과 묶일 수 있다. Phase 3의 History 복원 Undo 정책을 이미 확정한 것으로 보지 않는다.
+
+keymap/language/theme/lineNumbers/wrap Compartment는 생성 시 한 번 등록한다. 현재는 기본 keymap만 적용하고 나머지는 비어 있으며 작업 4~6에서 같은 view를 유지하며 reconfigure할 연결 지점이다. 기본 standard keymap에는 Escape를 바인딩하지 않아 선택이 있는 경우에도 내장 Escape 다음 Tab 탈출을 사용한다. IDE 프리셋 완성품이라고 표시하지 않는다.
 
 ## 데이터 흐름
 

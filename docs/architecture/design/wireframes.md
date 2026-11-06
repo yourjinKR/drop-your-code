@@ -1,8 +1,8 @@
 # 화면 구조와 와이어프레임
 
-작성일: 2026-11-07 · 상태: 사용자 리뷰를 위한 디자인 명세 제안, 미구현
+작성일: 2026-11-07 · 상태: 전체 목표 레이아웃 명세. 현재는 작업 3 기본 입력만 구현
 
-기준: [PRD](../../product/PRD.md) §4–6·9, [UI 명세](ui-spec.md), [디자인 시스템](design-system.md), [Phase 1 계획](../../plans/phase-1-editor-foundation.md). 여기의 전체 화면은 최종 MVP의 배치 계약이며, Phase 1의 기능 범위를 확대하지 않는다. 이번 변경은 문서만 작성한다.
+기준: [PRD](../../product/PRD.md) §4–6·9, [UI 명세](ui-spec.md), [디자인 시스템](design-system.md), [Phase 1 계획](../../plans/phase-1-editor-foundation.md). 여기의 전체 화면은 최종 MVP의 배치 계약이며 Phase 1의 기능 범위를 확대하지 않는다. 실제 구현 상태와 아직 숨기는 기능은 §7에서 구분한다.
 
 ## 1. 참조 해석
 
@@ -198,7 +198,7 @@ Sheet는 viewport 전체 폭·사용 가능한 높이를 사용하며 라벨과 
 
 | 시점 | 화면에 나타날 수 있는 기능 | 계속 숨기는 것 |
 |---|---|---|
-| 현재 앱 셸 | 현재 구현된 정적 구조만 존재. 본 제안은 적용되지 않음 | 실제 Editor·Preview·복사·출력·History 동작을 구현 완료로 표현하지 않음 |
+| 현재 작업 3 입력 셸 | 실제 Plain Text Editor·영어 skip/help·행 수 상태. 전체 목표 셸은 작업 6에서 적용 | IDE 프리셋·언어/테마 선택·Preview·복사·출력·History 완료로 표현하지 않음 |
 | Phase 1 작업 2–3 | 상태 모델·Editor 입력이 각각 구현된 범위. 구현된 순서대로 간결한 Editor 영역 | 렌더러, 출력 치수·배율, History, 저장 성공 |
 | Phase 1 작업 4–5 | Keymap, 수동 Language와 로딩·오류 상태 | 자동 감지와 전체 Shortcuts 화면 |
 | Phase 1 작업 6 | 기본 코드 창, Syntax theme Dark/Light, Line numbers, Wrap lines. 토큰·기본 Properties 접기 적용. 좁은 화면은 인라인 세로 배치로 설정 접근 보장 | 스타일 세부 조정, Preview, Export, Copy Image, History, 정식 모달 drawer/sheet |

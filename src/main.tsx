@@ -6,7 +6,7 @@ import './app/app.css';
 const root = document.getElementById('root');
 
 if (!root) {
-  throw new Error('앱을 표시할 루트 요소가 없습니다.');
+  throw new Error('The application root element is missing.');
 }
 
 createRoot(root).render(

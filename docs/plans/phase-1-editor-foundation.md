@@ -6,16 +6,16 @@
 
 **Architecture:** CodeMirror 상호작용 상태와 React의 공통 문서·설정을 어댑터로 연결한다. 후속 렌더러에는 전체 코드의 불변 입력을 제공하며 편집기 DOM을 출력 계약으로 사용하지 않는다.
 
-**Tech Stack:** React·TypeScript strict·Vite·CSS. 작업 1에서 Vitest·Testing Library·Playwright 검증 기반을 설치했다. CodeMirror 6은 작업 3에서 검토·도입한다. 이 문서 갱신에서는 의존성을 추가하지 않는다.
+**Tech Stack:** React·TypeScript strict·Vite·CSS. 작업 1에서 Vitest·Testing Library·Playwright 검증 기반을, 작업 3에서 CodeMirror 6의 state/view/commands/language 핵심 패키지를 설치했다. 추가 UI 프레임워크나 편집기 wrapper는 사용하지 않는다.
 
 **Spec:** [PRD §§4·6·8·9](../product/PRD.md), [아키텍처](../architecture/overview.md), [UI 명세](../architecture/design/ui-spec.md), [디자인 시스템](../architecture/design/design-system.md), [와이어프레임](../architecture/design/wireframes.md), [테스트 전략](../architecture/testing/strategy.md), [ADR 0001](../architecture/decisions/0001-foundation.md).
 
 ## 현재 기준과 작업 경계
 
-- 최초 계획의 시작점은 `cac5e906a23fc31d02875526927f822aacb6dbe3` (`init project`)였다. **2026-11-07 현재 작업 1 정적 앱 셸·검증 기반과 작업 2 순수 문서/설정 상태·SnapshotInput 투영을 구현했다. 작업 3~6은 미구현이다.** 작업 2 모듈은 아직 App에 연결하지 않았고 `src/app/App.tsx`와 `src/app/app.css`는 한국어 준비 안내를 표시하는 초기 셸이다. 후속 구현 시작 때 Git·의존성·실제 구현 상태를 다시 확인해 사용자 변경을 보존한다.
+- 최초 계획의 시작점은 `cac5e906a23fc31d02875526927f822aacb6dbe3` (`init project`)였다. **2026-11-07 현재 작업 1 검증 기반·작업 2 순수 상태·작업 3 CodeMirror/App 입력 연결을 구현했다. 작업 4~6은 미구현이다.** 화면은 영어 Plain Text Editor와 실제 행 수 상태를 제공하며 전체 목표 셸은 작업 6에서 적용한다. 후속 구현 시작 때 Git·의존성·실제 구현 상태를 다시 확인해 사용자 변경을 보존한다.
 - PRD §9의 Phase 1 다섯 항목을 구현한다. 렌더링·자동 크기 조절·이미지 출력은 Phase 2, 저장·히스토리·자동 언어 감지·완성된 반응형·단축키 안내는 Phase 3, 최적화·최종 호환성·배포는 Phase 4이다.
 - PRD §7은 후보 목록이다. 확정 제약과 설계 제안·미검증 가정을 구분한다. 의존성 도입 시 역할과 실제 선택 버전을 기록하며 최신 버전을 추정해 고정하지 않는다.
-- 최초 계획과 작업 2는 `writing-plans`, `verification-before-completion`을 사용했다. 디자인 명세 PR은 적용 시점만 정리했고 작업 2는 아래 순수 상태 범위만 구현했다. 실행 스킬 부재를 구현의 필수 장애물로 삼지 않는다.
+- 최초 계획과 작업 2~3은 `writing-plans`, `verification-before-completion`을 사용했다. 작업 3은 React 수명/성능 지침도 적용했다. 각 작업은 아래 독립 범위를 유지하며 실행 스킬 부재를 구현의 필수 장애물로 삼지 않는다.
 
 ## Global Constraints
 
@@ -25,12 +25,12 @@
 - IntelliJ와 VS Code 프리셋 동작을 보존한다. Windows 우선이며 macOS도 대응한다. 편집기 포커스 안에서만 편집 단축키를 처리한다.
 - 후속 MVP는 PNG·SVG·JPG·WebP를 지원하고, 외부 배경이 투명해도 코드 창 자체는 불투명하게 유지한다.
 - 모든 제품 UI 텍스트·접근성 이름·피드백은 영어다. `Editor`, `Properties`, `Copy Image`, `Export`를 사용한다. 문서의 한국어 설명과 사용자 코드 원문은 이 정책의 대상이 아니다.
-- 승인 후 UI 작업은 Neutral Dark 기반의 공통 CSS 토큰과 Light 대응값을 사용한다. 셸의 UI theme와 코드의 Syntax theme를 독립적으로 취급하며, Lucide만 UI 아이콘으로 사용한다. 이번에는 라이브러리를 설치하지 않는다.
+- UI 작업은 Neutral Dark 기반의 공통 CSS 토큰과 Light 대응값을 사용한다. 셸의 UI theme와 코드의 Syntax theme는 독립적이며 Lucide만 UI 아이콘으로 사용한다. 전체 토큰/아이콘 적용은 작업 6이다. 작업 3은 실제 입력에 필요한 CodeMirror 핵심 패키지만 도입했다.
 - 최초 계획 작성 시 앱 코드·초기화·의존성 설치·커밋·푸시·배포를 수행하지 않았다. 이후 구현과 PR 제출은 각각 요청된 범위에서 진행한다. 아래 명령은 작업별 검증 계약이며 실제 결과는 해당 작업 보고서에서 확인한다.
 
 ## 작업 단위별 PR 흐름
 
-1. 기반 문서·작업 1·디자인 명세 PR #3은 병합된 상태다. 다음 작업 진행 요청에 따라 `main`을 갱신하고 작업 2만 별도 `codex/` 브랜치에서 구현한다. 작업 2 PR은 제출 후 사용자 리뷰를 기다리고 병합·배포·작업 3 구현은 진행하지 않는다.
+1. 기반 문서·작업 1·디자인 명세 PR #3·작업 2 PR #4는 병합된 상태다. 병합 후 다음 작업 요청에 따라 PR #4의 head를 확인해 병합하고 최신 `main`에서 작업 3만 별도 `codex/` 브랜치로 구현했다. 작업 3 PR은 제출 후 리뷰를 기다리고 새 PR 병합·작업 4 구현·배포는 진행하지 않는다.
 2. 작업 1~6은 각각 독립 브랜치 `codex/phase-1-<작업명>`와 `main` 대상 PR 하나로 진행한다. 현재 PR이 병합되기 전에는 다음 구현 작업을 시작하지 않는다.
 3. 각 작업의 완료 조건을 확인한 뒤 [PR 템플릿](../../.github/pull_request_template.md)에 작업 번호·PRD 연결·실행 검증·미실행 항목·남은 제한을 기록한다. 문서 전용 변경은 앱 검증을 해당 없음으로 설명한다.
 4. 병합 후 원격 `main`을 받아 로컬 기준을 갱신하고 다음 브랜치를 만든다. 기존 사용자 변경은 보존하며 `main`에 직접 커밋하지 않는다. 커밋·푸시·병합·배포는 요청된 범위에서만 수행한다.
@@ -139,10 +139,12 @@ Desktop/Tablet/Mobile 목표는 [와이어프레임](../architecture/design/wire
 
 **입출력:** `EditorSurfaceProps = { code: string; settings: EditorSettings; onCodeChange: (code: string) => void }`와 `EditorSurface(props: EditorSurfaceProps)`를 제공한다. App은 reducer 상태를 소유한다. `EditorCompartments`는 `keymap`, `language`, `theme`, `lineNumbers`, `wrap` 각각의 CodeMirror `Compartment`를 갖는다. EditorSurface가 한 번 생성해 보관하고 `createEditor(parent: HTMLElement, props: EditorSurfaceProps, compartments: EditorCompartments): EditorView`에 전달한다. 생성/정리 외에는 같은 view와 compartments를 재사용한다.
 
-- [ ] 통합 테스트에 `input_updates_workspace_once`, `parent_echo_does_not_reset_selection_or_history`, `external_code_replacement_does_not_loop`, `unmount_destroys_editor`를 작성하고 실패를 확인한다.
-- [ ] 생성/정리 Effect, 문서 변경 listener, 외부 교체와 내부 입력 구분을 구현한다. 키 입력/설정 변경마다 EditorView를 새로 만들지 않는다. 외부 교체는 현재 코드와 다른 경우에만 한 transaction으로 반영한다.
-- [ ] 입력·붙여넣기·선택·삭제, 여러 줄, Undo/Redo, Tab/Shift+Tab 및 기본 줄 들여쓰기를 제공한다. 선택 언어에 따른 Enter 들여쓰기 품질은 작업 5의 fixture로 확인한다. 코드나 HTML을 실행하지 않는다.
-- [ ] `editor-input.spec.ts`에서 빈 입력·300줄 붙여넣기·CRLF/끝 개행·한글·이모지·HTML/script·URL을 입력하고 원문과 공통 상태 일치를 검증한다. 줄바꿈 정규화 정책은 CodeMirror 실제 동작을 확인해 LF로 명시하고 의미 있는 마지막 빈 줄은 보존한다.
+- [x] 통합 테스트에 `input_updates_workspace_once`, `parent_echo_does_not_reset_selection_or_history`, `external_code_replacement_does_not_loop`, `unmount_destroys_editor`를 작성하고 실패를 확인한다.
+- [x] 생성/정리 Effect, 문서 변경 listener, 외부 교체와 내부 입력 구분을 구현한다. 키 입력/설정 변경마다 EditorView를 새로 만들지 않는다. 외부 교체는 현재 코드와 다른 경우에만 한 transaction으로 반영한다.
+- [x] 입력·붙여넣기·선택·삭제, 여러 줄, Undo/Redo, Tab/Shift+Tab 및 기본 줄 들여쓰기를 제공한다. 선택 언어에 따른 Enter 들여쓰기 품질은 작업 5의 fixture로 확인한다. 코드나 HTML을 실행하지 않는다.
+- [x] `editor-input.spec.ts`에서 빈 입력·300줄 붙여넣기·CRLF/끝 개행·한글·이모지·HTML/script·URL을 입력하고 원문과 공통 상태 일치를 검증한다. 줄바꿈 정규화 정책은 CodeMirror 실제 동작을 확인해 LF로 명시하고 의미 있는 마지막 빈 줄은 보존한다.
+
+**구현 결과 (2026-11-07):** [작업 3 실행 계획](task-3-editor-input.md)과 [실제 검증 보고서](../verification/task-3-editor-input.md)를 추가했다. 기본 Plain Text 입력·공통 상태 연결·영어 입력 셸을 제공한다. 부모 echo에서 같은 view/선택/Undo를 유지하고 외부 교체는 annotation으로 callback을 억제한다. 외부 교체의 history 그룹 정책은 Phase 3에서 확정한다. 다섯 Compartment 중 기본 keymap만 동작하며 나머지 확장과 해당 UI는 작업 4~6에 남긴다. 실제 한글 IME·macOS·타 브라우저 검증은 보고서에 미검증으로 구분했다.
 
 **독립 완료 조건:** `npm run test -- tests/integration/EditorSurface.test.tsx`, `npm run test:browser -- tests/browser/editor-input.spec.ts --project=chromium`, `npm run typecheck` 성공. 원문·커서·Undo를 유지하고 실행/외부 요청이 없다.
 
@@ -234,4 +236,4 @@ Desktop/Tablet/Mobile 목표는 [와이어프레임](../architecture/design/wire
 
 작성 시 PRD §9의 Phase 1 다섯 항목을 작업 1/3/4/5/6에, 공통 상태를 작업 2에 연결했다. 타입·파일·명령의 이름을 맞추고 P1 겹침과 §8 후속 항목을 위 표로 추적했다. 문서 검증과 실제 구현의 테스트 성공 기록을 분리한다.
 
-다음 구현 작업은 **작업 3: CodeMirror 입력과 React 상태 연결**이다. 작업 2 PR이 병합되고 다음 구현 요청을 받으면 현재 Git 상태와 실제 선택 버전부터 재확인한다. 현재 작업의 제출 권한은 병합·배포·다음 작업 구현 권한을 뜻하지 않는다. 순수 상태 테스트 통과는 실제 편집기·키맵·접근성·출력 품질 검증과 구분한다.
+다음 구현 작업은 **작업 4: IntelliJ / VS Code 키맵과 포커스**다. 작업 3 PR이 병합되고 다음 구현 요청을 받으면 현재 Git 상태와 실제 선택 버전부터 재확인한다. 이번 요청의 병합 권한은 PR #4에 적용했으며 새 작업 PR 병합·작업 4 구현·배포는 범위에 포함하지 않는다. 기본 입력 검증 통과는 IDE 프리셋·언어·출력·MVP 완료와 구분한다.
