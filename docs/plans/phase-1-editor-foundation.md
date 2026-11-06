@@ -78,10 +78,12 @@
 
 **입출력:** 서버 상태나 API 없이 App을 마운트하고 후속 작업이 사용할 단일 페이지 셸과 검증 명령을 제공한다.
 
-- [ ] 공식 문서에서 선택 버전의 React·Vite·TS·Node·CodeMirror 호환성을 확인하고 최소 의존성과 앱 잠금 파일을 정한다. Vitest는 순수 로직, Testing Library/DOM 환경은 연결 동작, Playwright는 실제 키/브라우저 검증 목적을 기록한다. 기존 스킬 lock과 구분한다.
-- [ ] Vite·React·strict TS 및 CSS의 최소 셸을 구성한다. 백엔드 라우트·원격 폰트·분석·오류수집 전송을 추가하지 않는다. 아직 제공하지 않는 복사·내보내기·히스토리 버튼은 노출하지 않는다.
-- [ ] `typecheck`=`tsc --noEmit`, `build`=`vite build`, `dev`=`vite`, `preview`=`vite preview`, `test`=`vitest run`, `test:browser`=`playwright test` 명령을 정의한다. typecheck는 앱·테스트·설정 파일을 포함한다. Playwright는 Chromium/Firefox/WebKit 프로젝트를 구분하고 localhost 서버를 사용한다.
-- [ ] `foundation.spec.ts`에서 페이지 로드·셸 접근성 이름·외부 요청 없음·런타임 오류 없음을 검증한다. 정적 build 결과로도 직접 루트 접근이 가능하도록 한다.
+- [x] 공식 문서에서 선택 버전의 React·Vite·TS·Node·CodeMirror 호환성을 확인하고 최소 의존성과 앱 잠금 파일을 정한다. Vitest는 순수 로직, Testing Library/DOM 환경은 연결 동작, Playwright는 실제 키/브라우저 검증 목적을 기록한다. 기존 스킬 lock과 구분한다.
+- [x] Vite·React·strict TS 및 CSS의 최소 셸을 구성한다. 백엔드 라우트·원격 폰트·분석·오류수집 전송을 추가하지 않는다. 아직 제공하지 않는 복사·내보내기·히스토리 버튼은 노출하지 않는다.
+- [x] `typecheck`=`tsc --noEmit`, `build`=`vite build`, `dev`=`vite`, `preview`=`vite preview`, `test`=`vitest run`, `test:browser`=`playwright test` 명령을 정의한다. typecheck는 앱·테스트·설정 파일을 포함한다. Playwright는 Chromium/Firefox/WebKit 프로젝트를 구분하고 localhost 서버를 사용한다.
+- [x] `foundation.spec.ts`에서 페이지 로드·셸 접근성 이름·외부 요청 없음·런타임 오류 없음을 검증한다. 정적 build 결과로도 직접 루트 접근이 가능하도록 한다.
+
+**구현 결과 (2026-11-07):** [세부 실행 계획](task-1-static-app.md)과 [실제 검증 보고서](../verification/task-1-static-app.md)를 추가했다. CodeMirror는 metadata로 호환성만 확인하고 설치는 작업 3까지 보류했다. 작업 1만 구현했으며 작업 2~6은 시작하지 않았다.
 
 **독립 완료 조건:** `npm run typecheck`, `npm run build` 종료 0. `npm run test:browser -- tests/browser/foundation.spec.ts --project=chromium` 성공. 앱이 정적 산출물만으로 열리고 외부 서비스 요청이 없다. 라이브러리 설치만 된 상태를 완료로 보지 않는다.
 

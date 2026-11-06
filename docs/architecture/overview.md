@@ -1,6 +1,6 @@
 # 아키텍처 개요
 
-기준: [PRD v1.0](../product/PRD.md), [AGENTS.md](../../AGENTS.md). 이 문서는 구현 전 최소 설계이며 현재 앱 코드와 설치된 앱 의존성은 없다. PRD §7은 **기술 후보** 목록이다. TypeScript strict와 정적·클라이언트 전용 제약은 준수하고, React·Vite·CodeMirror 6을 Phase 1의 우선 검토안으로 삼는다. 버전·패키지 선택과 성능·브라우저 동작은 구현 시 검증한다.
+기준: [PRD v1.0](../product/PRD.md), [AGENTS.md](../../AGENTS.md). Phase 1 작업 1에서 React·TypeScript strict·Vite의 정적 앱 셸과 검증 기반을 구현했다. 현재 `src/main.tsx`가 `src/app/App.tsx`를 마운트하며 `dist/`의 정적 자산만으로 동작한다. 선택 버전과 실제 검증은 [작업 1 보고서](../verification/task-1-static-app.md)에 기록한다. 아래 편집기·상태·렌더링 설계는 후속 작업의 계약이며 아직 구현하지 않았다. CodeMirror 6은 호환성만 확인하고 편집기 구현 시 설치한다.
 
 ## 경계와 책임
 
