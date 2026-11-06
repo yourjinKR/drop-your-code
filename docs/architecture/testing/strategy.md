@@ -1,8 +1,8 @@
 # 검증 전략
 
-상태: 구현 전 검증 설계 · 2026-11-07
+상태: 작업 1 검증 기반 구현, 후속 기능은 검증 설계 · 2026-11-07
 
-기준은 [PRD](../../product/PRD.md)이며 책임 경계는 [아키텍처](../overview.md), 화면 동작은 [UI 명세](../design/ui-spec.md), 기술 선택과 실험은 [ADR 0001](../decisions/0001-foundation.md)을 따른다. Phase 1의 작업별 검증은 [구현 계획](../../plans/phase-1-editor-foundation.md)에 연결한다. 현재 앱, 테스트 실행 환경 및 이미지 출력물이 없으므로 이 문서의 검증은 모두 이후 수행할 계획이다.
+기준은 [PRD](../../product/PRD.md)이며 책임 경계는 [아키텍처](../overview.md), 화면 동작은 [UI 명세](../design/ui-spec.md), 기술 선택과 실험은 [ADR 0001](../decisions/0001-foundation.md)을 따른다. Phase 1의 작업별 검증은 [구현 계획](../../plans/phase-1-editor-foundation.md)에 연결한다. 작업 1에서 strict 타입 검사·Vitest/Testing Library/jsdom·Playwright 실행 환경과 셸 smoke 테스트를 추가했다. 실제 결과는 [작업 1 보고서](../../verification/task-1-static-app.md)에 기록하며, 아래 편집·렌더링·출력 검증은 해당 기능이 구현된 뒤 수행한다.
 
 ## 검증 수준과 역할
 
@@ -96,7 +96,7 @@ PRD 목표는 NFR-01 초기 로딩 2초, NFR-04 200줄 이미지 생성 2초, NF
 
 초기 제안으로 입력→다음 시각 갱신 p95 50ms 이하, 스타일 변경→다음 시각 갱신 p95 100ms 이하를 실험 기준으로 사용한다. 이는 PRD 확정 수치가 아니며 실제 기기 측정 후 이유와 함께 조정한다. 300줄 타이핑/붙여넣기, 언어·테마 전환, 후속 감지·저장 동시 실행을 각각 측정한다. 번들 크기는 PRD에 절대 상한이 없으므로 최초 production 빌드의 초기/지연 청크 크기를 기준선으로 기록하고 증가 이유를 리뷰한다.
 
-다음 명령은 후속 구현에서 스크립트를 마련한 뒤 실행할 제안 계약이다. 현재 실행 가능한 명령이나 통과 기록이 아니다. `npm run test`는 한 번 실행하고 종료하도록 구성하고, 브라우저 실행 환경은 Phase 1 구현 때 명시한다.
+다음 명령의 스크립트는 작업 1에서 구현했다. `npm run test`는 한 번 실행 후 종료하며 `tests/unit`·`tests/integration`만 수집한다. 현재 통합 셸 테스트가 하나 있고 순수 상태 단위 테스트는 작업 2에서 추가한다. Playwright는 기본적으로 build 후 `127.0.0.1:4173`의 production preview를 자동 시작·정리한다. `PLAYWRIGHT_SERVER_MODE=dev`이면 개발 서버를 검사한다. Chromium·Firefox·WebKit 프로젝트를 구분하며 설치한 브라우저에 한해 실행한다. Foundation 테스트는 루트 로드, 이름 있는 셸 영역, 키보드 진입, 화면 폭별 배치, CSS zoom과 페이지 진입 전부터 외부 HTTP/WebSocket·실패 요청·HTTP 오류·전송 본문·콘솔/런타임 오류를 확인한다. 실제 브라우저 확대·IME·OS 단축키의 수동 검증은 별개다.
 
 | 명령 | 기대 결과 |
 |---|---|
