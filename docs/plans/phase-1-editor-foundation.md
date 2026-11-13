@@ -12,7 +12,7 @@
 
 ## 현재 기준과 작업 경계
 
-- 최초 계획의 시작점은 `cac5e906a23fc31d02875526927f822aacb6dbe3` (`init project`)였다. **2026-11-13 현재 작업 1~4 기반·입력·주요 키맵과 작업 5 수동 언어 선택·구문 강조를 구현했다. 작업 6은 미구현이다.** 화면은 영어 Editor·Keymap 선택·`Properties`의 `Language`·적용 언어/실제 행 수를 제공하며 전체 목표 셸은 작업 6에서 적용한다.
+- 최초 계획의 시작점은 `cac5e906a23fc31d02875526927f822aacb6dbe3` (`init project`)였다. **2026-11-13 현재 작업 1~6의 Phase 1 편집기 기능을 구현했다.** 작업 6은 작업 5 PR #7이 병합된 `main`에서 기본 코드 창, 표시 설정과 편집 셸을 추가한다.
 - PRD §9의 Phase 1 다섯 항목을 구현한다. 렌더링·자동 크기 조절·이미지 출력은 Phase 2, 저장·히스토리·자동 언어 감지·완성된 반응형·단축키 안내는 Phase 3, 최적화·최종 호환성·배포는 Phase 4이다.
 - PRD §7은 후보 목록이다. 확정 제약과 설계 제안·미검증 가정을 구분한다. 의존성 도입 시 역할과 실제 선택 버전을 기록하며 최신 버전을 추정해 고정하지 않는다.
 - 최초 계획과 작업 2~4는 `writing-plans`, `verification-before-completion`을 사용했다. 작업 3~4는 React 수명/성능 지침도 적용했다. 각 작업은 아래 독립 범위를 유지하며 실행 스킬 부재를 구현의 필수 장애물로 삼지 않는다.
@@ -30,7 +30,7 @@
 
 ## 작업 단위별 PR 흐름
 
-1. 작업 4 PR #6이 병합된 `main`을 기준으로 `codex/phase-1-languages`에서 작업 5를 구현했다.
+1. 작업 5 PR #7이 병합된 `main`을 기준으로 `codex/phase-1-editor-window`에서 작업 6을 구현했다.
 2. 작업 1~6은 각각 독립 브랜치 `codex/phase-1-<작업명>`와 `main` 대상 PR 하나로 진행한다. 현재 PR이 병합되기 전에는 다음 구현 작업을 시작하지 않는다.
 3. 각 작업의 완료 조건을 확인한 뒤 [PR 템플릿](../../.github/pull_request_template.md)에 작업 번호·PRD 연결·실행 검증·미실행 항목·남은 제한을 기록한다. 문서 전용 변경은 앱 검증을 해당 없음으로 설명한다.
 4. 병합 후 원격 `main`을 받아 로컬 기준을 갱신하고 다음 브랜치를 만든다. 기존 사용자 변경은 보존하며 `main`에 직접 커밋하지 않는다. 커밋·푸시·병합·배포는 요청된 범위에서만 수행한다.
@@ -197,11 +197,13 @@ Desktop/Tablet/Mobile 목표는 [와이어프레임](../architecture/design/wire
 
 **입출력:** `getBasicTheme(id: EditorThemeId): BasicThemeTokens`는 창 배경·글자·구문 색상 값의 공유 원천이다. `BasicThemeTokens`는 후속 렌더러가 DOM 없이 읽을 수 있는 데이터로 둔다. `CodeWindow({ title, languageId, children })`는 기본 창 장식과 편집기를 조합한다. 실제 크기 모델·SVG는 만들지 않는다.
 
-- [ ] 제공된 목표 와이어프레임과 [디자인 시스템](../architecture/design/design-system.md)·[UI 명세](../architecture/design/ui-spec.md)를 기준으로 어두운 불투명 코드 창·빨강/노랑/초록 장식·상단 중앙 제목·언어 아이콘·라운딩·여백·강조를 구성한다. 이미지의 예제 코드·치수·`Dark+` 이름을 고정 계약으로 오인하지 않는다. 장식 버튼은 비상호작용 요소로 처리한다.
-- [ ] 작은 기본 Dark/Light 테마 2개와 줄 번호·wrap 설정을 구현한다. 테마·줄 번호·wrap 변경은 Compartment로 적용해 코드·선택·Undo를 보존한다. 추가 테마의 지연 로딩은 후속 확장점이다.
-- [ ] `theme-settings.test.tsx`에 `theme_preserves_document_history`, `line_numbers_and_wrap_change_only_presentation`을 작성한다. `editor-window.spec.ts`는 기본 장식·중앙 제목·언어 아이콘, 불투명 코드 창, 긴 행/wrap·스크롤·설정 라벨을 검증한다. 출력 이미지의 픽셀 일치 검증으로 혼동하지 않는다.
-- [ ] `phase-1.spec.ts`에 입력→키맵 전환→언어 선택→테마·줄 번호·wrap→Undo의 핵심 흐름과 악성 HTML/script 문자열 무실행·외부 요청 없음을 검증한다. 300줄 지연, 초기 로딩, 청크 분리·총량을 기록하고 미검증 환경을 남긴다.
-- [ ] 셸에 공통 semantic token·영어 label·Lucide 규칙을 적용하고 초기 한국어 준비 안내·큰 작업면 제목·설명 카드·설명 footer를 제거한다. `theme-settings.test.tsx`에서 `ui_theme_does_not_change_syntax_or_snapshot_input`을, `editor-window.spec.ts`에서 `properties_toggle_preserves_editor_state`, `all_visible_controls_have_english_names`, keyboard focus 및 Dark/Light 교차 조합을 확인한다. UI theme 변경은 코드·Syntax theme·출력 설정을 바꾸지 않는다.
+- [x] 제공된 목표 와이어프레임과 [디자인 시스템](../architecture/design/design-system.md)·[UI 명세](../architecture/design/ui-spec.md)를 기준으로 어두운 불투명 코드 창·빨강/노랑/초록 장식·상단 중앙 제목·언어 아이콘·라운딩·여백·강조를 구성한다. 장식 버튼은 비상호작용 요소로 처리한다.
+- [x] 작은 기본 Dark/Light 테마 2개와 줄 번호·wrap 설정을 구현한다. 테마·줄 번호·wrap 변경은 Compartment로 적용해 코드·선택·Undo를 보존한다. 추가 테마의 지연 로딩은 후속 확장점이다.
+- [x] `theme-settings.test.tsx`에 `theme_preserves_document_history`, `line_numbers_and_wrap_change_only_presentation`을 작성한다. `editor-window.spec.ts`는 기본 장식·중앙 제목·언어 아이콘, 불투명 코드 창, 긴 행/wrap·스크롤·설정 라벨을 검증한다.
+- [x] `phase-1.spec.ts`에서 입력→키맵 전환→언어 선택→테마·줄 번호·wrap→Undo 흐름, HTML/script 문자열 무실행과 외부 요청 부재를 검증한다. 300줄 편집, 초기 로딩, 청크 분리와 미검증 환경을 기록한다.
+- [x] 셸에 공통 semantic token·영어 label·Lucide를 적용한다. 테스트에서 UI theme가 Syntax theme와 SnapshotInput에 미치는 영향, Properties 접기·복원 시 상태 보존, 영어 이름, 키보드 포커스 및 Dark/Light 교차 조합을 확인한다.
+
+**구현 결과 (2026-11-13):** [작업 6 실행 계획](task-6-editor-window.md)과 [Phase 1 검증 결과](../verification/task-6-editor-window.md). `Properties`는 1024px 이상에서 오른쪽에 도킹하며 좁은 화면에서는 편집기 아래에 배치한다. 제목은 `untitled`로 고정하고 현재 언어에 맞는 로컬 아이콘을 표시한다.
 
 **독립 완료 조건:** `npm run test -- tests/integration/theme-settings.test.tsx`, `npm run test:browser -- tests/browser/editor-window.spec.ts tests/browser/phase-1.spec.ts --project=chromium`, 이어서 `npm run typecheck`, `npm run test`, `npm run build`, `npm run test:browser -- --project=chromium` 성공. 기본 편집 경험을 완성하되 Phase 1 완료를 MVP 인수 완료라고 보고하지 않는다.
 
@@ -240,4 +242,4 @@ Desktop/Tablet/Mobile 목표는 [와이어프레임](../architecture/design/wire
 
 작성 시 PRD §9의 Phase 1 다섯 항목을 작업 1/3/4/5/6에, 공통 상태를 작업 2에 연결했다. 타입·파일·명령의 이름을 맞추고 P1 겹침과 §8 후속 항목을 위 표로 추적했다. 문서 검증과 실제 구현의 테스트 성공 기록을 분리한다.
 
-다음 구현 작업은 **작업 6: 기본 코드 창·테마·편집 설정과 Phase 1 확인**이다. 작업 5 PR이 병합되고 다음 구현 요청을 받은 후 시작한다. Phase 1 검증과 MVP 전체 검증은 구분한다.
+다음 단계는 **Phase 2: 스냅샷 렌더링과 이미지 출력**이다. 작업 6 PR 병합 후 갱신한 `main`에서 다음 단계의 작업 단위와 검증 계획을 수립한다.

@@ -1,6 +1,6 @@
 # Drop Your Code
 
-브라우저에서 코드 스냅샷을 만드는 정적 앱입니다. 현재 [Phase 1 작업 5](docs/plans/task-5-languages.md)까지 코드 편집, VS Code/IntelliJ 키맵, 14개 언어의 수동 선택과 구문 강조를 제공합니다. 테마 전환과 기본 코드 창은 작업 6, 이미지 출력과 히스토리는 후속 단계입니다.
+브라우저에서 코드 스냅샷을 만드는 정적 앱입니다. [Phase 1](docs/plans/phase-1-editor-foundation.md)은 코드 편집, VS Code/IntelliJ 키맵, 14개 언어의 수동 선택, 기본 코드 창, Dark/Light 테마, 줄 번호와 줄 바꿈을 제공합니다. 이미지 미리보기와 출력은 Phase 2, 히스토리는 Phase 3의 범위입니다.
 
 ## 시작하기
 
@@ -36,7 +36,7 @@ npm run test:browser -- tests/browser/foundation.spec.ts --project=chromium
 Remove-Item Env:PLAYWRIGHT_SERVER_MODE
 ```
 
-브라우저 테스트는 셸, 키보드 이동, 레이아웃, 입력과 언어 로딩을 확인합니다. 실제 실행 결과와 미검증 항목은 [작업 5 검증 보고서](docs/verification/task-5-languages.md)를 참고하세요.
+브라우저 테스트는 셸, 키보드 이동, 레이아웃, 편집, 언어 로딩과 설정을 확인합니다. 실제 실행 결과는 [작업 6 검증 보고서](docs/verification/task-6-editor-window.md)를 참고하세요.
 
 ## 정적 산출물
 

@@ -5,8 +5,10 @@ import { indentMore, insertNewlineAndIndent, toggleComment } from '@codemirror/c
 import { highlightTree } from '@lezer/highlight';
 import { describe, expect, it, vi } from 'vitest';
 import { languageIds, languages, loadLanguage } from '../../src/editor/languages';
-import { editorHighlightStyle } from '../../src/editor/languageHighlighting';
+import { createHighlightStyle } from '../../src/editor/languageHighlighting';
 import { languageFixtures } from '../fixtures/code/languages';
+
+const editorHighlightStyle = createHighlightStyle('dark');
 
 describe('language registry', () => {
   it('covers the full initial language list and treats Plain Text as unparsed', async () => {

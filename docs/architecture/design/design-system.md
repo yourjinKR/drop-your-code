@@ -1,6 +1,6 @@
 # Design System — Minimal Developer Workspace
 
-작성일: 2026-11-07 · 상태: **공통 토큰·전체 셸은 작업 6 적용 대상, 작업 4 기본 입력·Keymap 구현**
+갱신일: 2026-11-13 · 상태: **Phase 1 편집 셸에 공통 토큰과 Lucide 적용**
 
 앱은 코드를 편집하고 이미지로 만드는 작은 개발 도구다. 코드 창을 시각적 중심으로 두고, 주변은 중립적인 면·1px 경계·작은 컨트롤로 정돈한다. 대형 제목, 설명 카드, 온보딩, 마케팅 섹션, 장식용 그라데이션은 사용하지 않는다. 스냅샷 배경의 선택적 그라데이션(FR-STYLE-03)은 이 UI 원칙과 별개이며 채택 시 Phase 2에서 검증한다.
 
@@ -104,7 +104,7 @@ UI font: `"Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif`.
 
 ## 5. 아이콘
 
-**Lucide만 UI 아이콘으로 사용한다.** 24×24 viewBox, 기본 stroke2, 둥근 cap/join, `currentColor`, fill 없음. 일반16px, rail18px, brand20px; 같은 역할에서 크기를 섞지 않는다. optical 조정이 필요해도 독자 stroke·emoji·다른 icon pack을 섞지 않는다. 개발 시 실제 사용하는 icon만 개별 import하고 버전·라이선스를 기록한다. 이번에는 설치하지 않는다.
+**Lucide만 UI 아이콘으로 사용한다.** 24×24 viewBox, 기본 stroke2, 둥근 cap/join, `currentColor`, fill 없음. 일반16px, rail18px, brand20px로 사용한다. 작업 6에서 `lucide-react` 1.72.0의 필요한 아이콘을 이름으로 가져온다. 배포 산출물에는 Lucide ISC와 해당 Feather MIT 고지를 포함한다.
 
 | 동작 / 영역 | Lucide 이름 제안 |
 |---|---|
