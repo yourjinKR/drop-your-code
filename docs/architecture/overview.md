@@ -1,6 +1,6 @@
 # 아키텍처 개요
 
-기준: [PRD v1.0](../product/PRD.md), [AGENTS.md](../../AGENTS.md). Phase 1 작업 1의 정적 셸·검증 기반, 작업 2의 순수 상태·SnapshotInput, 작업 3의 CodeMirror/App 입력 연결에 이어 작업 4는 IntelliJ/VS Code 주요 편집 키맵과 선택 UI를 제공한다. 현재 `src/main.tsx`가 App을 마운트하며 `dist/`의 정적 자산만으로 동작한다. 언어 선택·기본 코드 창/테마 UI·렌더러·출력·저장은 후속 작업이다. 실제 검증은 [작업 1](../verification/task-1-static-app.md), [작업 2](../verification/task-2-workspace-state.md), [작업 3](../verification/task-3-editor-input.md), [작업 4 보고서](../verification/task-4-keymaps.md)에 기록한다.
+기준은 [PRD v1.0](../product/PRD.md)과 [AGENTS.md](../../AGENTS.md)다. Phase 1은 정적 셸, 공통 문서와 SnapshotInput, CodeMirror 입력, IntelliJ/VS Code 키맵, 수동 언어, 기본 코드 창과 표시 설정을 제공한다. `src/main.tsx`가 App을 마운트하며 `dist/`의 정적 자산만으로 동작한다. 렌더러·출력·저장은 후속 단계다. [Phase 1 검증 결과](../verification/task-6-editor-window.md)
 
 ## 경계와 책임
 
@@ -18,6 +18,8 @@
 작업 2의 상태 계약은 초기 코드 `''`·revision0, VS Code, 수동 Plain Text, Dark syntax, 줄 번호/wrap off다. `codeChanged`와 외부 교체용 `codeReplaced`는 원문이 다를 때만 revision을 증가시키고 동일 값은 기존 상태를 반환한다. 설정 변경은 코드/revision을 보존한다. 상태는 중첩 값까지 readonly이며 함수는 이전 상태를 수정하지 않는다. reducer는 개행·공백을 정규화하지 않는다. CodeMirror 입력은 CRLF/CR을 LF로 정규화하고 마지막 빈 줄을 유지한다. 외부 props는 `state.toText(code)`와 `doc.eq`로 비교해 같은 문서를 반복 dispatch하지 않으며, 정규화만을 이유로 부모 props를 다시 쓰는 callback은 보내지 않는다.
 
 `SnapshotInput`은 `code`, `revision`, `languageId`, `themeId`, `lineNumbers`, `wrap`만 가진 새 평면 객체다. readonly는 TypeScript 계약이며 runtime freeze를 제공하지 않는다. 모든 값이 primitive이므로 원본의 중첩 가변 객체를 공유하지 않는다. `themeId`는 Syntax theme이고 UI theme·패널·Zoom·키맵·커서·Undo·저장 상태는 출력 입력에 포함하지 않는다. 설정 변경의 렌더 경합은 아래 요청 ID 계약으로 구분하며 코드 revision만으로 최신 렌더를 판단하지 않는다.
+
+`getBasicTheme(themeId)`는 DOM에 의존하지 않는 색 데이터를 반환한다. 편집 창은 이 값으로 창 테두리와 제목을 그리고 CodeMirror는 구문색과 편집기 전경·배경을 적용한다. 구문 테마, 줄 번호와 줄 바꿈은 별도 compartment를 통해 같은 EditorView에 반영한다. UI 테마와 Properties 표시 여부는 App의 UI 상태로 관리한다.
 
 ### 현재 편집기 어댑터
 

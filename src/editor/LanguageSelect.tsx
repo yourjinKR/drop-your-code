@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { CircleAlert } from 'lucide-react';
 import type { LanguageSupport } from '@codemirror/language';
 import type { LanguageId } from '../state/workspace';
 import { isLanguageId, languageIds, languages, loadLanguage } from './languages';
@@ -35,10 +36,11 @@ export function LanguageSelect({ appliedId, onApplied }: LanguageSelectProps) {
 
   return (
     <>
-      <div className="language-control">
+      <div className="property-field">
         <label htmlFor="editor-language">Language</label>
         <select
           id="editor-language"
+          name="language"
           ref={selectRef}
           value={request?.status === 'loading' ? request.id : appliedId}
           onChange={(event) => {
@@ -55,8 +57,9 @@ export function LanguageSelect({ appliedId, onApplied }: LanguageSelectProps) {
       {request?.status === 'failed' && (
         <div className="language-error">
           <p role="alert">
-            Could not load {languages[request.id].label}. Check your connection and retry. If it still fails,
-            save a copy of your code before refreshing.
+            <CircleAlert size={16} aria-hidden="true" />
+            <span>Could not load {languages[request.id].label}. Check your connection and retry. If it still fails,
+              save a copy of your code before refreshing.</span>
           </p>
           <button type="button" onClick={() => {
             selectRef.current?.focus();

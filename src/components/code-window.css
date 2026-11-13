@@ -1,0 +1,81 @@
+.code-window {
+  width: min(100%, 960px);
+  margin-inline: auto;
+  border: 1px solid var(--code-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--code-background);
+  box-shadow: 0 16px 32px rgb(0 0 0 / 20%);
+}
+
+.code-window-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-4);
+  border-bottom: 1px solid var(--code-border);
+  background: var(--code-header);
+  color: var(--code-title);
+}
+
+.window-lights {
+  display: flex;
+  gap: 6px;
+}
+
+.window-lights i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #f07168;
+}
+
+.window-lights i:nth-child(2) { background: #e9bf59; }
+.window-lights i:nth-child(3) { background: #76c77a; }
+
+.code-window-title {
+  position: relative;
+  justify-self: center;
+  max-width: calc(100% - 48px);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.code-window-title > svg {
+  position: absolute;
+  inset-inline-end: calc(100% + var(--space-2));
+  top: 2px;
+}
+
+.code-window-title > span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-surface, .editor-surface .cm-editor, .editor-surface .cm-scroller {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.editor-surface .cm-editor { height: clamp(240px, 53dvh, 540px); }
+
+.editor-surface .cm-scroller {
+  overflow: auto;
+  font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  tab-size: 2;
+}
+
+.editor-surface .cm-content { padding-block: 24px; }
+.editor-surface .cm-line { padding-inline: 24px; }
+.editor-surface .cm-lineNumbers .cm-gutterElement { padding-inline: 12px; }
+
+@media (forced-colors: active) {
+  .code-window { border-color: CanvasText; }
+  .editor-surface .cm-editor.cm-focused { outline-color: Highlight; }
+}

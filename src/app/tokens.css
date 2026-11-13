@@ -1,0 +1,83 @@
+:root {
+  color-scheme: dark;
+  --ui-canvas: #14161a;
+  --ui-surface: #1d1f24;
+  --ui-surface-raised: #292c32;
+  --ui-hover: #32363e;
+  --ui-pressed: #3d434d;
+  --ui-selected: #28344b;
+  --ui-border: #383c45;
+  --ui-control-border: #747b87;
+  --ui-text: #e8eaed;
+  --ui-text-secondary: #9ca2af;
+  --ui-text-disabled: #737986;
+  --ui-accent: #648ddd;
+  --ui-accent-hover: #7ca0e5;
+  --ui-accent-pressed: #5e85d2;
+  --ui-on-accent: #101827;
+  --ui-focus: #8ab4f8;
+  --ui-danger: #f28b82;
+  --ui-warning: #e3ba69;
+  --ui-success: #8ec99e;
+  --ui-scrim: rgb(0 0 0 / 56%);
+
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --border-width: 1px;
+  --radius-sm: 4px;
+  --radius-control: 6px;
+  --radius-overlay: 8px;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --toolbar-height: 56px;
+  --activity-width: 56px;
+  --properties-width: 300px;
+  --workspace-header-height: 48px;
+  --status-height: 28px;
+  --control-height: 32px;
+  --touch-target: 44px;
+  --canvas-inset: var(--space-6);
+  --ui-transition: 120ms ease-out;
+}
+
+:root[data-ui-theme="light"] {
+  color-scheme: light;
+  --ui-canvas: #f3f4f6;
+  --ui-surface: #fff;
+  --ui-surface-raised: #f0f1f3;
+  --ui-hover: #e5e7eb;
+  --ui-pressed: #d5d9e0;
+  --ui-selected: #e6edfa;
+  --ui-border: #d3d7de;
+  --ui-control-border: #707783;
+  --ui-text: #20242b;
+  --ui-text-secondary: #586170;
+  --ui-text-disabled: #858c97;
+  --ui-accent: #315db5;
+  --ui-accent-hover: #284f9d;
+  --ui-accent-pressed: #214284;
+  --ui-on-accent: #fff;
+  --ui-focus: #245ac2;
+  --ui-danger: #b3261e;
+  --ui-warning: #805300;
+  --ui-success: #236a3b;
+  --ui-scrim: rgb(0 0 0 / 32%);
+}
+
+@media (max-width: 767px) {
+  :root { --canvas-inset: var(--space-4); }
+}
+
+@media (pointer: coarse) {
+  :root { --control-height: var(--touch-target); --status-height: var(--touch-target); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --ui-transition: 0ms; }
+}
