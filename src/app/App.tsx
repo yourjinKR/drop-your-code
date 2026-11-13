@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { CodeXml, Moon, PanelRightOpen, SquareCode, Sun } from 'lucide-react';
 import type { LanguageSupport } from '@codemirror/language';
 import { CodeWindow } from '../components/CodeWindow';
@@ -7,7 +7,8 @@ import { IconButton } from '../components/ui/IconButton';
 import { EditorSurface } from '../editor/EditorSurface';
 import { detectPlatform } from '../editor/keymaps';
 import { languages } from '../editor/languages';
-import { createInitialWorkspace, workspaceReducer } from '../state/workspace';
+import { useSnapshotModel } from '../snapshot/useSnapshotModel';
+import { createInitialWorkspace, selectSnapshotInput, workspaceReducer } from '../state/workspace';
 import type { LanguageId } from '../state/workspace';
 
 type UiTheme = 'dark' | 'light';
@@ -24,6 +25,9 @@ export function App() {
 
   const { settings } = workspace;
   const languageId = settings.language.languageId;
+  const { themeId, lineNumbers, wrap } = settings;
+  const input = useMemo(() => selectSnapshotInput(workspace), [workspace.document, languageId, themeId, lineNumbers, wrap]);
+  const { model } = useSnapshotModel(input);
   const lineCount = workspace.document.code.split('\n').length;
   const isMac = detectPlatform() === 'macos';
   const keymapHint = isMac
@@ -125,7 +129,7 @@ export function App() {
             </div>
           </div>
           <div className="editor-canvas">
-            <CodeWindow title="untitled" languageId={languageId} themeId={settings.themeId}>
+            <CodeWindow title="untitled" languageId={languageId} themeId={themeId} model={model}>
               <EditorSurface
                 code={workspace.document.code}
                 settings={settings}

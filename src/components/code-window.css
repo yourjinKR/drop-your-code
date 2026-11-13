@@ -1,5 +1,5 @@
 .code-window {
-  width: min(100%, 960px);
+  width: min(100%, var(--code-window-width));
   margin-inline: auto;
   border: 1px solid var(--code-border);
   border-radius: 12px;
@@ -12,7 +12,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
   align-items: center;
-  min-height: 44px;
+  min-height: var(--code-header-height);
   padding-inline: var(--space-4);
   border-bottom: 1px solid var(--code-border);
   background: var(--code-header);
@@ -61,18 +61,20 @@
   max-width: 100%;
 }
 
-.editor-surface .cm-editor { height: clamp(240px, 53dvh, 540px); }
+.editor-surface .cm-editor { max-height: min(53dvh, 540px); }
+.editor-surface .cm-scroller { min-height: min(var(--code-content-height), 53dvh, 540px); }
 
 .editor-surface .cm-scroller {
   overflow: auto;
-  font-family: Consolas, "SFMono-Regular", Menlo, monospace;
-  font-size: 14px;
-  line-height: 1.5;
-  tab-size: 2;
+  font-family: var(--code-font);
+  font-size: var(--code-font-size);
+  line-height: var(--code-line-height);
+  tab-size: var(--code-tab-size);
+  font-variant-ligatures: none;
 }
 
-.editor-surface .cm-content { padding-block: 24px; }
-.editor-surface .cm-line { padding-inline: 24px; }
+.editor-surface .cm-content { padding-block: var(--code-padding); }
+.editor-surface .cm-line { padding-inline: var(--code-padding); }
 .editor-surface .cm-lineNumbers .cm-gutterElement { padding-inline: 12px; }
 
 @media (forced-colors: active) {
