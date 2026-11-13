@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 
-type IconButtonProps = Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-controls' | 'aria-expanded' | 'aria-pressed' | 'disabled' | 'onClick'> & {
+type IconButtonProps = Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-busy' | 'aria-controls' | 'aria-disabled' |
+  'aria-expanded' | 'aria-pressed' | 'className' | 'disabled' | 'onClick'> & {
   label: string;
   children: ReactNode;
   ref?: Ref<HTMLButtonElement>;
 };
 
-export function IconButton({ label, children, ref, ...props }: IconButtonProps) {
+export function IconButton({ label, children, ref, className = 'icon-button', ...props }: IconButtonProps) {
   const [dismissed, setDismissed] = useState(false);
 
   return (
@@ -15,7 +16,7 @@ export function IconButton({ label, children, ref, ...props }: IconButtonProps) 
       <button
         {...props}
         type="button"
-        className="icon-button"
+        className={className}
         ref={ref}
         aria-label={label}
         onBlur={() => setDismissed(false)}

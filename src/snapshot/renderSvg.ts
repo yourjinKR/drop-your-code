@@ -5,7 +5,7 @@ import { escapeXml } from './xmlText';
 
 const position = (value: number) => Number(value.toFixed(3));
 
-export function renderSnapshotSvg(model: SnapshotModel): string {
+export function renderSnapshotSvg(model: SnapshotModel, viewport = { width: model.width, height: model.height }): string {
   const { window: frame, width, height, theme, presentation, shadow } = model;
   const { radius, backgroundColor, transparent, showLanguageIcon, shadowEnabled, fontSize } = presentation;
   const frameSize = `width="${frame.width}" height="${frame.height}" rx="${radius}"`;
@@ -28,7 +28,7 @@ export function renderSnapshotSvg(model: SnapshotModel): string {
   const shadowFilter = shadowEnabled ? `<filter id="window-shadow" filterUnits="userSpaceOnUse" x="${-frame.x}" y="${-frame.y}" width="${width}" height="${height}"><feGaussianBlur stdDeviation="${shadow.blur}"/></filter>` : '';
   const windowShadow = shadowEnabled ? `<g filter="url(#window-shadow)" opacity="${shadow.opacity}"><rect ${frameSize} y="${shadow.offsetY}" fill="#000"/></g>` : '';
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xml:space="preserve">
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${viewport.width}" height="${viewport.height}" viewBox="0 0 ${width} ${height}" xml:space="preserve">
 <defs><clipPath id="window-clip"><rect ${frameSize}/></clipPath>${shadowFilter}</defs>
 ${transparent ? '' : `<rect width="${width}" height="${height}" fill="${backgroundColor}"/>`}
 <g transform="translate(${frame.x} ${frame.y})">
