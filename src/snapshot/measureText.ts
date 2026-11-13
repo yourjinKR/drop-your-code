@@ -1,5 +1,6 @@
 import type { SyntaxStyle } from '../theme/syntaxHighlighting';
 import { titleFont } from './presentation';
+import { xmlText } from './xmlText';
 
 export type MeasureText = (text: string, style?: SyntaxStyle) => number;
 
@@ -25,13 +26,13 @@ export async function prepareTextMeasurement(family: string, size: number, lineH
     const cached = cache.get(key);
     if (cached !== undefined) return cached;
     if (context.font !== face) context.font = face;
-    const width = context.measureText(text).width;
+    const width = context.measureText(xmlText(text)).width;
     cache.set(key, width);
     return width;
   };
   const measureTitle: MeasureText = (text) => {
     context.font = heading;
-    return context.measureText(text).width;
+    return context.measureText(xmlText(text)).width;
   };
   return { measure, measureTitle, baseline: (lineHeight + ascent - descent) / 2 };
 }

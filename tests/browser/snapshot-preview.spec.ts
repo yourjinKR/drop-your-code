@@ -1,0 +1,87 @@
+import { expect, test } from '@playwright/test';
+import type { Locator } from '@playwright/test';
+
+async function readImage(image: Locator) {
+  return image.evaluate(async (element: HTMLImageElement) => (await fetch(element.src)).text());
+}
+
+test('keyboard tabs preserve the editor node, selection, scrolling and Undo', async ({ page }) => {
+  await page.goto('/');
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  const original = await editor.elementHandle();
+  const editorTab = page.getByRole('tab', { name: 'Editor' });
+  const previewTab = page.getByRole('tab', { name: 'Preview' });
+  await editor.focus();
+  await page.keyboard.insertText(Array.from({ length: 300 }, (_, index) => `line ${index + 1}`).join('\n'));
+  await editor.press('Control+End');
+  await editor.press('Shift+Home');
+  const scroller = page.locator('.cm-scroller');
+  const scrollTop = () => scroller.evaluate((element) => element.scrollTop);
+  await expect.poll(scrollTop).toBeGreaterThan(500);
+  const position = await scrollTop();
+  await editorTab.focus();
+  await editorTab.press('End');
+  await expect(previewTab).toBeFocused();
+  await expect(editorTab).toHaveAttribute('aria-selected', 'true');
+  await previewTab.press('Space');
+  await expect(previewTab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('img', { name: 'Code snapshot' })).toBeVisible();
+  await expect(editor).toBeHidden();
+  await previewTab.press('Home');
+  await editorTab.press('Enter');
+  await expect(editorTab).toBeFocused();
+  await expect.poll(scrollTop).toBe(position);
+  await expect(page.getByRole('group', { name: 'Preview zoom' })).toHaveCount(0);
+  await previewTab.click();
+  await page.getByRole('button', { name: 'Focus editor' }).click();
+  await expect(editor).toBeFocused();
+  expect(await editor.evaluate((element, first) => element === first, original)).toBe(true);
+  expect(await page.evaluate(() => getSelection()?.toString())).toBe('line 300');
+  await editor.press('Control+z');
+  await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('1 line');
+  await previewTab.click();
+  await page.getByRole('link', { name: 'Skip to editor' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(editorTab).toHaveAttribute('aria-selected', 'true');
+});
+
+test('Fit and zoom preserve the complete standalone SVG and preview scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  await editor.focus();
+  await page.keyboard.insertText(`first ${'가 👩‍💻 '.repeat(160)}\n${Array.from({ length: 299 }, (_, index) => `line ${index + 2}`).join('\n')}\n`);
+  await page.getByRole('tab', { name: 'Preview' }).click();
+  const image = page.getByRole('img', { name: 'Code snapshot' });
+  const canvas = page.getByRole('region', { name: 'Snapshot canvas' });
+  const fit = page.getByRole('button', { name: 'Fit' });
+  const zoomIn = page.getByRole('button', { name: 'Zoom in' });
+  await expect(page.getByText(/maximum image width/)).toBeVisible();
+  await expect(fit).toHaveAttribute('aria-pressed', 'true');
+  const source = await readImage(image);
+  expect(source).toContain('line 300');
+  expect(source).toContain('first');
+  const dims = await page.locator('.preview-dimensions').innerText();
+  const src = await image.getAttribute('src');
+  await page.getByRole('button', { name: 'Collapse Properties' }).click();
+  await expect.poll(() => canvas.evaluate((element) => element.scrollHeight - element.clientHeight)).toBeLessThan(2);
+  await zoomIn.click();
+  await expect(page.locator('.preview-scale')).toHaveText('25%');
+  await canvas.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+  const top = () => canvas.evaluate((element) => element.scrollTop);
+  await expect.poll(top).toBeGreaterThan(600);
+  const before = await top();
+  await page.getByRole('tab', { name: 'Editor' }).click();
+  await page.getByRole('tab', { name: 'Preview' }).click();
+  await expect.poll(top).toBe(before);
+  await expect(page.locator('.preview-dimensions')).toHaveText(dims);
+  await expect(image).toHaveAttribute('src', src!);
+  await page.getByRole('button', { name: 'Switch to light mode' }).click();
+  await expect(image).toHaveAttribute('src', src!);
+  await page.getByRole('button', { name: 'Show Properties' }).click();
+  await page.getByRole('combobox', { name: 'Syntax theme' }).selectOption('light');
+  await expect(image).not.toHaveAttribute('src', src!);
+  expect(await readImage(image)).toContain('fill="#ffffff"');
+  await fit.click();
+  await expect.poll(top).toBe(0);
+});

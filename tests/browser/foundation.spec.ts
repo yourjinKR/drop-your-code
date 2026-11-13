@@ -84,14 +84,14 @@ test('opens the static root with an English editor and no unsupported actions', 
   await expect(page).toHaveTitle(/Drop Your Code/);
   await expect(page.getByRole('banner')).toBeVisible();
   await expect(page.getByRole('heading', { level: 1, name: 'Drop Your Code' })).toBeVisible();
-  await expect(page.getByRole('main', { name: 'Editor' })).toBeVisible();
+  await expect(page.getByRole('main', { name: 'Workspace' })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Code editor' })).toBeVisible();
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('1 line');
   await expect(page.getByRole('complementary', { name: 'Properties' })
     .getByRole('combobox', { name: 'Language' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(
-    page.getByRole('button', { name: /copy|export|history|preview/i }),
+    page.getByRole('button', { name: /copy|export|history/i }),
   ).toHaveCount(0);
   await page.waitForLoadState('networkidle');
 });
@@ -103,7 +103,9 @@ test('lets keyboard users skip directly to the workspace', async ({ page }) => {
   await expect(skipLink).toBeFocused();
   await expect(skipLink).toBeInViewport();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('main', { name: 'Editor' })).toBeFocused();
+  await expect(page.getByRole('main', { name: 'Workspace' })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('tab', { name: 'Editor' })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.getByRole('combobox', { name: 'Keymap' })).toBeFocused();
   await page.keyboard.press('Tab');
@@ -114,7 +116,7 @@ for (const width of [360, 768, 1280]) {
   test(`keeps the shell reachable at ${width}px without horizontal overflow`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    await expect(page.getByRole('main', { name: 'Editor' })).toBeVisible();
+    await expect(page.getByRole('main', { name: 'Workspace' })).toBeVisible();
     const editor = page.getByRole('textbox', { name: 'Code editor' });
     await editor.scrollIntoViewIfNeeded();
     await expect(editor).toBeInViewport();
@@ -132,7 +134,7 @@ test('preserves access to the editor and status with 200% CSS zoom', async ({ pa
   await page.evaluate(() => {
     document.documentElement.style.zoom = '2';
   });
-  await expect(page.getByRole('main', { name: 'Editor' })).toBeVisible();
+  await expect(page.getByRole('main', { name: 'Workspace' })).toBeVisible();
   const editor = page.getByRole('textbox', { name: 'Code editor' });
   await editor.scrollIntoViewIfNeeded();
   await expect(editor).toBeInViewport();

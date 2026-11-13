@@ -1,17 +1,10 @@
-import { Braces, CodeXml, Database, FileCode, FileText, Hash, Paintbrush, Terminal } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
 import type { EditorThemeId, LanguageId } from '../state/workspace';
 import type { SnapshotModel } from '../snapshot/model';
+import { languageArtwork } from '../snapshot/languageArtwork';
 import { defaultSnapshotPresentation, snapshotFont, snapshotTabSize, windowHeaderHeight } from '../snapshot/presentation';
 import { getBasicTheme } from '../theme/basicThemes';
 import './code-window.css';
-
-const languageIcons: Record<LanguageId, LucideIcon> = {
-  plaintext: FileCode, java: FileCode, kotlin: FileCode, javascript: Braces, typescript: Braces,
-  python: FileCode, sql: Database, json: Braces, yaml: Hash, html: CodeXml, css: Paintbrush,
-  xml: CodeXml, shell: Terminal, markdown: FileText,
-};
 
 type CodeWindowProps = {
   title: string;
@@ -23,7 +16,7 @@ type CodeWindowProps = {
 
 export function CodeWindow({ title, languageId, themeId, model, children }: CodeWindowProps) {
   const theme = getBasicTheme(themeId);
-  const LanguageIcon = languageIcons[languageId];
+  const LanguageIcon = languageArtwork[languageId].default;
   const colors = {
     '--code-background': theme.background,
     '--code-header': theme.header,
