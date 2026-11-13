@@ -7,7 +7,7 @@ import {
   moveLineUp,
   redo,
   standardKeymap,
-  toggleLineComment,
+  toggleComment,
   undo,
 } from '@codemirror/commands';
 import type { Command, KeyBinding } from '@codemirror/view';
@@ -66,7 +66,7 @@ export function buildKeymap(preset: KeymapPreset, platform: EditorPlatform): rea
     },
     { key: intellij ? 'Shift-Alt-ArrowUp' : 'Alt-ArrowUp', run: moveLineUp },
     { key: intellij ? 'Shift-Alt-ArrowDown' : 'Alt-ArrowDown', run: moveLineDown },
-    { key: `${modifier}-/`, run: toggleLineComment },
+    { key: `${modifier}-/`, run: toggleComment },
     { key: 'Tab', run: indentMore, shift: indentLess },
   ];
 

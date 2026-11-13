@@ -24,7 +24,9 @@ describe('app foundation', () => {
     expect(screen.getByRole('status', { name: 'Editor status' })).toHaveAttribute('aria-live', 'off');
     expect(screen.getByRole('status', { name: 'Editor status' })).toHaveTextContent('Plain Text');
     expect(screen.getByRole('status', { name: 'Editor status' })).toHaveTextContent('1 line');
-    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(screen.getByRole('complementary', { name: 'Properties' })).toContainElement(
+      screen.getByRole('combobox', { name: 'Language' }),
+    );
     expect(screen.getByRole('combobox', { name: 'Keymap' })).toHaveValue('vscode');
     expect(screen.getByRole('combobox', { name: 'Keymap' })).toHaveAccessibleDescription(
       /browser and system shortcuts may take priority/i,

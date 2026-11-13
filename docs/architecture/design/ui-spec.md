@@ -1,6 +1,6 @@
 # UI 명세
 
-작성일: 2026-11-07 · 상태: **작업 4 Plain Text 편집기·주요 IDE 키맵 구현, 전체 디자인 셸은 작업 6 적용 대상**
+갱신일: 2026-11-13 · 상태: **작업 5 수동 언어 선택·구문 강조 구현, 전체 디자인 셸은 작업 6 적용 대상**
 
 기준은 [PRD](../../product/PRD.md) §4–6 및 §8이다. 이번에 제공된 `desktop-wireframe.png`, `.svg`, `design-reference.md`를 Desktop 방향으로 사용한다. 이전의 참조 이미지 부재 상태는 해소되었다. 첨부 문서의 전달용 예시 프롬프트는 실행 지시가 아니다. 배치·초기값은 PRD의 확정 요구와 구분되는 설계 제안이며, 사용자 리뷰 후 각 기능 단계에서 적용·검증한다.
 
@@ -27,9 +27,9 @@ PRD §5.1의 Header / Main / Settings Panel을 다음 역할로 세분화한다.
 
 Phase 1은 편집 창, 키맵·수동 언어·기본 Syntax theme 선택, 줄 번호·줄 바꿈의 기초를 제공한다. 작업6에서 디자인 토큰·독립 UI Dark/Light·기본 Properties 접기를 적용한다. 이미지 미리보기·복사·내보내기·히스토리는 후속 단계이며 준비 중 버튼·빈 섹션·가짜 저장 성공을 표시하지 않는다. 이 문서의 전체 화면 정의가 Phase 1 작업 2~6의 기능 범위 확대를 뜻하지 않는다.
 
-현재 화면은 Brand, `Editor` main과 `Code editor` 입력, header의 native `Keymap` select, 짧은 도움말, 실제 Plain Text/행 수를 제공한다. select는 VS Code/IntelliJ를 메모리 상태로 변경하고 editor로 focus를 강제 이동하지 않는다. 현재 플랫폼·프리셋의 주요 차이와 browser/system 우선순위를 영어로 안내한다. 빈 Properties·준비 안내·상시 설명은 없다. outer shell은 Light, 입력 면은 고정 Dark이며 전체 토큰·패널·테마 UI·macOS 코드 창은 작업 6이다.
+현재 화면은 Brand, `Editor` main과 `Code editor` 입력, header의 native `Keymap` select, 짧은 도움말, `Properties` → `Code`의 native `Language` select, 적용 언어와 실제 행 수를 제공한다. `Properties`는 넓은 화면에서 편집기 오른쪽, 960px 미만에서 아래에 놓인다. 빈 섹션·준비 안내는 없다. outer shell은 Light, 입력 면과 구문 팔레트는 고정 Dark이며 전체 토큰·패널 접기·테마 UI·macOS 코드 창은 작업 6이다.
 
-이 현재 상태는 최종 목표 UI와 구분한다. 작업 4에서 주요 IDE 키맵만 추가했고 Language/Syntax theme/줄 번호/wrap은 작업 5/6에서 제공한다. 아직 없는 기능은 미리 버튼으로 표시하지 않는다. Keymap 저장·전체 Shortcuts는 Phase 3이며 현재 새로고침하면 VS Code 기본값으로 시작한다.
+`Language` 전환 중에는 `Loading [language]…`를 알리고 상태 표시줄에는 마지막 적용 언어가 남는다. 실패하면 select도 마지막 적용값으로 돌아오며 영어 오류와 `Retry`를 제공한다. 다른 언어를 선택하거나 재시도하는 동안에도 편집할 수 있으며 전환 때문에 포커스를 편집기로 이동시키지 않는다. `Keymap`과 `Language`는 현재 메모리에만 저장되며 새로고침하면 VS Code와 Plain Text로 시작한다. 자동 감지·저장·전체 Shortcuts는 Phase 3이다.
 
 ## 2. 기본 코드 창
 

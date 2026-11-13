@@ -198,7 +198,7 @@ Sheet는 viewport 전체 폭·사용 가능한 높이를 사용하며 라벨과 
 
 | 시점 | 화면에 나타날 수 있는 기능 | 계속 숨기는 것 |
 |---|---|---|
-| 현재 작업 4 입력 셸 | Plain Text Editor·Keymap 선택·영어 skip/help·행 수. 전체 목표 셸은 작업 6에서 적용 | 언어/테마 선택·Preview·이미지 복사/출력·History 완료로 표현하지 않음 |
+| 현재 작업 5 입력 셸 | Editor·Keymap 선택·영어 skip/help·`Properties`의 수동 `Language`·적용 언어/행 수. 960px 미만에서는 Properties를 편집기 아래에 배치 | 패널 접기·테마 선택·Preview·이미지 복사/출력·History |
 | Phase 1 작업 2–3 | 상태 모델·Editor 입력이 각각 구현된 범위. 구현된 순서대로 간결한 Editor 영역 | 렌더러, 출력 치수·배율, History, 저장 성공 |
 | Phase 1 작업 4–5 | Keymap, 수동 Language와 로딩·오류 상태 | 자동 감지와 전체 Shortcuts 화면 |
 | Phase 1 작업 6 | 기본 코드 창, Syntax theme Dark/Light, Line numbers, Wrap lines. 토큰·기본 Properties 접기 적용. 좁은 화면은 인라인 세로 배치로 설정 접근 보장 | 스타일 세부 조정, Preview, Export, Copy Image, History, 정식 모달 drawer/sheet |

@@ -2,8 +2,10 @@ import { Annotation, Compartment, EditorState } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { history, isolateHistory } from '@codemirror/commands';
 import { indentUnit } from '@codemirror/language';
+import type { LanguageSupport } from '@codemirror/language';
 import type { EditorSettings } from '../state/workspace';
 import { buildKeymap, detectPlatform } from './keymaps';
+import { languageHighlighting } from './languageHighlighting';
 
 const lineEditEvents = [
   'delete.line', 'delete.cut', 'move.line', 'input.copyline', 'indent', 'input.indent', 'delete.dedent',
@@ -12,6 +14,7 @@ const lineEditEvents = [
 export type EditorSurfaceProps = {
   code: string;
   settings: EditorSettings;
+  languageSupport?: LanguageSupport | null;
   onCodeChange: (code: string) => void;
 };
 
@@ -44,9 +47,8 @@ export function createEditor(
         )),
         indentUnit.of('  '),
         compartments.keymap.of(keymap.of(buildKeymap(props.settings.keymap, detectPlatform()))),
-        // Later tasks reconfigure these slots; no unsupported controls are exposed.
-        compartments.language.of([]),
-        compartments.theme.of([]),
+        compartments.language.of(props.languageSupport?.extension ?? []),
+        compartments.theme.of(languageHighlighting),
         compartments.lineNumbers.of([]),
         compartments.wrap.of([]),
         EditorView.contentAttributes.of({
