@@ -12,10 +12,10 @@
 
 ## 현재 기준과 작업 경계
 
-- 최초 계획의 시작점은 `cac5e906a23fc31d02875526927f822aacb6dbe3` (`init project`)였다. **2026-11-07 현재 작업 1 검증 기반·작업 2 순수 상태·작업 3 CodeMirror/App 입력 연결을 구현했다. 작업 4~6은 미구현이다.** 화면은 영어 Plain Text Editor와 실제 행 수 상태를 제공하며 전체 목표 셸은 작업 6에서 적용한다. 후속 구현 시작 때 Git·의존성·실제 구현 상태를 다시 확인해 사용자 변경을 보존한다.
+- 최초 계획의 시작점은 `cac5e906a23fc31d02875526927f822aacb6dbe3` (`init project`)였다. **2026-11-07 현재 작업 1~3 기반·입력과 작업 4 IntelliJ/VS Code 주요 키맵을 구현했다. 작업 5~6은 미구현이다.** 화면은 영어 Plain Text Editor·Keymap 선택·실제 행 수를 제공하며 전체 목표 셸은 작업 6에서 적용한다. 후속 구현 시작 때 Git·의존성·실제 구현 상태를 다시 확인해 사용자 변경을 보존한다.
 - PRD §9의 Phase 1 다섯 항목을 구현한다. 렌더링·자동 크기 조절·이미지 출력은 Phase 2, 저장·히스토리·자동 언어 감지·완성된 반응형·단축키 안내는 Phase 3, 최적화·최종 호환성·배포는 Phase 4이다.
 - PRD §7은 후보 목록이다. 확정 제약과 설계 제안·미검증 가정을 구분한다. 의존성 도입 시 역할과 실제 선택 버전을 기록하며 최신 버전을 추정해 고정하지 않는다.
-- 최초 계획과 작업 2~3은 `writing-plans`, `verification-before-completion`을 사용했다. 작업 3은 React 수명/성능 지침도 적용했다. 각 작업은 아래 독립 범위를 유지하며 실행 스킬 부재를 구현의 필수 장애물로 삼지 않는다.
+- 최초 계획과 작업 2~4는 `writing-plans`, `verification-before-completion`을 사용했다. 작업 3~4는 React 수명/성능 지침도 적용했다. 각 작업은 아래 독립 범위를 유지하며 실행 스킬 부재를 구현의 필수 장애물로 삼지 않는다.
 
 ## Global Constraints
 
@@ -30,14 +30,14 @@
 
 ## 작업 단위별 PR 흐름
 
-1. 기반 문서·작업 1·디자인 명세 PR #3·작업 2 PR #4는 병합된 상태다. 병합 후 다음 작업 요청에 따라 PR #4의 head를 확인해 병합하고 최신 `main`에서 작업 3만 별도 `codex/` 브랜치로 구현했다. 작업 3 PR은 제출 후 리뷰를 기다리고 새 PR 병합·작업 4 구현·배포는 진행하지 않는다.
+1. 작업 3 PR #5까지 병합된 상태다. 사용자 요청에 따라 PR #5의 예상 head를 확인해 병합하고 최신 `main`에서 작업 4만 별도 `codex/` 브랜치로 구현했다. 작업 4 PR은 제출 후 리뷰를 기다리고 새 PR 병합·작업 5 구현·배포는 진행하지 않는다.
 2. 작업 1~6은 각각 독립 브랜치 `codex/phase-1-<작업명>`와 `main` 대상 PR 하나로 진행한다. 현재 PR이 병합되기 전에는 다음 구현 작업을 시작하지 않는다.
 3. 각 작업의 완료 조건을 확인한 뒤 [PR 템플릿](../../.github/pull_request_template.md)에 작업 번호·PRD 연결·실행 검증·미실행 항목·남은 제한을 기록한다. 문서 전용 변경은 앱 검증을 해당 없음으로 설명한다.
 4. 병합 후 원격 `main`을 받아 로컬 기준을 갱신하고 다음 브랜치를 만든다. 기존 사용자 변경은 보존하며 `main`에 직접 커밋하지 않는다. 커밋·푸시·병합·배포는 요청된 범위에서만 수행한다.
 
 ## 디자인 적용 시점과 범위
 
-이번 변경은 명세만 제공한다. 작업 2~6의 순서·기능·기존 완료 조건을 유지하고, 아래의 디자인 적용을 해당 기능을 실제로 제공하는 PR 안에서 검증한다. 전체 목표 화면을 한 PR에 구현하거나, 미구현 기능을 disabled/`Coming soon` 버튼으로 미리 노출하지 않는다.
+이 절은 디자인 적용 순서를 정의한다. 작업 2~6의 기능·기존 완료 조건을 유지하고 해당 기능을 실제로 제공하는 PR 안에서 디자인을 검증한다. 전체 목표 화면을 한 PR에 구현하거나 미구현 기능을 disabled/`Coming soon` 버튼으로 미리 노출하지 않는다.
 
 | 작업 / 시점 | 적용할 디자인과 파일 경계 | 해당 PR의 추가 확인 |
 |---|---|---|
@@ -158,10 +158,12 @@ Desktop/Tablet/Mobile 목표는 [와이어프레임](../architecture/design/wire
 
 **입출력:** `buildKeymap(preset: KeymapPreset, platform: 'windows' | 'macos' | 'other'): readonly KeyBinding[]`. 키 구성은 전용 Compartment로 교체하며 공통 기본 키맵보다 우선한다. 키맵 선택은 reducer에 반영하되 로컬 저장하지 않는다.
 
-- [ ] Windows 표 9개 명령의 프리셋별 결과 테스트를 작성한다. Undo `Ctrl+Z`, Redo IntelliJ `Ctrl+Shift+Z` / VS Code `Ctrl+Y`, 복제 `Ctrl+D` / `Shift+Alt+↓`, 삭제 `Ctrl+Y` / `Ctrl+Shift+K`, 이동 `Shift+Alt+↑/↓` / `Alt+↑/↓`, 주석 `Ctrl+/`, Tab/Shift+Tab, 무선택 줄 잘라내기 `Ctrl+X`를 확인한다. 일반 `Ctrl+C`는 텍스트 복사를 유지한다.
-- [ ] 공식 IDE 문서의 macOS 기본표를 확인해 9개 명령 대응표를 `keymaps.ts`의 설명 및 테스트 데이터로 남긴다. PRD Windows 목표를 임의 변경하거나 전체 Ctrl→Cmd 치환하지 않는다. 명령은 CodeMirror 기본 기능을 우선 재사용하고 무선택 잘라내기는 실제 클립보드까지 검증한다.
-- [ ] 편집기 포커스 안에서만 처리하고 IME 조합 중 간섭을 막는다. 프리셋 교체 시 이전 바인딩을 제거하며 문서·선택·Undo를 유지한다. 처리할 명령에만 기본 동작 방지를 적용한다.
-- [ ] `keymaps.spec.ts`에 `ctrl_y_matches_active_preset`, `switch_preserves_document_selection_history`, `settings_input_is_not_editor`, `unselected_cut_is_linewise`, `copy_remains_text`, `tab_escape_leaves_editor`를 작성한다. CodeMirror 공식 Tab 탈출 방식(Escape 후 Tab 등)을 선택 버전에서 확인해 최소 도움말로 노출한다. 전체 단축키 안내 UI와 구분한다.
+- [x] Windows 표 9개 명령의 프리셋별 결과 테스트를 작성한다. Undo `Ctrl+Z`, Redo IntelliJ `Ctrl+Shift+Z` / VS Code `Ctrl+Y`, 복제 `Ctrl+D` / `Shift+Alt+↓`, 삭제 `Ctrl+Y` / `Ctrl+Shift+K`, 이동 `Shift+Alt+↑/↓` / `Alt+↑/↓`, 주석 `Ctrl+/`, Tab/Shift+Tab, 무선택 줄 잘라내기 `Ctrl+X`를 확인한다. 일반 `Ctrl+C`는 텍스트 복사를 유지한다.
+- [x] 공식 IDE 문서의 macOS 기본표를 확인해 9개 명령 대응표를 `keymaps.ts`의 설명 및 테스트 데이터로 남긴다. PRD Windows 목표를 임의 변경하거나 전체 Ctrl→Cmd 치환하지 않는다. 명령은 CodeMirror 기본 기능을 우선 재사용하고 무선택 잘라내기는 실제 클립보드까지 검증한다.
+- [x] 편집기 포커스 안에서만 처리하고 IME 조합 중 간섭을 막는다. 프리셋 교체 시 이전 바인딩을 제거하며 문서·선택·Undo를 유지한다. 처리할 명령에만 기본 동작 방지를 적용한다.
+- [x] `keymaps.spec.ts`에 `ctrl_y_matches_active_preset`, `switch_preserves_document_selection_history`, `settings_input_is_not_editor`, `unselected_cut_is_linewise`, `copy_remains_text`, `tab_escape_leaves_editor`를 작성한다. CodeMirror 공식 Tab 탈출 방식(Escape 후 Tab 등)을 선택 버전에서 확인해 최소 도움말로 노출한다. 전체 단축키 안내 UI와 구분한다.
+
+**구현 결과 (2026-11-07):** [작업 4 실행 계획](task-4-keymaps.md)과 [검증 보고서](../verification/task-4-keymaps.md)를 추가했다. Keymap select는 메모리 reducer만 갱신하고 같은 view의 keymap Compartment를 교체한다. Windows 명령과 별도 macOS 대응표를 구성했으며 focus/composition guard·native Copy/Cut·Escape 다음 Tab을 유지한다. 빠른 입력과 줄 삭제/내어쓰기의 Undo 그룹을 분리했다. 실제 macOS/OS IME는 미검증이고 Plain Text 주석은 no-op이다. 언어 토큰을 주입한 통합 검사와 실제 언어 지원은 구분한다.
 
 **독립 완료 조건:** `npm run test -- tests/integration/keymaps.test.tsx`, `npm run test:browser -- tests/browser/keymaps.spec.ts --project=chromium`, `npm run typecheck` 성공. 9개 명령·포커스 외 무개입·교체 후 기존 바인딩 미잔존을 입증한다.
 
@@ -236,4 +238,4 @@ Desktop/Tablet/Mobile 목표는 [와이어프레임](../architecture/design/wire
 
 작성 시 PRD §9의 Phase 1 다섯 항목을 작업 1/3/4/5/6에, 공통 상태를 작업 2에 연결했다. 타입·파일·명령의 이름을 맞추고 P1 겹침과 §8 후속 항목을 위 표로 추적했다. 문서 검증과 실제 구현의 테스트 성공 기록을 분리한다.
 
-다음 구현 작업은 **작업 4: IntelliJ / VS Code 키맵과 포커스**다. 작업 3 PR이 병합되고 다음 구현 요청을 받으면 현재 Git 상태와 실제 선택 버전부터 재확인한다. 이번 요청의 병합 권한은 PR #4에 적용했으며 새 작업 PR 병합·작업 4 구현·배포는 범위에 포함하지 않는다. 기본 입력 검증 통과는 IDE 프리셋·언어·출력·MVP 완료와 구분한다.
+다음 구현 작업은 **작업 5: 초기 언어 전체와 수동 선택·강조**다. 작업 4 PR이 병합되고 다음 구현 요청을 받으면 현재 Git 상태와 실제 선택 버전부터 재확인한다. 이번 요청의 병합 권한은 PR #5에 적용했으며 새 PR 병합·작업 5 구현·배포는 범위에 포함하지 않는다. 주요 키맵 검증 통과는 전체 IDE 재현·언어·출력·MVP 완료와 구분한다.

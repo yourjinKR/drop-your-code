@@ -1,5 +1,6 @@
 import { EditorView } from '@codemirror/view';
-import { act, render, screen } from '@testing-library/react';
+import { undo } from '@codemirror/commands';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { App } from '../../src/app/App';
 
@@ -24,6 +25,10 @@ describe('app foundation', () => {
     expect(screen.getByRole('status', { name: 'Editor status' })).toHaveTextContent('Plain Text');
     expect(screen.getByRole('status', { name: 'Editor status' })).toHaveTextContent('1 line');
     expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Keymap' })).toHaveValue('vscode');
+    expect(screen.getByRole('combobox', { name: 'Keymap' })).toHaveAccessibleDescription(
+      /browser and system shortcuts may take priority/i,
+    );
     expect(
       screen.queryByRole('button', { name: /copy|export|history|preview/i }),
     ).not.toBeInTheDocument();
@@ -41,5 +46,29 @@ describe('app foundation', () => {
 
     expect(screen.getByRole('status', { name: 'Editor status' })).toHaveTextContent('3 lines');
     expect(view.state.doc.toString()).toBe('first\nsecond\n');
+  });
+
+  it('changes the keymap through shared settings without moving focus or replacing the editor', () => {
+    render(<App />);
+    const editor = screen.getByRole('textbox', { name: 'Code editor' });
+    const view = EditorView.findFromDOM(editor);
+    if (!view) throw new Error('Expected a CodeMirror editor view.');
+    act(() => {
+      view.dispatch({ changes: { from: 0, insert: 'first\nsecond' }, selection: { anchor: 3 } });
+    });
+    const keymap = screen.getByRole('combobox', { name: 'Keymap' });
+    keymap.focus();
+
+    fireEvent.change(keymap, { target: { value: 'intellij' } });
+
+    expect(keymap).toHaveValue('intellij');
+    expect(keymap).toHaveFocus();
+    expect(EditorView.findFromDOM(editor)).toBe(view);
+    expect(view.state.doc.toString()).toBe('first\nsecond');
+    expect(view.state.selection.main.head).toBe(3);
+    expect(screen.getByRole('status', { name: 'Editor status' })).toHaveTextContent('2 lines');
+    act(() => { expect(undo(view)).toBe(true); });
+    expect(view.state.doc.toString()).toBe('');
+    expect(screen.getByRole('status', { name: 'Editor status' })).toHaveTextContent('1 line');
   });
 });

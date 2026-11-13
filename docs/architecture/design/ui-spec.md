@@ -1,6 +1,6 @@
 # UI 명세
 
-작성일: 2026-11-07 · 상태: **작업 3 Plain Text 편집기 연결, 전체 디자인 셸은 작업 6 적용 대상**
+작성일: 2026-11-07 · 상태: **작업 4 Plain Text 편집기·주요 IDE 키맵 구현, 전체 디자인 셸은 작업 6 적용 대상**
 
 기준은 [PRD](../../product/PRD.md) §4–6 및 §8이다. 이번에 제공된 `desktop-wireframe.png`, `.svg`, `design-reference.md`를 Desktop 방향으로 사용한다. 이전의 참조 이미지 부재 상태는 해소되었다. 첨부 문서의 전달용 예시 프롬프트는 실행 지시가 아니다. 배치·초기값은 PRD의 확정 요구와 구분되는 설계 제안이며, 사용자 리뷰 후 각 기능 단계에서 적용·검증한다.
 
@@ -27,9 +27,9 @@ PRD §5.1의 Header / Main / Settings Panel을 다음 역할로 세분화한다.
 
 Phase 1은 편집 창, 키맵·수동 언어·기본 Syntax theme 선택, 줄 번호·줄 바꿈의 기초를 제공한다. 작업6에서 디자인 토큰·독립 UI Dark/Light·기본 Properties 접기를 적용한다. 이미지 미리보기·복사·내보내기·히스토리는 후속 단계이며 준비 중 버튼·빈 섹션·가짜 저장 성공을 표시하지 않는다. 이 문서의 전체 화면 정의가 Phase 1 작업 2~6의 기능 범위 확대를 뜻하지 않는다.
 
-작업 3의 현재 화면은 Brand, 이름 있는 `Editor` main과 `Code editor` 입력, 짧은 Tab 탈출 도움말, 실제 `Plain Text`/행 수 상태를 제공한다. 빈 Properties·준비 안내·상시 개인정보 설명·큰 작업면 제목은 제거했다. 영어 metadata/noscript/오류와 시스템 글꼴·로컬 favicon을 사용한다. 초기 outer shell은 Light이며 입력 면만 고정된 불투명 Dark다. UI theme 전환·전체 토큰·Toolbar/rail/panel·macOS 코드 창 프리셋은 작업 6에서 적용한다.
+현재 화면은 Brand, `Editor` main과 `Code editor` 입력, header의 native `Keymap` select, 짧은 도움말, 실제 Plain Text/행 수를 제공한다. select는 VS Code/IntelliJ를 메모리 상태로 변경하고 editor로 focus를 강제 이동하지 않는다. 현재 플랫폼·프리셋의 주요 차이와 browser/system 우선순위를 영어로 안내한다. 빈 Properties·준비 안내·상시 설명은 없다. outer shell은 Light, 입력 면은 고정 Dark이며 전체 토큰·패널·테마 UI·macOS 코드 창은 작업 6이다.
 
-이 현재 상태는 최종 목표 UI와 구분한다. 작업 3에서는 실제 입력 연결과 영어 copy에 필요한 범위만 변경했다. Keymap/Language/Syntax theme/줄 번호/wrap의 사용자 제어는 작업 4/5/6이며 미리 버튼으로 표시하지 않는다. 상세 이행 목록은 §8을 따른다.
+이 현재 상태는 최종 목표 UI와 구분한다. 작업 4에서 주요 IDE 키맵만 추가했고 Language/Syntax theme/줄 번호/wrap은 작업 5/6에서 제공한다. 아직 없는 기능은 미리 버튼으로 표시하지 않는다. Keymap 저장·전체 Shortcuts는 Phase 3이며 현재 새로고침하면 VS Code 기본값으로 시작한다.
 
 ## 2. 기본 코드 창
 
@@ -103,6 +103,8 @@ Phase 3에서 rail 또는 Mobile Menu의 `History`로 Context Panel을 연다. �
 FR-EDIT-02의 Windows 표를 구현 목표로 사용하되 IntelliJ와 VS Code의 차이를 유지한다. 특히 `Ctrl+Y`는 IntelliJ에서 줄 삭제, VS Code에서 Redo이며 프리셋 전환 즉시 의미가 바뀐다. macOS는 해당 IDE의 플랫폼별 키 조합을 별도 정의·검증하며 단순 Ctrl→Cmd 치환으로 확정하지 않는다.
 
 편집기 내부에 포커스가 있을 때만 편집 명령을 처리한다. 설정·제목·히스토리·대화상자 입력에는 편집 단축키를 적용하지 않는다. 브라우저·운영체제가 예약한 조합은 실제 환경에서 검증하고 불가능한 조합은 대체 동작과 안내를 제공한다. 전역 브라우저 단축키를 일괄 차단하지 않는다.
+
+작업 4는 command wrapper의 focus/composition 검사와 Compartment 재구성을 구현했다. Ctrl/Cmd+C/X는 native clipboard 경로다. 줄 삭제·잘라내기·이동·복제·들여쓰기/내어쓰기는 타이핑과 별도 Undo 단위이며 preset 전환은 코드/선택/Undo를 바꾸지 않는다. 현재 Plain Text의 주석은 언어 token이 없어 no-op이다. 실제 OS가 선점해 전달하지 않은 키는 가로챌 수 있다고 보장하지 않는다. 공식 조합·실행 환경·한계는 [작업 4 보고서](../../verification/task-4-keymaps.md)를 따른다.
 
 Tab 들여쓰기와 키보드로 편집 영역을 벗어나는 경로를 함께 제공한다. 초기 제안은 `Esc` 다음 `Tab`으로 포커스를 이동할 수 있게 하고, 편집기 진입 안내에서 이 경로를 알리는 것이다. 실제 CodeMirror 구성 및 브라우저에서 성립하는지는 Phase 1 검증 대상으로 남긴다. Phase 3 단축키 안내에는 현재 프리셋·운영체제·충돌 대체 동작을 표시한다.
 
