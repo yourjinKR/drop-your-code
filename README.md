@@ -1,6 +1,6 @@
 # Drop Your Code
 
-브라우저에서 코드 스냅샷을 만드는 정적 앱입니다. 현재 구현 범위는 [Phase 1 작업 1](docs/plans/task-1-static-app.md)의 앱 셸과 검증 기반입니다. 코드 편집·키맵·설정·이미지 출력·히스토리는 후속 작업입니다.
+브라우저에서 코드 스냅샷을 만드는 정적 앱입니다. 현재 [Phase 1 작업 5](docs/plans/task-5-languages.md)까지 코드 편집, VS Code/IntelliJ 키맵, 14개 언어의 수동 선택과 구문 강조를 제공합니다. 테마 전환과 기본 코드 창은 작업 6, 이미지 출력과 히스토리는 후속 단계입니다.
 
 ## 시작하기
 
@@ -36,7 +36,7 @@ npm run test:browser -- tests/browser/foundation.spec.ts --project=chromium
 Remove-Item Env:PLAYWRIGHT_SERVER_MODE
 ```
 
-브라우저 테스트는 페이지 로드부터 셸·키보드 이동·360/768/1280px 레이아웃·200% CSS zoom·외부 요청·HTTP/콘솔/런타임 오류를 확인합니다. CSS zoom은 실제 브라우저 확대와 구분합니다. 실제 실행 결과와 미검증 항목은 [작업 1 검증 보고서](docs/verification/task-1-static-app.md)에 기록합니다.
+브라우저 테스트는 셸, 키보드 이동, 레이아웃, 입력과 언어 로딩을 확인합니다. 실제 실행 결과와 미검증 항목은 [작업 5 검증 보고서](docs/verification/task-5-languages.md)를 참고하세요.
 
 ## 정적 산출물
 

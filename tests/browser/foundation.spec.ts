@@ -87,7 +87,8 @@ test('opens the static root with an English editor and no unsupported actions', 
   await expect(page.getByRole('main', { name: 'Editor' })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Code editor' })).toBeVisible();
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('1 line');
-  await expect(page.getByRole('complementary')).toHaveCount(0);
+  await expect(page.getByRole('complementary', { name: 'Properties' })
+    .getByRole('combobox', { name: 'Language' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(
     page.getByRole('button', { name: /copy|export|history|preview/i }),

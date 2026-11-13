@@ -59,6 +59,19 @@ export function EditorSurface(props: EditorSurfaceProps) {
     appliedKeymapRef.current = props.settings.keymap;
   }, [props.settings.keymap]);
 
+  const languageSupport = props.languageSupport ?? null;
+  useLayoutEffect(() => {
+    const view = viewRef.current;
+    const compartment = compartmentsRef.current?.language;
+    if (!view || !compartment) return;
+    const current = compartment.get(view.state);
+    const unchanged = languageSupport
+      ? current === languageSupport.extension
+      : Array.isArray(current) && current.length === 0;
+    if (unchanged) return;
+    view.dispatch({ effects: compartment.reconfigure(languageSupport?.extension ?? []) });
+  }, [languageSupport]);
+
   useLayoutEffect(() => {
     const view = viewRef.current;
     if (!view) return;
