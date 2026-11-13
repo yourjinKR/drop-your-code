@@ -4,6 +4,7 @@ import { history, isolateHistory } from '@codemirror/commands';
 import { indentUnit } from '@codemirror/language';
 import type { LanguageSupport } from '@codemirror/language';
 import type { EditorSettings } from '../state/workspace';
+import { snapshotTabSize } from '../snapshot/presentation';
 import { buildKeymap, detectPlatform } from './keymaps';
 import { editorThemes } from './languageHighlighting';
 
@@ -49,6 +50,7 @@ export function createEditor(
             : null
         )),
         indentUnit.of('  '),
+        EditorState.tabSize.of(snapshotTabSize),
         compartments.keymap.of(keymap.of(buildKeymap(props.settings.keymap, detectPlatform()))),
         compartments.language.of(props.languageSupport?.extension ?? noExtension),
         compartments.theme.of(editorThemes[props.settings.themeId]),

@@ -6,6 +6,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../src/app/App';
 import { loadLanguage } from '../../src/editor/languages';
 
+// Keep the editor's mocked loader responses scoped to the language selection flow.
+vi.mock('../../src/snapshot/model', () => ({ buildSnapshotModel: async () => null }));
+
 vi.mock('../../src/editor/languages', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../src/editor/languages')>(),
   loadLanguage: vi.fn(),

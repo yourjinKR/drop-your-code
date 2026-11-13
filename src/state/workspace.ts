@@ -1,3 +1,6 @@
+import { defaultSnapshotPresentation, validPresentation } from '../snapshot/presentation';
+import type { SnapshotPresentation } from '../snapshot/presentation';
+
 export type KeymapPreset = 'intellij' | 'vscode';
 
 /** Syntax theme only; the application UI theme is a separate preference. */
@@ -28,6 +31,7 @@ export type EditorSettings = {
   readonly themeId: EditorThemeId;
   readonly lineNumbers: boolean;
   readonly wrap: boolean;
+  readonly presentation: SnapshotPresentation;
 };
 
 export type WorkspaceState = {
@@ -43,6 +47,7 @@ export type WorkspaceAction =
   | { type: 'keymapChanged'; preset: KeymapPreset }
   | { type: 'languageChanged'; languageId: LanguageId }
   | { type: 'themeChanged'; themeId: EditorThemeId }
+  | { type: 'presentationChanged'; presentation: SnapshotPresentation }
   | { type: 'lineNumbersChanged' | 'wrapChanged'; enabled: boolean };
 
 /** Whole-document values for downstream rendering, without editor or UI state. */
@@ -53,6 +58,7 @@ export type SnapshotInput = {
   readonly themeId: EditorThemeId;
   readonly lineNumbers: boolean;
   readonly wrap: boolean;
+  readonly presentation: SnapshotPresentation;
 };
 
 export function createInitialWorkspace(): WorkspaceState {
@@ -64,6 +70,7 @@ export function createInitialWorkspace(): WorkspaceState {
       themeId: 'dark',
       lineNumbers: false,
       wrap: false,
+      presentation: defaultSnapshotPresentation,
     },
   };
 }
@@ -92,6 +99,14 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
     case 'themeChanged':
       if (state.settings.themeId === action.themeId) return state;
       return { ...state, settings: { ...state.settings, themeId: action.themeId } };
+    case 'presentationChanged': {
+      const current = state.settings.presentation;
+      if (!validPresentation(action.presentation)) return state;
+      const presentation = { ...action.presentation, backgroundColor: action.presentation.backgroundColor.toLowerCase() };
+      const keys = Object.keys(defaultSnapshotPresentation) as (keyof SnapshotPresentation)[];
+      if (keys.every((key) => current[key] === presentation[key])) return state;
+      return { ...state, settings: { ...state.settings, presentation: Object.freeze(presentation) } };
+    }
     case 'lineNumbersChanged':
       if (state.settings.lineNumbers === action.enabled) return state;
       return { ...state, settings: { ...state.settings, lineNumbers: action.enabled } };
@@ -109,5 +124,6 @@ export function selectSnapshotInput(state: WorkspaceState): SnapshotInput {
     themeId: state.settings.themeId,
     lineNumbers: state.settings.lineNumbers,
     wrap: state.settings.wrap,
+    presentation: state.settings.presentation,
   };
 }

@@ -10,13 +10,17 @@ import type { KeymapPreset } from '../state/workspace';
 
 export type { EditorSurfaceProps } from './createEditor';
 
-export function EditorSurface(props: EditorSurfaceProps & { focusRef?: RefObject<(() => void) | null> }) {
+export function EditorSurface(props: EditorSurfaceProps & { focusRef?: RefObject<(() => void) | null>; visible?: boolean }) {
   const parentRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const compartmentsRef = useRef<EditorCompartments | null>(null);
   const appliedKeymapRef = useRef<KeymapPreset | null>(null);
   const committedProps = useRef(props);
   const { focusRef } = props;
+
+  useLayoutEffect(() => {
+    if (props.visible) viewRef.current?.requestMeasure();
+  }, [props.visible]);
 
   useLayoutEffect(() => {
     committedProps.current = props;

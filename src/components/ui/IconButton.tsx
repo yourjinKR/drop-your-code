@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 
-type IconButtonProps = Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-controls' | 'aria-expanded' | 'onClick'> & {
+type IconButtonProps = Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-controls' | 'aria-expanded' | 'aria-pressed' | 'disabled' | 'onClick'> & {
   label: string;
   children: ReactNode;
   ref?: Ref<HTMLButtonElement>;

@@ -10,7 +10,7 @@ describe('app foundation', () => {
 
     expect(screen.getByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Drop Your Code' })).toBeVisible();
-    const workspace = screen.getByRole('main', { name: 'Editor' });
+    const workspace = screen.getByRole('main', { name: 'Workspace' });
     expect(workspace).toHaveAttribute('id', 'workspace');
     expect(workspace).toHaveAttribute('tabindex', '-1');
     const editor = screen.getByRole('textbox', { name: 'Code editor' });
@@ -32,7 +32,7 @@ describe('app foundation', () => {
       /browser and system shortcuts may take priority/i,
     );
     expect(
-      screen.queryByRole('button', { name: /copy|export|history|preview/i }),
+      screen.queryByRole('button', { name: /copy|export|history/i }),
     ).not.toBeInTheDocument();
   });
 

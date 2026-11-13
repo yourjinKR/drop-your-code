@@ -4,6 +4,7 @@ import type { Dispatch, Ref } from 'react';
 import { LanguageSelect } from '../editor/LanguageSelect';
 import type { EditorSettings as Settings, LanguageId, WorkspaceAction } from '../state/workspace';
 import { IconButton } from './ui/IconButton';
+import { PropertyGroup, SnapshotStyleSettings } from './SnapshotStyleSettings';
 
 type EditorSettingsProps = {
   settings: Settings;
@@ -29,8 +30,7 @@ export function EditorSettings({ settings, open, collapseRef, onCollapse, onLang
           <PanelRightClose size={16} aria-hidden="true" />
         </IconButton>
       </div>
-      <section className="properties-code" aria-labelledby="code-properties-heading">
-        <h3 id="code-properties-heading">Code</h3>
+      <PropertyGroup label="Code" initiallyOpen>
         <LanguageSelect appliedId={settings.language.languageId} onApplied={onLanguageApplied} />
         <div className="property-field">
           <label htmlFor="syntax-theme">Syntax theme</label>
@@ -57,7 +57,9 @@ export function EditorSettings({ settings, open, collapseRef, onCollapse, onLang
           <input type="checkbox" name="wrap-lines" checked={settings.wrap}
             onChange={(event) => dispatch({ type: 'wrapChanged', enabled: event.currentTarget.checked })} />
         </label>
-      </section>
+      </PropertyGroup>
+      <SnapshotStyleSettings presentation={settings.presentation}
+        onChange={(presentation) => dispatch({ type: 'presentationChanged', presentation })} />
     </aside>
   );
 }

@@ -63,9 +63,9 @@ Phase 2의 자동 크기 계산은 전체 줄 수와 가장 긴 줄의 측정값
 | 그룹 | 필드 | 상태·제약 |
 |---|---|---|
 | Code | Language, Syntax theme, Line numbers, Wrap lines. 이후 Language detection | 작업5는 수동 언어, 작업6은 테마/줄 번호/wrap. Phase3 자동 감지는 수동 선택을 덮어쓰지 않음 |
-| Window | Title, Language icon, Radius, Shadow on/off·강도 | 작업6은 고정 기본 창. Phase2 조절. macOS 외 style selector는 이미지 때문에 추가하지 않음 |
-| Background | Color, Background padding, Transparent; 선택적 그라데이션 | Phase2. 투명이어도 창은 불투명, 안내 체크무늬는 출력 제외 |
-| Typography | Font, Font size, Line height, Code padding | Phase2. 실제 범위·단위·현재 적용 font/fallback 표시, 유효 값만 반영 |
+| Window | Title, Language icon, Radius, Shadow, Shadow strength | 기본 제목 `untitled`, 아이콘과 그림자 켜짐, Radius 12px (0–32px), Shadow strength Medium (Low/Medium/High) |
+| Background | Color, Background padding, Transparent | 기본 `#242427`, 48px (0–128px), 투명 꺼짐. 그림자의 표시 여백은 composition에 확보하고 투명 배경에서도 창은 불투명하게 유지한다. |
+| Typography | Font, Font size, Line height, Code padding | 기본 System monospace, 14px (10–32px), 1.5 (1.2–2.0, 0.1 단위), 24px (0–64px). 로컬 글꼴은 사용 가능할 때 표시하고 적용 스택을 안내한다. |
 | Export | Format, 논리 출력 치수, JPG background. Phase3 Scale | Phase2 기본 **2x**, Phase3 **1x/2x/3x/4x**. SVG는 scale 무관임을 안내하고 선택 비활성 |
 
 Code를 기본으로 펼치고 다른 섹션은 접는다. 복수 펼침은 허용한다. 구현된 필드가 없는 섹션은 숨긴다. 유효한 설정은 같은 프레젠테이션에 즉시 반영하며 별도 Apply는 없다. 패널 닫기가 이미 적용한 값을 취소하지 않는다. 숫자 필드는 부분 입력을 허용하고 blur/Enter에서 검증하며, 실패하면 입력값과 마지막 유효 프레젠테이션을 보존한다.
