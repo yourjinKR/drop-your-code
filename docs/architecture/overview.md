@@ -1,6 +1,6 @@
 # 아키텍처 개요
 
-기준은 [PRD v1.0](../product/PRD.md)과 [AGENTS.md](../../AGENTS.md)다. `src/main.tsx`가 App을 마운트하며 `dist/`의 정적 자산만으로 동작한다. Phase 2 Task 10까지 공통 문서와 스타일을 읽는 SVG 미리보기와 PNG·SVG 다운로드를 제공한다. [Phase 1 검증 결과](../verification/task-6-editor-window.md) · [Task 10 검증 결과](../verification/task-10-png-svg-export.md)
+기준은 [PRD v1.0](../product/PRD.md)과 [AGENTS.md](../../AGENTS.md)다. `src/main.tsx`가 App을 마운트하며 `dist/`의 정적 자산만으로 동작한다. Phase 2 Task 11까지 공통 문서와 스타일을 읽는 SVG 미리보기와 PNG·SVG·JPG·WebP 다운로드를 제공한다. [Task 10 검증 결과](../verification/task-10-png-svg-export.md) · [Task 11 검증 결과](../verification/task-11-jpg-webp-export.md)
 
 ## 경계와 책임
 
@@ -10,7 +10,7 @@
 | 공통 코드·설정 상태 | 코드와 revision, 수동 언어 선택, 키맵, 테마, 줄 번호·줄 바꿈의 단일 논리 원본. 설정 변경과 코드 교체를 명시적 동작으로 처리 | CodeMirror 인스턴스·DOM·Blob·Undo 이력을 저장하지 않음. Phase 1; 스타일 설정은 Phase 2 확장 |
 | 스냅샷 입력·모델 | 공통 상태에서 불변 `SnapshotInput`을 추출. 이후 전체 코드의 토큰·줄·폰트 지표·레이아웃을 가진 `SnapshotModel`로 변환 | 커서·선택·편집 스크롤·키맵을 이미지에 포함하지 않음. Phase 1은 입력 투영만, 실제 모델 생성은 Phase 2 |
 | 렌더링 | 스냅샷 모델을 미리보기와 출력 표현으로 변환. 줄 수·최장 행·wrap·최소/최대 폭으로 레이아웃 계산 | 편집 트랜잭션·파일 저장·클립보드 API를 알지 않음. Phase 2 |
-| 내보내기 | 클릭 시점의 `SnapshotInput`과 일치하는 모델 → SVG 또는 PNG Blob → 다운로드 어댑터 | 인코더는 React UI와 편집기 DOM에서 독립. 배율 UI는 Phase 3 |
+| 내보내기 | 클릭 시점의 `SnapshotInput`과 일치하는 모델 → SVG·PNG·JPG·WebP Blob → 다운로드 어댑터 | 인코더는 React UI와 편집기 DOM에서 독립. 배율 UI는 Phase 3 |
 | 로컬 저장 | 검증된 설정과 최대 20개 스니펫의 읽기·쓰기·복원·삭제. 저장 오류를 결과로 반환 | UI와 편집을 중단시키거나 외부로 데이터를 보내지 않음. Phase 3 |
 
 현재는 React reducer와 직접 연결한 CodeMirror 어댑터를 사용한다. 별도 전역 상태 라이브러리, React용 편집기 래퍼, Worker, 서비스 워커는 도입하지 않았다. 필요성과 측정 근거가 생기면 별도 결정한다.
@@ -57,7 +57,7 @@ Task 7에서 DOM 캡처와 전용 SVG를 비교해 전용 SVG를 채택했다. T
 
 SVG에 외부 URL·사용자 HTML·스크립트를 넣지 않는다. 텍스트와 속성을 안전하게 직렬화한다. SVG는 배율과 무관한 벡터를 유지하고 래스터는 1x~4x(기본 2x)를 적용한다. PNG/WebP/SVG의 외부 배경은 투명 가능하되 코드 창 배경은 항상 불투명하다. JPG는 선택한 불투명 배경색으로 합성한다. Canvas 인코딩의 MIME 지원·크기 한계·메모리 실패는 실제 결과를 확인하며 조용히 다른 포맷으로 저장하지 않는다.
 
-`src/export/encodeSnapshot.ts`는 PNG를 목표 픽셀 치수의 SVG에서 다시 렌더링한다. Canvas 한 변은 최대 16,384px, 전체는 최대 33,554,432픽셀이다. 이 예산에서 RGBA 버퍼 하나는 최대 128 MiB이며 디코더와 인코더는 별도 메모리를 사용할 수 있다. 한계를 넘으면 SVG 저장을 안내한다.
+`src/export/encodeSnapshot.ts`는 PNG·JPG·WebP를 목표 픽셀 치수의 SVG에서 다시 렌더링한다. JPG는 Canvas에 대체색을 먼저 채우고, WebP는 실제 MIME이 `image/webp`일 때만 파일을 생성한다. Canvas 한 변은 최대 16,384px, 전체는 최대 33,554,432픽셀이다. 이 예산에서 RGBA 버퍼 하나는 최대 128 MiB이며 디코더와 인코더는 별도 메모리를 사용할 수 있다. 한계를 넘으면 SVG 저장을 안내한다.
 
 ## 키맵과 포커스
 

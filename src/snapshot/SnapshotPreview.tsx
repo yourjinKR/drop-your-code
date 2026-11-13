@@ -6,11 +6,12 @@ export const previewZoomLevels = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 
 type PreviewProps = ReturnType<typeof useSnapshotModel> & {
   active: boolean;
+  backgroundColor?: string | undefined;
   zoom: number | null;
   onDisplay: (scale: number, width: number, height: number) => void;
 };
 
-export function SnapshotPreview({ active, model, status, retry, zoom, onDisplay }: PreviewProps) {
+export function SnapshotPreview({ active, model, status, retry, zoom, onDisplay, backgroundColor }: PreviewProps) {
   const viewport = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const previous = useRef<{ zoom: number | null; scale: number; offsetX: number; offsetY: number } | null>(null);
@@ -78,7 +79,7 @@ export function SnapshotPreview({ active, model, status, retry, zoom, onDisplay 
         }}>
         <div className="preview-stage">
           {image && <img ref={imageRef} src={image.url} alt="Code snapshot" draggable={false}
-            style={{ width: width * scale, height: height * scale }} />}
+            style={{ width: width * scale, height: height * scale, backgroundColor }} />}
         </div>
       </div>
     </div>

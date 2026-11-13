@@ -2,8 +2,14 @@ import type { SnapshotModel } from '../snapshot/model';
 import { renderSnapshotSvg } from '../snapshot/renderSvg';
 
 export type RasterScale = 1 | 2 | 3 | 4;
-export type SnapshotExportOptions = { format: 'svg' } | { format: 'png'; scale: RasterScale };
+export type SnapshotExportOptions =
+  | { format: 'svg' }
+  | { format: 'png' | 'webp'; scale: RasterScale }
+  | { format: 'jpg'; scale: RasterScale; backgroundColor: string };
 export const DEFAULT_RASTER_SCALE: RasterScale = 2;
+export const DEFAULT_JPG_BACKGROUND = '#ffffff';
+
+const rasterMime = { png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' } as const;
 
 const maxCanvasSide = 16_384;
 // Limit the RGBA canvas alone to 128 MiB, before SVG and encoder buffers.
@@ -18,6 +24,9 @@ export async function encodeSnapshot(model: SnapshotModel, options: SnapshotExpo
   }
   if (options.format === 'svg') {
     return new Blob([renderSnapshotSvg(model)], { type: 'image/svg+xml' });
+  }
+  if (options.format === 'jpg' && !/^#[0-9a-f]{6}$/i.test(options.backgroundColor)) {
+    throw new SnapshotExportError('Choose a valid opaque JPG background color.');
   }
 
   const pixelWidth = width * options.scale;
@@ -41,13 +50,24 @@ export async function encodeSnapshot(model: SnapshotModel, options: SnapshotExpo
       await image.decode().catch(() => {
         throw new SnapshotExportError('Could not render the snapshot for export. Try again.');
       });
+      if (options.format === 'jpg') {
+        context.fillStyle = options.backgroundColor;
+        context.fillRect(0, 0, pixelWidth, pixelHeight);
+      }
       context.drawImage(image, 0, 0, pixelWidth, pixelHeight);
     } finally {
       URL.revokeObjectURL(url);
     }
 
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
-    if (blob?.type !== 'image/png') throw new SnapshotExportError('Could not encode a PNG image. Choose SVG or try again.');
+    const mime = rasterMime[options.format];
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, mime));
+    if (options.format === 'webp' && blob && blob.type !== mime) {
+      throw new SnapshotExportError('WebP export is unavailable in this browser. Choose another format.');
+    }
+    if (blob?.type !== mime) {
+      const label = options.format === 'webp' ? 'WebP' : options.format.toUpperCase();
+      throw new SnapshotExportError(`Could not encode a ${label} image. Choose SVG or try again.`);
+    }
     return blob;
   } finally {
     canvas.width = 0;

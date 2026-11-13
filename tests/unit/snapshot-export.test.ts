@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_RASTER_SCALE, encodeSnapshot } from '../../src/export/encodeSnapshot';
+import { DEFAULT_JPG_BACKGROUND, DEFAULT_RASTER_SCALE, encodeSnapshot } from '../../src/export/encodeSnapshot';
 import { layoutSnapshot } from '../../src/snapshot/layout';
 import { createInitialWorkspace, selectSnapshotInput } from '../../src/state/workspace';
 
@@ -17,11 +17,12 @@ function mockRaster() {
     static override createObjectURL = createUrl;
     static override revokeObjectURL = revokeUrl;
   });
+  const context = { drawImage, fillRect: vi.fn(), fillStyle: '' };
   const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext')
-    .mockReturnValue({ drawImage } as unknown as CanvasRenderingContext2D);
+    .mockReturnValue(context as unknown as CanvasRenderingContext2D);
   const toBlob = vi.spyOn(HTMLCanvasElement.prototype, 'toBlob')
     .mockImplementation((callback) => callback(png));
-  return { drawImage, decode, png, createUrl, revokeUrl, getContext, toBlob };
+  return { context, drawImage, decode, png, createUrl, revokeUrl, getContext, toBlob };
 }
 
 afterEach(() => vi.unstubAllGlobals());
@@ -76,5 +77,47 @@ describe('snapshot encoder', () => {
     toBlob.mockImplementationOnce((callback) => callback(result));
     await expect(encodeSnapshot(snapshot, { format: 'png', scale: 2 })).rejects.toThrow(/Could not encode a PNG/);
     expect(revokeUrl).toHaveBeenCalledWith('blob:snapshot');
+  });
+
+  it.each([1, 2, 3, 4] as const)('composites JPG before drawing the SVG at %sx', async (scale) => {
+    const { context, drawImage, createUrl, toBlob } = mockRaster();
+    const jpg = new Blob(['jpg'], { type: 'image/jpeg' });
+    toBlob.mockImplementationOnce((callback) => callback(jpg));
+    const model = { ...snapshot, presentation: { ...snapshot.presentation, transparent: true } };
+    expect(DEFAULT_JPG_BACKGROUND).toBe('#ffffff');
+    await expect(encodeSnapshot(model, { format: 'jpg', scale, backgroundColor: '#f4d2a0' })).resolves.toBe(jpg);
+    expect(context.fillStyle).toBe('#f4d2a0');
+    expect(context.fillRect).toHaveBeenCalledWith(0, 0, 888 * scale, 496 * scale);
+    expect(context.fillRect).toHaveBeenCalledBefore(drawImage);
+    expect(toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/jpeg');
+    expect(await createUrl.mock.calls[0]![0].text()).not.toContain('#f4d2a0');
+    expect(model.presentation.transparent).toBe(true);
+  });
+
+  it('rejects an invalid or translucent JPG background', async () => {
+    const { getContext } = mockRaster();
+    await expect(encodeSnapshot(snapshot, { format: 'jpg', scale: 2, backgroundColor: '#f4d2a080' }))
+      .rejects.toThrow('Choose a valid opaque JPG background color.');
+    expect(getContext).not.toHaveBeenCalled();
+  });
+
+  it.each([1, 2, 3, 4] as const)('encodes WebP without a background fill at %sx', async (scale) => {
+    const { context, drawImage, toBlob } = mockRaster();
+    const webp = new Blob(['webp'], { type: 'image/webp' });
+    toBlob.mockImplementationOnce((callback) => callback(webp));
+    await expect(encodeSnapshot(snapshot, { format: 'webp', scale })).resolves.toBe(webp);
+    expect(context.fillRect).not.toHaveBeenCalled();
+    expect(drawImage).toHaveBeenCalledWith(expect.any(Image), 0, 0, 888 * scale, 496 * scale);
+    expect(toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/webp');
+  });
+
+  it('distinguishes WebP encoder failure from the browser falling back to PNG', async () => {
+    const { png, toBlob } = mockRaster();
+    const options = { format: 'webp', scale: 2 } as const;
+    toBlob.mockImplementationOnce((callback) => callback(null));
+    await expect(encodeSnapshot(snapshot, options)).rejects.toThrow(/Could not encode a WebP image/);
+    toBlob.mockImplementationOnce((callback) => callback(png));
+    await expect(encodeSnapshot(snapshot, options))
+      .rejects.toThrow('WebP export is unavailable in this browser. Choose another format.');
   });
 });

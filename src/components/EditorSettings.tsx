@@ -12,6 +12,8 @@ type EditorSettingsProps = {
   settings: Settings;
   format: SnapshotExportOptions['format'];
   onFormatChange: (format: SnapshotExportOptions['format']) => void;
+  jpgBackground: string;
+  onJpgBackgroundChange: (color: string) => void;
   dimensions: { width: number; height: number } | null;
   open: boolean;
   collapseRef: Ref<HTMLButtonElement>;
@@ -20,7 +22,7 @@ type EditorSettingsProps = {
   dispatch: Dispatch<WorkspaceAction>;
 };
 
-export function EditorSettings({ settings, format, onFormatChange, dimensions, open, collapseRef, onCollapse,
+export function EditorSettings({ settings, format, onFormatChange, jpgBackground, onJpgBackgroundChange, dimensions, open, collapseRef, onCollapse,
   onLanguageApplied, dispatch }: EditorSettingsProps) {
   return (
     <aside id="properties" className="properties-panel" aria-labelledby="properties-heading" hidden={!open}>
@@ -71,15 +73,25 @@ export function EditorSettings({ settings, format, onFormatChange, dimensions, o
           <label htmlFor="export-format">Format</label>
           <select id="export-format" value={format} onChange={(event) => {
             const selected = event.currentTarget.value;
-            if (selected === 'png' || selected === 'svg') onFormatChange(selected);
+            if (selected === 'png' || selected === 'svg' || selected === 'jpg' || selected === 'webp') onFormatChange(selected);
           }}>
             <option value="png">PNG</option>
             <option value="svg">SVG</option>
+            <option value="jpg">JPG</option>
+            <option value="webp">WebP</option>
           </select>
         </div>
         <p className="property-note">
           Snapshot size {dimensions ? `${dimensions.width} × ${dimensions.height} px` : '—'}
         </p>
+        {format === 'jpg' && <div className="property-field">
+          <label htmlFor="jpg-background">JPG background</label>
+          <input id="jpg-background" type="color" value={jpgBackground}
+            onChange={(event) => {
+              const color = event.currentTarget.value;
+              if (/^#[0-9a-f]{6}$/i.test(color)) onJpgBackgroundChange(color);
+            }} />
+        </div>}
         <p className="property-note">
           {format === 'svg' ? 'SVG uses the snapshot size.' : dimensions
             ? `${DEFAULT_RASTER_SCALE}× output ${dimensions.width * DEFAULT_RASTER_SCALE} × ${dimensions.height * DEFAULT_RASTER_SCALE} px`

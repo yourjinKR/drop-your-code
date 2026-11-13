@@ -8,7 +8,7 @@ import { IconButton } from '../components/ui/IconButton';
 import { EditorSurface } from '../editor/EditorSurface';
 import { detectPlatform } from '../editor/keymaps';
 import { languages } from '../editor/languages';
-import { DEFAULT_RASTER_SCALE } from '../export/encodeSnapshot';
+import { DEFAULT_JPG_BACKGROUND, DEFAULT_RASTER_SCALE } from '../export/encodeSnapshot';
 import type { SnapshotExportOptions } from '../export/encodeSnapshot';
 import { useSnapshotExport } from '../export/useSnapshotExport';
 import { SnapshotPreview, previewZoomLevels } from '../snapshot/SnapshotPreview';
@@ -28,6 +28,7 @@ export function App() {
   const [tabStop, setTabStop] = useState<Mode>('editor');
   const [zoom, setZoom] = useState<number | null>(null);
   const [format, setFormat] = useState<SnapshotExportOptions['format']>('png');
+  const [jpgBackground, setJpgBackground] = useState(DEFAULT_JPG_BACKGROUND);
   const [previewDisplay, setPreviewDisplay] = useState({ scale: 1, width: 0, height: 0 });
   const editorTab = useRef<HTMLButtonElement>(null);
   const previewTab = useRef<HTMLButtonElement>(null);
@@ -43,7 +44,10 @@ export function App() {
   const input = useMemo(() => selectSnapshotInput(workspace), [workspace.document, languageId, themeId, lineNumbers, wrap, presentation]);
   const snapshot = useSnapshotModel(input);
   const currentModel = snapshot.status === 'ready' ? snapshot.model : null;
-  const output = useSnapshotExport(input, currentModel, format === 'svg' ? { format } : { format, scale: DEFAULT_RASTER_SCALE });
+  const exportOptions: SnapshotExportOptions = format === 'svg' ? { format } : format === 'jpg'
+    ? { format, scale: DEFAULT_RASTER_SCALE, backgroundColor: jpgBackground }
+    : { format, scale: DEFAULT_RASTER_SCALE };
+  const output = useSnapshotExport(input, currentModel, exportOptions);
   const previewActive = mode === 'preview';
   const zoomIn = previewZoomLevels.find((value) => value > previewDisplay.scale);
   const zoomOut = previewZoomLevels.filter((value) => value < previewDisplay.scale).at(-1);
@@ -218,12 +222,15 @@ export function App() {
             </CodeWindow>
             <p id="editor-help" className="editor-help">Tab indents. Press Escape, then Tab to leave the editor.</p>
           </div>
-          <SnapshotPreview active={previewActive} {...snapshot} zoom={zoom} onDisplay={onDisplay} />
+          <SnapshotPreview active={previewActive} {...snapshot} zoom={zoom} onDisplay={onDisplay}
+            backgroundColor={format === 'jpg' ? jpgBackground : undefined} />
         </section>
         <EditorSettings
           settings={settings}
           format={format}
           onFormatChange={setFormat}
+          jpgBackground={jpgBackground}
+          onJpgBackgroundChange={setJpgBackground}
           dimensions={currentModel}
           open={propertiesOpen}
           collapseRef={collapseProperties}
