@@ -44,7 +44,7 @@ button, select, input[type="checkbox"] { touch-action: manipulation; }
 
 .app-shell {
   display: grid;
-  grid-template: "header header" auto "activity workspace" 1fr "status status" auto / var(--activity-width) minmax(0, 1fr);
+  grid-template: "header header" auto "feedback feedback" auto "activity workspace" 1fr "status status" auto / var(--activity-width) minmax(0, 1fr);
   min-height: 100dvh;
 }
 
@@ -61,11 +61,41 @@ button, select, input[type="checkbox"] { touch-action: manipulation; }
 
 .app-header h1 { font-size: 15px; font-weight: 600; }
 
+.export-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-inline-start: auto;
+}
+
+.export-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  padding-inline: var(--space-2);
+  border: var(--border-width) solid transparent;
+  border-radius: var(--radius-control);
+  color: var(--ui-on-accent);
+  background: var(--ui-accent);
+  cursor: pointer;
+}
+
+.export-button:hover { background: var(--ui-accent-hover); }
+.export-button:active { background: var(--ui-accent-pressed); }
+.export-button[aria-disabled="true"] { opacity: 0.65; cursor: default; }
+
+.export-feedback { grid-area: feedback; background: var(--ui-surface); }
+.export-feedback p:not(:empty) { padding: var(--space-1) var(--space-4); color: var(--ui-text-secondary); }
+.export-feedback p[role="alert"] { color: var(--ui-danger); }
+
 .brand-mark {
   display: grid;
   place-items: center;
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
   border-radius: var(--radius-overlay);
   background: var(--ui-selected);
 }
@@ -365,7 +395,7 @@ select, .property-field input, .language-error button, .preview-message button {
 @media (min-width: 1024px) and (min-height: 440px) {
   .app-shell {
     height: 100dvh;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
   }
 
   .workspace, .workspace-editor, .properties-panel { min-height: 0; }
@@ -388,11 +418,16 @@ select, .property-field input, .language-error button, .preview-message button {
 }
 
 @media (max-width: 767px) {
-  .app-shell { grid-template: "header activity" auto "workspace workspace" 1fr "status status" auto / minmax(0, 1fr) auto; }
+  .app-shell { grid-template: "header activity" auto "feedback feedback" auto "workspace workspace" 1fr "status status" auto / minmax(0, 1fr) auto; }
   .activity-bar { flex-direction: row; border-inline-end: 0; border-bottom: var(--border-width) solid var(--ui-border); }
   .activity-bar .icon-tooltip { inset: 100% 0 auto auto; }
   .workspace-tabs svg { display: none; }
   .workspace-header { flex-wrap: wrap; }
+}
+
+@media (max-width: 479px) {
+  .app-header { gap: var(--space-2); padding-inline: var(--space-2); }
+  .app-header h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 
 @media (pointer: coarse) {
@@ -401,5 +436,5 @@ select, .property-field input, .language-error button, .preview-message button {
 
 @media (forced-colors: active) {
   :focus-visible { outline-color: Highlight; }
-  .icon-button { border-color: ButtonText; }
+  .icon-button, .export-button { border-color: ButtonText; }
 }

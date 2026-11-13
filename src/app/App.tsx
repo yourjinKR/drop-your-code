@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { CodeXml, Eye, Maximize, Minus, Moon, PanelRightOpen, Plus, SquareCode, Sun } from 'lucide-react';
+import { CodeXml, Download, Eye, Maximize, Minus, Moon, PanelRightOpen, Plus, SquareCode, Sun } from 'lucide-react';
 import type { LanguageSupport } from '@codemirror/language';
 import type { KeyboardEvent } from 'react';
 import { CodeWindow } from '../components/CodeWindow';
@@ -8,6 +8,9 @@ import { IconButton } from '../components/ui/IconButton';
 import { EditorSurface } from '../editor/EditorSurface';
 import { detectPlatform } from '../editor/keymaps';
 import { languages } from '../editor/languages';
+import { DEFAULT_RASTER_SCALE } from '../export/encodeSnapshot';
+import type { SnapshotExportOptions } from '../export/encodeSnapshot';
+import { useSnapshotExport } from '../export/useSnapshotExport';
 import { SnapshotPreview, previewZoomLevels } from '../snapshot/SnapshotPreview';
 import { useSnapshotModel } from '../snapshot/useSnapshotModel';
 import { createInitialWorkspace, selectSnapshotInput, workspaceReducer } from '../state/workspace';
@@ -24,6 +27,7 @@ export function App() {
   const [mode, setMode] = useState<Mode>('editor');
   const [tabStop, setTabStop] = useState<Mode>('editor');
   const [zoom, setZoom] = useState<number | null>(null);
+  const [format, setFormat] = useState<SnapshotExportOptions['format']>('png');
   const [previewDisplay, setPreviewDisplay] = useState({ scale: 1, width: 0, height: 0 });
   const editorTab = useRef<HTMLButtonElement>(null);
   const previewTab = useRef<HTMLButtonElement>(null);
@@ -38,6 +42,8 @@ export function App() {
   const { themeId, lineNumbers, wrap, presentation } = settings;
   const input = useMemo(() => selectSnapshotInput(workspace), [workspace.document, languageId, themeId, lineNumbers, wrap, presentation]);
   const snapshot = useSnapshotModel(input);
+  const currentModel = snapshot.status === 'ready' ? snapshot.model : null;
+  const output = useSnapshotExport(input, currentModel, format === 'svg' ? { format } : { format, scale: DEFAULT_RASTER_SCALE });
   const previewActive = mode === 'preview';
   const zoomIn = previewZoomLevels.find((value) => value > previewDisplay.scale);
   const zoomOut = previewZoomLevels.filter((value) => value < previewDisplay.scale).at(-1);
@@ -116,7 +122,18 @@ export function App() {
       <header className="app-header">
         <span className="brand-mark"><CodeXml size={20} aria-hidden="true" /></span>
         <h1 translate="no">Drop Your Code</h1>
+        <div className="export-actions">
+          <button className="export-button" type="button" aria-disabled={output.busy} aria-busy={output.busy}
+            onClick={output.exportImage}>
+            <Download size={16} aria-hidden="true" />{output.busy ? 'Exporting…' : 'Export'}
+          </button>
+        </div>
       </header>
+
+      <div className="export-feedback">
+        <p role="status" aria-label="Image output status">{output.message}</p>
+        {output.error && <p role="alert">{output.error}</p>}
+      </div>
 
       <div className="activity-bar" role="group" aria-label="Workspace controls">
         <IconButton label="Focus editor" onClick={() => {
@@ -205,6 +222,9 @@ export function App() {
         </section>
         <EditorSettings
           settings={settings}
+          format={format}
+          onFormatChange={setFormat}
+          dimensions={currentModel}
           open={propertiesOpen}
           collapseRef={collapseProperties}
           onCollapse={toggleProperties}

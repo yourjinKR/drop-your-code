@@ -2,12 +2,17 @@ import { PanelRightClose } from 'lucide-react';
 import type { LanguageSupport } from '@codemirror/language';
 import type { Dispatch, Ref } from 'react';
 import { LanguageSelect } from '../editor/LanguageSelect';
+import { DEFAULT_RASTER_SCALE } from '../export/encodeSnapshot';
+import type { SnapshotExportOptions } from '../export/encodeSnapshot';
 import type { EditorSettings as Settings, LanguageId, WorkspaceAction } from '../state/workspace';
 import { IconButton } from './ui/IconButton';
 import { PropertyGroup, SnapshotStyleSettings } from './SnapshotStyleSettings';
 
 type EditorSettingsProps = {
   settings: Settings;
+  format: SnapshotExportOptions['format'];
+  onFormatChange: (format: SnapshotExportOptions['format']) => void;
+  dimensions: { width: number; height: number } | null;
   open: boolean;
   collapseRef: Ref<HTMLButtonElement>;
   onCollapse: () => void;
@@ -15,7 +20,8 @@ type EditorSettingsProps = {
   dispatch: Dispatch<WorkspaceAction>;
 };
 
-export function EditorSettings({ settings, open, collapseRef, onCollapse, onLanguageApplied, dispatch }: EditorSettingsProps) {
+export function EditorSettings({ settings, format, onFormatChange, dimensions, open, collapseRef, onCollapse,
+  onLanguageApplied, dispatch }: EditorSettingsProps) {
   return (
     <aside id="properties" className="properties-panel" aria-labelledby="properties-heading" hidden={!open}>
       <div className="properties-header">
@@ -60,6 +66,26 @@ export function EditorSettings({ settings, open, collapseRef, onCollapse, onLang
       </PropertyGroup>
       <SnapshotStyleSettings presentation={settings.presentation}
         onChange={(presentation) => dispatch({ type: 'presentationChanged', presentation })} />
+      <PropertyGroup label="Export">
+        <div className="property-field">
+          <label htmlFor="export-format">Format</label>
+          <select id="export-format" value={format} onChange={(event) => {
+            const selected = event.currentTarget.value;
+            if (selected === 'png' || selected === 'svg') onFormatChange(selected);
+          }}>
+            <option value="png">PNG</option>
+            <option value="svg">SVG</option>
+          </select>
+        </div>
+        <p className="property-note">
+          Snapshot size {dimensions ? `${dimensions.width} × ${dimensions.height} px` : '—'}
+        </p>
+        <p className="property-note">
+          {format === 'svg' ? 'SVG uses the snapshot size.' : dimensions
+            ? `${DEFAULT_RASTER_SCALE}× output ${dimensions.width * DEFAULT_RASTER_SCALE} × ${dimensions.height * DEFAULT_RASTER_SCALE} px`
+            : `${DEFAULT_RASTER_SCALE}× output —`}
+        </p>
+      </PropertyGroup>
     </aside>
   );
 }
