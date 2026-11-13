@@ -32,7 +32,8 @@ describe('app foundation', () => {
       /browser and system shortcuts may take priority/i,
     );
     expect(screen.getByRole('button', { name: 'Export' })).toBeEnabled();
-    expect(screen.queryByRole('button', { name: /copy image|history/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copy Image' })).toBeEnabled();
+    expect(screen.queryByRole('button', { name: /history/i })).not.toBeInTheDocument();
   });
 
   it('updates the line count from the shared document after an editor transaction', () => {

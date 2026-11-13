@@ -91,7 +91,8 @@ test('opens the static root with an English editor and no unsupported actions', 
     .getByRole('combobox', { name: 'Language' })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.getByRole('button', { name: 'Export' })).toBeEnabled();
-  await expect(page.getByRole('button', { name: /copy image|history/i })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Copy Image' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /history/i })).toHaveCount(0);
   await page.waitForLoadState('networkidle');
 });
 

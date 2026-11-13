@@ -68,23 +68,30 @@ button, select, input[type="checkbox"] { touch-action: manipulation; }
   margin-inline-start: auto;
 }
 
-.export-button {
+.export-button, .copy-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  min-width: var(--control-height);
   min-height: var(--control-height);
   padding-inline: var(--space-2);
   border: var(--border-width) solid transparent;
   border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.export-button {
   color: var(--ui-on-accent);
   background: var(--ui-accent);
-  cursor: pointer;
 }
 
 .export-button:hover { background: var(--ui-accent-hover); }
 .export-button:active { background: var(--ui-accent-pressed); }
-.export-button[aria-disabled="true"] { opacity: 0.65; cursor: default; }
+.copy-button { color: var(--ui-text); background: transparent; border-color: var(--ui-control-border); }
+.copy-button:hover { background: var(--ui-hover); }
+.copy-button:active { background: var(--ui-pressed); }
+.export-button[aria-disabled="true"], .copy-button[aria-disabled="true"] { opacity: 0.65; cursor: default; }
 
 .export-feedback { grid-area: feedback; background: var(--ui-surface); }
 .export-feedback p:not(:empty) { padding: var(--space-1) var(--space-4); color: var(--ui-text-secondary); }
@@ -363,6 +370,12 @@ select, .property-field input, .language-error button, .preview-message button {
 .icon-control:hover > .icon-tooltip { visibility: visible; transition: visibility 0s 500ms; }
 .icon-button:focus-visible + .icon-tooltip { visibility: visible; }
 .activity-bar .icon-tooltip { inset: auto auto 0 100%; }
+.export-actions .icon-tooltip { display: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .copy-progress { animation: copy-progress 800ms linear infinite; }
+  @keyframes copy-progress { to { transform: rotate(360deg); } }
+}
 
 .app-footer {
   grid-area: status;
@@ -428,6 +441,9 @@ select, .property-field input, .language-error button, .preview-message button {
 @media (max-width: 479px) {
   .app-header { gap: var(--space-2); padding-inline: var(--space-2); }
   .app-header h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .copy-button span { display: none; }
+  .export-actions .icon-tooltip { display: block; }
+  .copy-button:focus-visible + .icon-tooltip { visibility: visible; }
 }
 
 @media (pointer: coarse) {
@@ -436,5 +452,5 @@ select, .property-field input, .language-error button, .preview-message button {
 
 @media (forced-colors: active) {
   :focus-visible { outline-color: Highlight; }
-  .icon-button, .export-button { border-color: ButtonText; }
+  .icon-button, .export-button, .copy-button { border-color: ButtonText; }
 }

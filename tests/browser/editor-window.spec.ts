@@ -68,13 +68,16 @@ test('all_visible_controls_have_english_names', async ({ page }) => {
   await page.getByRole('button', { name: 'Focus editor' }).click();
   await expect(page.getByRole('textbox', { name: 'Code editor' })).toBeFocused();
   await expect(page.getByRole('button', { name: 'Export' })).toBeEnabled();
-  await expect(page.getByRole('button', { name: /history|copy image/i })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Copy Image' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /history/i })).toHaveCount(0);
 });
 
 test('keeps keyboard focus visible in forced colors and respects reduced motion', async ({ page }) => {
   await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
   await page.goto('/');
   await page.keyboard.press('Tab');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Copy Image' })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Export' })).toBeFocused();
   await page.keyboard.press('Tab');

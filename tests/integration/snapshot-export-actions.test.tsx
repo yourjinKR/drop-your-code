@@ -1,5 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { copySnapshotPng } from '../../src/export/copyPng';
 import { downloadSnapshot, snapshotFilename } from '../../src/export/downloadSnapshot';
 import { encodeSnapshot, SnapshotExportError } from '../../src/export/encodeSnapshot';
 import type { SnapshotExportOptions } from '../../src/export/encodeSnapshot';
@@ -11,6 +12,7 @@ import { createInitialWorkspace, selectSnapshotInput } from '../../src/state/wor
 import type { SnapshotInput } from '../../src/state/workspace';
 
 vi.mock('../../src/snapshot/model', () => ({ buildSnapshotModel: vi.fn() }));
+vi.mock('../../src/export/copyPng', () => ({ copySnapshotPng: vi.fn() }));
 vi.mock('../../src/export/encodeSnapshot', { spy: true });
 vi.mock('../../src/export/downloadSnapshot', { spy: true });
 
@@ -60,5 +62,32 @@ describe('image download', () => {
   it.each([['   ', 'untitled.svg'], ['..', 'untitled.svg'], ['CON.txt', '_CON.txt.svg'],
     ['한글:👩‍💻?.', '한글_👩_💻_.svg']])('sanitizes the filename for %s', (title, expected) => {
     expect(snapshotFilename(title, 'svg')).toBe(expected);
+  });
+});
+
+describe('image copy', () => {
+  it('copies the clicked input as default PNG and blocks downloads until the write completes', async () => {
+    const view = renderOutput({ input, preview: null, options: { format: 'jpg', scale: 4, backgroundColor: '#123456' } });
+    let encode!: () => Promise<Blob>;
+    let finish!: () => void;
+    vi.mocked(copySnapshotPng).mockImplementationOnce((createPng) => {
+      encode = createPng;
+      return new Promise((resolve) => { finish = resolve; });
+    });
+    vi.mocked(buildSnapshotModel).mockResolvedValueOnce(model);
+    vi.mocked(encodeSnapshot).mockResolvedValueOnce(png);
+    act(() => { void view.result.current.copyImage(); });
+    expect(copySnapshotPng).toHaveBeenCalledTimes(1);
+    expect(view.result.current).toMatchObject({ action: 'copy', busy: true, message: '' });
+
+    view.rerender({ input: { ...input, code: 'later', revision: 1 }, preview: null, options: { format: 'svg' } });
+    await act(async () => { await view.result.current.exportImage(); });
+    await expect(encode()).resolves.toBe(png);
+    expect(buildSnapshotModel).toHaveBeenCalledExactlyOnceWith(input);
+    expect(encodeSnapshot).toHaveBeenCalledExactlyOnceWith(model, pngOptions);
+    expect(downloadSnapshot).not.toHaveBeenCalled();
+    expect(view.result.current.message).toBe('');
+    await act(async () => { finish(); });
+    expect(view.result.current).toMatchObject({ action: null, busy: false, message: 'Image copied.', error: '' });
   });
 });

@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { CodeXml, Download, Eye, Maximize, Minus, Moon, PanelRightOpen, Plus, SquareCode, Sun } from 'lucide-react';
+import { CodeXml, Copy, Download, Eye, LoaderCircle, Maximize, Minus, Moon, PanelRightOpen, Plus, SquareCode, Sun } from 'lucide-react';
 import type { LanguageSupport } from '@codemirror/language';
 import type { KeyboardEvent } from 'react';
 import { CodeWindow } from '../components/CodeWindow';
@@ -48,6 +48,7 @@ export function App() {
     ? { format, scale: DEFAULT_RASTER_SCALE, backgroundColor: jpgBackground }
     : { format, scale: DEFAULT_RASTER_SCALE };
   const output = useSnapshotExport(input, currentModel, exportOptions);
+  const copyLabel = output.action === 'copy' ? 'Copying…' : 'Copy Image';
   const previewActive = mode === 'preview';
   const zoomIn = previewZoomLevels.find((value) => value > previewDisplay.scale);
   const zoomOut = previewZoomLevels.filter((value) => value < previewDisplay.scale).at(-1);
@@ -127,9 +128,15 @@ export function App() {
         <span className="brand-mark"><CodeXml size={20} aria-hidden="true" /></span>
         <h1 translate="no">Drop Your Code</h1>
         <div className="export-actions">
-          <button className="export-button" type="button" aria-disabled={output.busy} aria-busy={output.busy}
+          <IconButton className="copy-button" label={copyLabel} aria-disabled={output.busy}
+            aria-busy={output.action === 'copy'} onClick={output.copyImage}>
+            {output.action === 'copy' ? <LoaderCircle className="copy-progress" size={16} aria-hidden="true" />
+              : <Copy size={16} aria-hidden="true" />}
+            <span aria-hidden="true">{copyLabel}</span>
+          </IconButton>
+          <button className="export-button" type="button" aria-disabled={output.busy} aria-busy={output.action === 'export'}
             onClick={output.exportImage}>
-            <Download size={16} aria-hidden="true" />{output.busy ? 'Exporting…' : 'Export'}
+            <Download size={16} aria-hidden="true" />{output.action === 'export' ? 'Exporting…' : 'Export'}
           </button>
         </div>
       </header>
