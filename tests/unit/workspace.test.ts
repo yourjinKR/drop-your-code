@@ -1,6 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from 'vitest';
+import { defaultSnapshotPresentation } from '../../src/snapshot/presentation';
 import {
   createInitialWorkspace,
   selectSnapshotInput,
@@ -16,6 +17,7 @@ import type {
 function freezeWorkspace(state: WorkspaceState): WorkspaceState {
   Object.freeze(state.document);
   Object.freeze(state.settings.language);
+  Object.freeze(state.settings.presentation);
   Object.freeze(state.settings);
   return Object.freeze(state);
 }
@@ -58,6 +60,7 @@ describe('workspace state', () => {
         themeId: 'dark',
         lineNumbers: false,
         wrap: false,
+        presentation: defaultSnapshotPresentation,
       },
     });
     expect(second).toEqual(first);
@@ -130,9 +133,10 @@ describe('workspace state', () => {
       themeId: 'light',
       lineNumbers: true,
       wrap: true,
+      presentation: defaultSnapshotPresentation,
     });
     expect(snapshot).not.toBe(state.document);
-    expect(Object.values(snapshot).every((value) => value === null || typeof value !== 'object')).toBe(true);
+    expect(snapshot.presentation).toBe(state.settings.presentation);
     expect(state.settings.keymap).toBe('intellij');
     expect(state.settings.language).toEqual({ mode: 'manual', languageId: 'java' });
     expect(selectSnapshotInput(state)).not.toBe(snapshot);
@@ -146,8 +150,30 @@ describe('workspace state', () => {
 
     expect(snapshot).toEqual({
       code: 'original\n', revision: 1, languageId: 'plaintext', themeId: 'dark', lineNumbers: false, wrap: false,
+      presentation: defaultSnapshotPresentation,
     });
     expect(selectSnapshotInput(restyled)).toEqual({ ...snapshot, code: 'later\n', revision: 2, themeId: 'light' });
+  });
+
+  it('projects validated presentation changes without changing the document or previous snapshots', () => {
+    const state = workspaceReducer(createInitialWorkspace(), { type: 'codeChanged', code: 'original\n' });
+    const before = selectSnapshotInput(state);
+    const presentation = { ...before.presentation, title: '<예제>&', lineHeight: 1.7, backgroundColor: '#Ab12Cd' };
+    const action = { type: 'presentationChanged', presentation } as const;
+    const next = workspaceReducer(state, action);
+    expect(next.document).toBe(state.document);
+    expect(selectSnapshotInput(next)).toEqual({ ...before, presentation: { ...presentation, backgroundColor: '#ab12cd' } });
+    expect(Object.isFrozen(next.settings.presentation)).toBe(true);
+    expect(workspaceReducer(next, action)).toBe(next);
+    expect(before.presentation.title).toBe('untitled');
+    presentation.title = 'later';
+    expect(next.settings.presentation.title).toBe('<예제>&');
+  });
+
+  it.each([{ radius: -1 }, { backgroundPadding: 129 }, { fontSize: NaN }, { lineHeight: 1.25 },
+    { codePadding: Infinity }, { backgroundColor: 'url(https://example.com)' }])('keeps the last valid style for %o', (invalid) => {
+    const state = createInitialWorkspace();
+    expect(workspaceReducer(state, { type: 'presentationChanged', presentation: { ...state.settings.presentation, ...invalid } })).toBe(state);
   });
 
   it('exports readonly state and snapshot contracts', () => {
@@ -166,6 +192,8 @@ describe('workspace state', () => {
       snapshot.code = 'mutated';
       // @ts-expect-error Snapshot revision is also readonly.
       snapshot.revision = 99;
+      // @ts-expect-error Snapshot presentation values are readonly.
+      snapshot.presentation.fontSize = 99;
     }
     expect(snapshot.code).toBe('');
   });

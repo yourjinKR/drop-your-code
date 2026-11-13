@@ -2,10 +2,10 @@
   width: min(100%, var(--code-window-width));
   margin-inline: auto;
   border: 1px solid var(--code-border);
-  border-radius: 12px;
+  border-radius: var(--code-radius);
   overflow: hidden;
   background: var(--code-background);
-  box-shadow: 0 16px 32px rgb(0 0 0 / 20%);
+  box-shadow: var(--code-shadow);
 }
 
 .code-window-header {
@@ -37,11 +37,13 @@
 .code-window-title {
   position: relative;
   justify-self: center;
-  max-width: calc(100% - 48px);
+  max-width: 100%;
   font-size: 13px;
   font-weight: 600;
   line-height: 20px;
 }
+
+.code-window-title[data-has-icon="true"] { max-width: calc(100% - 48px); }
 
 .code-window-title > svg {
   position: absolute;
@@ -53,7 +55,7 @@
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: pre;
 }
 
 .editor-surface, .editor-surface .cm-editor, .editor-surface .cm-scroller {

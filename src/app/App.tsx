@@ -35,8 +35,8 @@ export function App() {
 
   const { settings } = workspace;
   const languageId = settings.language.languageId;
-  const { themeId, lineNumbers, wrap } = settings;
-  const input = useMemo(() => selectSnapshotInput(workspace), [workspace.document, languageId, themeId, lineNumbers, wrap]);
+  const { themeId, lineNumbers, wrap, presentation } = settings;
+  const input = useMemo(() => selectSnapshotInput(workspace), [workspace.document, languageId, themeId, lineNumbers, wrap, presentation]);
   const snapshot = useSnapshotModel(input);
   const previewActive = mode === 'preview';
   const zoomIn = previewZoomLevels.find((value) => value > previewDisplay.scale);
@@ -189,7 +189,7 @@ export function App() {
             </div>
           </div>
           <div className="editor-canvas" id="editor-panel" role="tabpanel" aria-labelledby="editor-tab" hidden={previewActive}>
-            <CodeWindow title="untitled" languageId={languageId} themeId={themeId} model={snapshot.model}>
+            <CodeWindow presentation={presentation} languageId={languageId} themeId={themeId} model={snapshot.model}>
               <EditorSurface
                 code={workspace.document.code}
                 settings={settings}

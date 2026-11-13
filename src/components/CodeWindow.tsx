@@ -2,21 +2,24 @@ import type { CSSProperties, ReactNode } from 'react';
 import type { EditorThemeId, LanguageId } from '../state/workspace';
 import type { SnapshotModel } from '../snapshot/model';
 import { languageArtwork } from '../snapshot/languageArtwork';
-import { defaultSnapshotPresentation, snapshotFont, snapshotTabSize, windowHeaderHeight } from '../snapshot/presentation';
+import { snapshotFonts, snapshotShadows, snapshotTabSize, windowHeaderHeight } from '../snapshot/presentation';
+import type { SnapshotPresentation } from '../snapshot/presentation';
 import { getBasicTheme } from '../theme/basicThemes';
 import './code-window.css';
 
 type CodeWindowProps = {
-  title: string;
+  presentation: SnapshotPresentation;
   languageId: LanguageId;
   themeId: EditorThemeId;
   model: SnapshotModel | null;
   children: ReactNode;
 };
 
-export function CodeWindow({ title, languageId, themeId, model, children }: CodeWindowProps) {
+export function CodeWindow({ presentation, languageId, themeId, model, children }: CodeWindowProps) {
   const theme = getBasicTheme(themeId);
   const LanguageIcon = languageArtwork[languageId].default;
+  const { title, fontId, fontSize, lineHeight, codePadding, radius, shadowEnabled, shadowStrength, showLanguageIcon } = presentation;
+  const shadow = snapshotShadows[shadowStrength];
   const colors = {
     '--code-background': theme.background,
     '--code-header': theme.header,
@@ -25,19 +28,21 @@ export function CodeWindow({ title, languageId, themeId, model, children }: Code
     '--code-window-width': `${model?.window.width ?? 320}px`,
     '--code-content-height': `${model?.editorContentHeight ?? 69}px`,
     '--code-header-height': `${windowHeaderHeight}px`,
-    '--code-font': snapshotFont,
-    '--code-font-size': `${defaultSnapshotPresentation.fontSize}px`,
-    '--code-line-height': defaultSnapshotPresentation.lineHeight,
-    '--code-padding': `${defaultSnapshotPresentation.codePadding}px`,
+    '--code-font': snapshotFonts[fontId].family,
+    '--code-font-size': `${fontSize}px`,
+    '--code-line-height': lineHeight,
+    '--code-padding': `${codePadding}px`,
     '--code-tab-size': snapshotTabSize,
+    '--code-radius': `${radius}px`,
+    '--code-shadow': shadowEnabled ? `0 ${shadow.offsetY}px ${shadow.blur * 2}px rgb(0 0 0 / ${shadow.opacity})` : 'none',
   } as CSSProperties;
 
   return (
     <div className="code-window" data-syntax-theme={themeId} style={colors}>
       <div className="code-window-header">
         <span className="window-lights" aria-hidden="true"><i /><i /><i /></span>
-        <span className="code-window-title" title={title} translate="no">
-          <LanguageIcon size={16} aria-hidden="true" />
+        <span className="code-window-title" title={title} translate="no" data-has-icon={showLanguageIcon}>
+          {showLanguageIcon && <LanguageIcon size={16} aria-hidden="true" />}
           <span>{title}</span>
         </span>
       </div>

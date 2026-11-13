@@ -3,7 +3,7 @@ import { getBasicTheme } from '../theme/basicThemes';
 import type { SyntaxStyle } from '../theme/syntaxHighlighting';
 import type { HighlightSpan } from './highlight';
 import type { MeasureText } from './measureText';
-import { defaultSnapshotPresentation, snapshotFont, snapshotShadow, snapshotTabSize, windowHeaderHeight } from './presentation';
+import { snapshotFonts, snapshotShadows, snapshotTabSize, windowHeaderHeight } from './presentation';
 
 export type SnapshotRun = Readonly<{ text: string; x: number; width: number; style?: SyntaxStyle | undefined }>;
 export type SnapshotRow = Readonly<{
@@ -92,10 +92,10 @@ export function layoutSnapshot(
   input: SnapshotInput,
   highlights: readonly HighlightSpan[],
   measure: MeasureText,
-  baselineOffset = 16,
+  baselineOffset = input.presentation.fontSize * 1.15,
   measureTitle: MeasureText = measure,
 ) {
-  const presentation = defaultSnapshotPresentation;
+  const presentation = input.presentation;
   const lines = input.code.split(/\r\n?|\n/);
   const lineHeight = presentation.fontSize * presentation.lineHeight;
   const gutter = input.lineNumbers ? Math.ceil(measure('9'.repeat(String(lines.length).length))) + 25 : 0;
@@ -140,17 +140,22 @@ export function layoutSnapshot(
   });
   const contentHeight = (count: number) => Math.ceil(2 * presentation.codePadding + count * lineHeight);
   const windowHeight = 2 + windowHeaderHeight + contentHeight(rows.length);
-  const inset = presentation.backgroundPadding;
-  const titleLimit = (windowWidth - 34) / 2 - 48;
+  const shadow = snapshotShadows[presentation.shadowStrength];
+  // Keep the portion of the blur visible at 8-bit alpha even with zero background padding.
+  const shadowInset = presentation.shadowEnabled ? Math.ceil(2.5 * shadow.blur) : 0;
+  const insetX = Math.max(presentation.backgroundPadding, shadowInset);
+  const insetTop = Math.max(presentation.backgroundPadding, shadowInset - shadow.offsetY);
+  const insetBottom = Math.max(presentation.backgroundPadding, shadowInset + (presentation.shadowEnabled ? shadow.offsetY : 0));
+  const titleLimit = (windowWidth - 34) / 2 - (presentation.showLanguageIcon ? 48 : 0);
   const title = presentation.title;
   const displayTitle = measureTitle(title) <= titleLimit ? title
     : `${title.slice(0, fitText(title, titleLimit - measureTitle('…'), measureTitle))}…`;
 
   return {
     revision: input.revision,
-    width: windowWidth + 2 * inset,
-    height: windowHeight + 2 * inset,
-    window: { x: inset, y: inset, width: windowWidth, height: windowHeight },
+    width: windowWidth + 2 * insetX,
+    height: windowHeight + insetTop + insetBottom,
+    window: { x: insetX, y: insetTop, width: windowWidth, height: windowHeight },
     rows,
     gutter,
     lineHeight,
@@ -159,8 +164,8 @@ export function layoutSnapshot(
     languageId: input.languageId,
     theme: getBasicTheme(input.themeId),
     presentation,
-    fontFamily: snapshotFont,
-    shadow: snapshotShadow,
+    fontFamily: snapshotFonts[presentation.fontId].family,
+    shadow,
     displayTitle,
     titleWidth: measureTitle(displayTitle),
   } as const;
