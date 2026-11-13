@@ -1,6 +1,8 @@
 # Drop Your Code
 
-브라우저에서 코드 스냅샷을 만드는 정적 앱입니다. [Phase 1](docs/plans/phase-1-editor-foundation.md)은 코드 편집, VS Code/IntelliJ 키맵, 14개 언어의 수동 선택, 기본 코드 창, Dark/Light 테마, 줄 번호와 줄 바꿈을 제공합니다. 이미지 미리보기와 출력은 Phase 2, 히스토리는 Phase 3의 범위입니다.
+브라우저에서 코드 스냅샷을 만드는 정적 앱입니다. VS Code와 IntelliJ 키맵, 14개 언어의 수동 선택, 스냅샷 스타일 설정과 미리보기를 제공합니다. 전체 코드를 PNG·SVG·JPG·WebP로 저장하거나 PNG 이미지로 복사할 수 있습니다.
+
+Phase 2 구현을 마쳤습니다. Phase 3는 현재 기능 점검 → 피드백 정리 → 수정 → 안정화를 거친 뒤 재개합니다. [Phase 2 마무리 기록](docs/verification/phase-2-closeout.md)
 
 ## 시작하기
 
@@ -36,7 +38,7 @@ npm run test:browser -- tests/browser/foundation.spec.ts --project=chromium
 Remove-Item Env:PLAYWRIGHT_SERVER_MODE
 ```
 
-브라우저 테스트는 셸, 키보드 이동, 레이아웃, 편집, 언어 로딩과 설정을 확인합니다. 실제 실행 결과는 [작업 6 검증 보고서](docs/verification/task-6-editor-window.md)를 참고하세요.
+브라우저 테스트는 편집과 키맵, 언어 선택과 설정, 스냅샷 미리보기, 실제 다운로드와 클립보드를 확인합니다. [Phase 1 검증](docs/verification/task-6-editor-window.md) · [Phase 2 검증](docs/verification/task-12-png-clipboard.md)
 
 ## 정적 산출물
 
@@ -52,4 +54,5 @@ npm run preview -- --host 127.0.0.1
 - [제품 요구사항](docs/product/PRD.md)
 - [아키텍처](docs/architecture/overview.md)
 - [Phase 1 작업 계획](docs/plans/phase-1-editor-foundation.md)
+- [Phase 2 작업 계획](docs/plans/phase-2-snapshot-rendering.md)
 - [검증 전략](docs/architecture/testing/strategy.md)
