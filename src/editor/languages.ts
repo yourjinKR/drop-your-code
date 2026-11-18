@@ -1,5 +1,8 @@
 import { LanguageSupport, StreamLanguage } from '@codemirror/language';
 import type { LanguageId } from '../state/workspace';
+import type { Highlighter } from '../theme/syntaxHighlighting';
+
+export type LoadedLanguage = Readonly<{ support: LanguageSupport; highlight: Highlighter }>;
 
 type LanguageEntry = {
   label: string;
@@ -53,19 +56,21 @@ export function isLanguageId(value: string): value is LanguageId {
   return Object.hasOwn(languages, value);
 }
 
-const languageLoads = new Map<LanguageId, Promise<LanguageSupport>>();
+const languageLoads = new Map<LanguageId, Promise<LoadedLanguage>>();
 
-export function loadLanguage(id: LanguageId): Promise<LanguageSupport | null> {
-  const load = languages[id].load;
-  if (!load) return Promise.resolve(null);
+export function loadLanguage(id: LanguageId): Promise<LoadedLanguage | null> {
+  if (id === 'plaintext') return Promise.resolve(null);
   const cached = languageLoads.get(id);
   if (cached) return cached;
   // Avoid poisoning the browser's module map when it already reports being offline.
-  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
     return Promise.reject(new Error('Offline'));
   }
 
-  const request = load().catch((error: unknown) => {
+  const request = Promise.all([
+    languages[id].load(),
+    import('../theme/textMateHighlighter').then(({ loadTextMate }) => loadTextMate(id)),
+  ]).then(([support, highlight]) => ({ support, highlight })).catch((error: unknown) => {
     languageLoads.delete(id);
     throw error;
   });

@@ -5,6 +5,7 @@ import { EditorView } from '@codemirror/view';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../src/app/App';
 import { loadLanguage } from '../../src/editor/languages';
+import type { LoadedLanguage } from '../../src/editor/languages';
 
 // Keep the editor's mocked loader responses scoped to the language selection flow.
 vi.mock('../../src/snapshot/model', () => ({ buildSnapshotModel: async () => null }));
@@ -27,11 +28,14 @@ function openEditor() {
   };
 }
 
-function support(name: string) {
-  return new LanguageSupport(StreamLanguage.define({ name, token: (stream) => {
-    stream.skipToEnd();
-    return null;
-  } }));
+function support(name: string): LoadedLanguage {
+  return {
+    support: new LanguageSupport(StreamLanguage.define({ name, token: (stream) => {
+      stream.skipToEnd();
+      return null;
+    } })),
+    highlight: () => [],
+  };
 }
 
 const mockLoad = vi.mocked(loadLanguage);
@@ -50,8 +54,8 @@ describe('manual language selection', () => {
   beforeEach(() => mockLoad.mockReset());
 
   it.each(['resolves', 'rejects'])('keeps the newer language when an older load %s late', async (result) => {
-    const java = deferred<LanguageSupport>();
-    const python = deferred<LanguageSupport>();
+    const java = deferred<LoadedLanguage>();
+    const python = deferred<LoadedLanguage>();
     mockLoad.mockReturnValueOnce(java.promise).mockReturnValueOnce(python.promise);
     const { choose, view, status } = openEditor();
 

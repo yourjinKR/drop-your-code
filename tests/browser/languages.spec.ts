@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
+import { getBasicTheme } from '../../src/theme/basicThemes';
 import { languageFixtures } from '../fixtures/code/languages';
 
 function controls(page: Page) {
@@ -76,6 +77,41 @@ for (const fixture of languageFixtures) {
     expect(await readCode(editor)).toBe(`${fixture.indent.before}\n${indent}`);
   });
 }
+
+test('matches Java annotation, declaration and string colors in the editor and SVG', async ({ page }) => {
+  await page.goto('/');
+  const { editor, select, status } = controls(page);
+  await paste(editor, languageFixtures.find(({ id }) => id === 'java')!.code);
+  await select.selectOption('java');
+  await expect(status).toContainText('Java');
+  const theme = page.getByRole('combobox', { name: 'Syntax theme' });
+  const image = page.getByRole('img', { name: 'Code snapshot' });
+
+  for (const themeId of ['dark', 'light'] as const) {
+    await theme.selectOption(themeId);
+    await page.getByRole('tab', { name: 'Editor' }).click();
+    const colors = getBasicTheme(themeId).syntax;
+    const samples = [
+      ['@Service', colors.annotation], ['@Profile', colors.annotation], ['@Override', colors.annotation],
+      ['"!prod"', colors.string],
+      ['Demo', colors.className], ['String', colors.type], ['label', colors.function],
+      ['"한글"', colors.string],
+    ] as const;
+    for (const [text, color] of samples) {
+      await expect(editor.locator('.cm-line span').and(editor.getByText(text, { exact: true })).first())
+        .toHaveCSS('color', cssRgb(color));
+    }
+
+    await page.getByRole('tab', { name: 'Preview' }).click();
+    await expect(image).toBeVisible();
+    await expect.poll(() => image.evaluate(async (node: HTMLImageElement, names) => {
+      const source = await (await fetch(node.src)).text();
+      const svg = new DOMParser().parseFromString(source, 'image/svg+xml');
+      const spans = [...svg.querySelectorAll('.code-row text')];
+      return names.map((name) => spans.find((span) => span.textContent?.trim() === name)?.getAttribute('fill'));
+    }, samples.map(([text]) => text))).toEqual(samples.map(([, color]) => color));
+  }
+});
 
 test('editing and a second language are available while the first chunk is delayed', async ({ page }) => {
   let release!: () => void;

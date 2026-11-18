@@ -3,11 +3,11 @@ import { Annotation, Compartment, EditorState } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import { history, isolateHistory } from '@codemirror/commands';
 import { indentUnit } from '@codemirror/language';
-import type { LanguageSupport } from '@codemirror/language';
 import type { EditorSettings } from '../state/workspace';
 import { snapshotTabSize } from '../snapshot/presentation';
 import { buildKeymap, detectPlatform } from './keymaps';
 import { editorThemes } from './languageHighlighting';
+import type { LoadedLanguage } from './languages';
 
 const lineEditEvents = [
   'delete.line', 'delete.cut', 'move.line', 'input.copyline', 'indent', 'input.indent', 'delete.dedent',
@@ -16,13 +16,14 @@ const lineEditEvents = [
 export type EditorSurfaceProps = {
   code: string;
   settings: EditorSettings;
-  languageSupport?: LanguageSupport | null;
+  language?: LoadedLanguage | null;
   onCodeChange: (code: string) => void;
 };
 
 export type EditorCompartments = {
   keymap: Compartment;
   language: Compartment;
+  highlighting: Compartment;
   theme: Compartment;
   lineNumbers: Compartment;
   wrap: Compartment;
@@ -54,7 +55,8 @@ export function createEditor(
         indentUnit.of('  '),
         EditorState.tabSize.of(snapshotTabSize),
         compartments.keymap.of(keymap.of(buildKeymap(props.settings.keymap, detectPlatform()))),
-        compartments.language.of(props.languageSupport?.extension ?? noExtension),
+        compartments.language.of(props.language?.support.extension ?? noExtension),
+        compartments.highlighting.of(noExtension),
         compartments.theme.of(editorThemes[props.settings.themeId]),
         compartments.lineNumbers.of(props.settings.lineNumbers ? lineNumberGutter : noExtension),
         compartments.wrap.of(props.settings.wrap ? EditorView.lineWrapping : noExtension),

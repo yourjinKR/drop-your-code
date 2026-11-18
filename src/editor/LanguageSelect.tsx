@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { CircleAlert } from 'lucide-react';
-import type { LanguageSupport } from '@codemirror/language';
 import type { LanguageId } from '../state/workspace';
 import { isLanguageId, languageIds, languages, loadLanguage } from './languages';
+import type { LoadedLanguage } from './languages';
 
 type LanguageRequest = { id: LanguageId; status: 'loading' | 'failed' };
 
 type LanguageSelectProps = {
   appliedId: LanguageId;
-  onApplied: (id: LanguageId, support: LanguageSupport | null) => void;
+  onApplied: (id: LanguageId, language: LoadedLanguage | null) => void;
 };
 
 export function LanguageSelect({ appliedId, onApplied }: LanguageSelectProps) {

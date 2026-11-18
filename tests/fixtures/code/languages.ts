@@ -11,29 +11,33 @@ type LanguageFixture = {
   comment?: string | readonly [string, string];
 };
 
-const keyword = '#d7a9f0';
-const string = '#acd69e';
-const comment = '#a2adbd';
-const type = '#99c7ff';
-const property = '#91dfd4';
+const keyword = '#cf8e6d';
+const string = '#6aab73';
+const comment = '#8c919a';
+const type = '#bcbec4';
+const className = '#abcae7';
+const callable = '#56a8f5';
+const property = '#c77dbb';
+const annotation = '#b3ae60';
 
 export const languageFixtures: readonly LanguageFixture[] = [
   { id: 'plaintext', label: 'Plain Text', code: 'const text = "한글"; // plain', tokens: [],
     indent: { before: '  text', spaces: 2 } },
-  { id: 'java', label: 'Java', code: 'class Demo {\n  String text = "한글"; // note\n}',
-    tokens: [['class', keyword], ['"한글"', string], ['// note', comment]],
+  { id: 'java', label: 'Java', code: '@Service\n@Profile("!prod")\nclass Demo {\n  @Override\n  String label() { return helper(); }\n  String helper() { return "한글"; } // note\n}',
+    tokens: [['@Service', annotation], ['@Profile', annotation], ['@Override', annotation], ['"!prod"', string],
+      ['class', keyword], ['Demo', className], ['String', type], ['label', callable], ['"한글"', string], ['// note', comment]],
     indent: { before: 'class Demo {', spaces: 2 }, comment: '//' },
   { id: 'kotlin', label: 'Kotlin', code: 'fun demo() {\n  val text = "한글" // note\n}',
     tokens: [['fun', keyword], ['"한글"', string], ['// note', comment]],
     indent: { before: 'fun demo() {', spaces: 2 }, comment: '//' },
-  { id: 'javascript', label: 'JavaScript', code: 'function demo() {\n  return "한글"; // note\n}',
-    tokens: [['return', keyword], ['"한글"', string], ['// note', comment]],
+  { id: 'javascript', label: 'JavaScript', code: 'class Demo {}\nfunction demo() {\n  return "한글"; // note\n}\ndemo();',
+    tokens: [['return', keyword], ['Demo', className], ['demo', callable], ['"한글"', string], ['// note', comment]],
     indent: { before: 'function demo() {', spaces: 2 }, comment: '//' },
-  { id: 'typescript', label: 'TypeScript', code: 'interface Demo {\n  text: "한글"; // note\n}',
-    tokens: [['interface', keyword], ['"한글"', string], ['// note', comment]],
+  { id: 'typescript', label: 'TypeScript', code: 'interface Demo {\n  text: "한글"; // note\n}\nfunction label(value: Demo) { return value.text; }',
+    tokens: [['interface', keyword], ['Demo', type], ['label', callable], ['"한글"', string], ['// note', comment]],
     indent: { before: 'interface Demo {', spaces: 2 }, comment: '//' },
-  { id: 'python', label: 'Python', code: 'def demo():\n  return "한글" # note',
-    tokens: [['return', keyword], ['"한글"', string], ['# note', comment]],
+  { id: 'python', label: 'Python', code: 'class Demo:\n  pass\ndef demo():\n  return "한글" # note\ndemo()',
+    tokens: [['return', keyword], ['Demo', className], ['demo', callable], ['"한글"', string], ['# note', comment]],
     indent: { before: 'def demo():', spaces: 2 }, comment: '#' },
   { id: 'sql', label: 'SQL', code: "SELECT '한글'; -- note",
     tokens: [['SELECT', keyword], ["'한글'", string], ['-- note', comment]],
