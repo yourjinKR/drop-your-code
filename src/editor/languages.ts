@@ -3,40 +3,46 @@ import type { LanguageId } from '../state/workspace';
 
 type LanguageEntry = {
   label: string;
+  extension: string | null;
   load: (() => Promise<LanguageSupport>) | null;
 };
 
 export const languages = {
-  plaintext: { label: 'Plain Text', load: null },
-  java: { label: 'Java', load: () => import('@codemirror/lang-java').then(({ java }) => java()) },
+  plaintext: { label: 'Plain Text', extension: null, load: null },
+  java: { label: 'Java', extension: 'java', load: () => import('@codemirror/lang-java').then(({ java }) => java()) },
   kotlin: {
     label: 'Kotlin',
+    extension: 'kt',
     load: () => import('@codemirror/legacy-modes/mode/clike')
       .then(({ kotlin }) => new LanguageSupport(StreamLanguage.define(kotlin))),
   },
   javascript: {
     label: 'JavaScript',
+    extension: 'js',
     load: () => import('@codemirror/lang-javascript').then(({ javascript }) => javascript()),
   },
   typescript: {
     label: 'TypeScript',
+    extension: 'ts',
     load: () => import('@codemirror/lang-javascript')
       .then(({ javascript }) => javascript({ typescript: true })),
   },
-  python: { label: 'Python', load: () => import('@codemirror/lang-python').then(({ python }) => python()) },
-  sql: { label: 'SQL', load: () => import('@codemirror/lang-sql').then(({ sql }) => sql()) },
-  json: { label: 'JSON', load: () => import('@codemirror/lang-json').then(({ json }) => json()) },
-  yaml: { label: 'YAML', load: () => import('@codemirror/lang-yaml').then(({ yaml }) => yaml()) },
-  html: { label: 'HTML', load: () => import('@codemirror/lang-html').then(({ html }) => html()) },
-  css: { label: 'CSS', load: () => import('@codemirror/lang-css').then(({ css }) => css()) },
-  xml: { label: 'XML', load: () => import('@codemirror/lang-xml').then(({ xml }) => xml()) },
+  python: { label: 'Python', extension: 'py', load: () => import('@codemirror/lang-python').then(({ python }) => python()) },
+  sql: { label: 'SQL', extension: 'sql', load: () => import('@codemirror/lang-sql').then(({ sql }) => sql()) },
+  json: { label: 'JSON', extension: 'json', load: () => import('@codemirror/lang-json').then(({ json }) => json()) },
+  yaml: { label: 'YAML', extension: 'yaml', load: () => import('@codemirror/lang-yaml').then(({ yaml }) => yaml()) },
+  html: { label: 'HTML', extension: 'html', load: () => import('@codemirror/lang-html').then(({ html }) => html()) },
+  css: { label: 'CSS', extension: 'css', load: () => import('@codemirror/lang-css').then(({ css }) => css()) },
+  xml: { label: 'XML', extension: 'xml', load: () => import('@codemirror/lang-xml').then(({ xml }) => xml()) },
   shell: {
     label: 'Shell',
+    extension: 'sh',
     load: () => import('@codemirror/legacy-modes/mode/shell')
       .then(({ shell }) => new LanguageSupport(StreamLanguage.define(shell))),
   },
   markdown: {
     label: 'Markdown',
+    extension: 'md',
     load: () => import('@codemirror/lang-markdown').then(({ markdown }) => markdown({ addKeymap: false })),
   },
 } satisfies Record<LanguageId, LanguageEntry>;

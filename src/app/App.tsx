@@ -222,7 +222,8 @@ export function App() {
             </div>
           </div>
           <div className="editor-canvas" id="editor-panel" role="tabpanel" aria-labelledby="editor-tab" hidden={previewActive}>
-            <CodeWindow presentation={presentation} languageId={languageId} themeId={themeId} model={snapshot.model}>
+            <CodeWindow presentation={presentation} languageId={languageId} themeId={themeId} model={snapshot.model}
+              onTitleChange={(title) => dispatch({ type: 'presentationChanged', presentation: { ...presentation, title } })}>
               <EditorSurface
                 code={workspace.document.code}
                 settings={settings}

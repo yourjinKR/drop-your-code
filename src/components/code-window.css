@@ -35,29 +35,37 @@
 .window-lights i:nth-child(3) { background: #76c77a; }
 
 .code-window-title {
-  position: relative;
+  grid-column: 2;
   justify-self: center;
+  min-width: 0;
+  min-height: var(--control-height);
   max-width: 100%;
+  padding: 0 var(--space-1);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: inherit;
   font-size: 13px;
   font-weight: 600;
   line-height: 20px;
 }
 
-.code-window-title[data-has-icon="true"] { max-width: calc(100% - 48px); }
-
-.code-window-title > svg {
-  position: absolute;
-  inset-inline-end: calc(100% + var(--space-2));
-  top: 2px;
-}
-
-.code-window-title > span {
-  display: block;
+button.code-window-title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: pre;
+  background: transparent;
+  cursor: text;
 }
 
+button.code-window-title:hover { border-color: var(--code-border); }
+.code-window-title:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
+
+input.code-window-title {
+  width: 100%;
+  border-color: var(--code-border);
+  background: var(--code-background);
+  text-align: center;
+}
 .editor-surface, .editor-surface .cm-editor, .editor-surface .cm-scroller {
   min-width: 0;
   max-width: 100%;

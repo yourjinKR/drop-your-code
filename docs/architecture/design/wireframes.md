@@ -71,7 +71,7 @@ History의 기본 행은 제목 또는 구분 가능한 코드 일부, 언어, �
 | 섹션 | 배치할 필드 | 최초 표시 시점 |
 |---|---|---|
 | Code | Language, Syntax theme, Line numbers, Wrap lines. 나중에 Language detection | 수동 언어는 작업 5, 기본 테마·줄 번호·wrap은 작업 6, 자동 감지는 Phase 3 |
-| Window | Title, Language icon, Radius, Shadow. macOS 장식은 기본 프리셋 | 고정 프리셋은 작업 6, 사용자 조정 필드는 Phase 2 |
+| Window | Show title, Title, Radius, Shadow. macOS 장식은 기본 프리셋 | 제목 표시는 기본 끔. 켰을 때 코드 창의 제목을 눌러 직접 편집 가능 |
 | Background | Color, Background padding, Transparent. 선택적 그라데이션은 별도 결정 | Phase 2 |
 | Typography | Font, Font size, Line height, Code padding | Phase 2. 작업 6은 고정 기본값만 사용 |
 

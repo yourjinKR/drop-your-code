@@ -1,9 +1,10 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import type { EditorThemeId, LanguageId } from '../state/workspace';
 import type { SnapshotModel } from '../snapshot/model';
-import { languageArtwork } from '../snapshot/languageArtwork';
 import { snapshotFonts, snapshotShadows, snapshotTabSize, windowHeaderHeight } from '../snapshot/presentation';
 import type { SnapshotPresentation } from '../snapshot/presentation';
+import { formatWindowTitle } from '../snapshot/windowTitle';
 import { getBasicTheme } from '../theme/basicThemes';
 import './code-window.css';
 
@@ -12,13 +13,56 @@ type CodeWindowProps = {
   languageId: LanguageId;
   themeId: EditorThemeId;
   model: SnapshotModel | null;
+  onTitleChange: (title: string) => void;
   children: ReactNode;
 };
 
-export function CodeWindow({ presentation, languageId, themeId, model, children }: CodeWindowProps) {
+function EditableWindowTitle({ title, displayTitle, onChange }: {
+  title: string;
+  displayTitle: string;
+  onChange: (title: string) => void;
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const restoreFocus = useRef(false);
+  const editing = draft !== null;
+
+  useLayoutEffect(() => {
+    if (!editing && restoreFocus.current) {
+      restoreFocus.current = false;
+      trigger.current?.focus();
+    }
+  }, [editing]);
+
+  function finish(value: string | null, focusButton = false) {
+    if (value !== null && value !== title) onChange(value);
+    restoreFocus.current = focusButton;
+    setDraft(null);
+  }
+
+  if (editing) {
+    return <input className="code-window-title" type="text" aria-label="Window title" translate="no" autoFocus
+      autoCapitalize="none" autoCorrect="off" spellCheck={false}
+      value={draft} onChange={(event) => setDraft(event.currentTarget.value)}
+      onFocus={(event) => event.currentTarget.select()}
+      onBlur={(event) => finish(event.currentTarget.value)}
+      onKeyDown={(event) => {
+        if (event.nativeEvent.isComposing || (event.key !== 'Enter' && event.key !== 'Escape')) return;
+        event.preventDefault();
+        finish(event.key === 'Enter' ? event.currentTarget.value : null, true);
+      }} />;
+  }
+
+  return <button className="code-window-title" type="button" ref={trigger}
+    aria-label={displayTitle ? `${displayTitle}, edit title` : 'Add title'}
+    title={displayTitle || undefined} translate={displayTitle ? 'no' : undefined} onClick={() => setDraft(title)}>
+    {displayTitle || 'Add title'}
+  </button>;
+}
+
+export function CodeWindow({ presentation, languageId, themeId, model, onTitleChange, children }: CodeWindowProps) {
   const theme = getBasicTheme(themeId);
-  const LanguageIcon = languageArtwork[languageId].default;
-  const { title, fontId, fontSize, lineHeight, codePadding, radius, shadowEnabled, shadowStrength, showLanguageIcon } = presentation;
+  const { title, fontId, fontSize, lineHeight, codePadding, radius, shadowEnabled, shadowStrength, showTitle } = presentation;
   const shadow = snapshotShadows[shadowStrength];
   const colors = {
     '--code-background': theme.background,
@@ -41,10 +85,8 @@ export function CodeWindow({ presentation, languageId, themeId, model, children 
     <div className="code-window" data-syntax-theme={themeId} style={colors}>
       <div className="code-window-header">
         <span className="window-lights" aria-hidden="true"><i /><i /><i /></span>
-        <span className="code-window-title" title={title} translate="no" data-has-icon={showLanguageIcon}>
-          {showLanguageIcon && <LanguageIcon size={16} aria-hidden="true" />}
-          <span>{title}</span>
-        </span>
+        {showTitle && <EditableWindowTitle title={title} displayTitle={formatWindowTitle(title, languageId)}
+          onChange={onTitleChange} />}
       </div>
       {children}
     </div>

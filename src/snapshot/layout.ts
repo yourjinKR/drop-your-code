@@ -4,6 +4,7 @@ import type { SyntaxStyle } from '../theme/syntaxHighlighting';
 import type { HighlightSpan } from './highlight';
 import type { MeasureText } from './measureText';
 import { snapshotFonts, snapshotShadows, snapshotTabSize, windowHeaderHeight } from './presentation';
+import { formatWindowTitle } from './windowTitle';
 
 export type SnapshotRun = Readonly<{ text: string; x: number; width: number; style?: SyntaxStyle | undefined }>;
 export type SnapshotRow = Readonly<{
@@ -146,8 +147,8 @@ export function layoutSnapshot(
   const insetX = Math.max(presentation.backgroundPadding, shadowInset);
   const insetTop = Math.max(presentation.backgroundPadding, shadowInset - shadow.offsetY);
   const insetBottom = Math.max(presentation.backgroundPadding, shadowInset + (presentation.shadowEnabled ? shadow.offsetY : 0));
-  const titleLimit = (windowWidth - 34) / 2 - (presentation.showLanguageIcon ? 48 : 0);
-  const title = presentation.title;
+  const titleLimit = (windowWidth - 34) / 2;
+  const title = presentation.showTitle ? formatWindowTitle(presentation.title, input.languageId) : '';
   const displayTitle = measureTitle(title) <= titleLimit ? title
     : `${title.slice(0, fitText(title, titleLimit - measureTitle('…'), measureTitle))}…`;
 
@@ -161,13 +162,11 @@ export function layoutSnapshot(
     lineHeight,
     editorContentHeight: contentHeight(input.wrap ? rows.length : lines.length),
     hasOverflowWrap: !input.wrap && rows.length > lines.length,
-    languageId: input.languageId,
     theme: getBasicTheme(input.themeId),
     presentation,
     fontFamily: snapshotFonts[presentation.fontId].family,
     shadow,
     displayTitle,
-    titleWidth: measureTitle(displayTitle),
   } as const;
 }
 

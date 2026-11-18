@@ -12,7 +12,7 @@ describe('snapshot SVG', () => {
     expect(svg.querySelector('parsererror, script, foreignObject, image, [href]')).toBeNull();
     expect(svg.documentElement.getAttribute('viewBox')).toBe(`0 0 ${model.width} ${model.height}`);
     expect(svg.querySelectorAll('circle')).toHaveLength(3);
-    expect(svg.querySelector('.language-icon path')).not.toBeNull();
+    expect(svg.querySelector('.language-icon, .window-title')).toBeNull();
     expect(svg.querySelector('feGaussianBlur')).not.toBeNull();
     const rows = [...svg.querySelectorAll('.code-row')];
     expect(rows[0]?.textContent).toBe('1const  한글\t👩‍💻 <script>&"\'�');
@@ -21,5 +21,15 @@ describe('snapshot SVG', () => {
     expect(rows[2]?.textContent?.endsWith('last')).toBe(true);
     expect(rows[2]?.querySelector('[text-anchor="end"]')).toBeNull();
     expect(rows[3]?.textContent).toBe('3');
+  });
+
+  it('serializes the visible title with its language extension as literal text', () => {
+    const input = selectSnapshotInput(createInitialWorkspace());
+    const model = layoutSnapshot({ ...input, languageId: 'java',
+      presentation: { ...input.presentation, title: '<예제>&', showTitle: true },
+    }, [], (text) => text.length * 10);
+    const svg = new DOMParser().parseFromString(renderSnapshotSvg(model), 'image/svg+xml');
+    expect(svg.querySelector('.window-title')?.textContent).toBe('<예제>&.java');
+    expect(svg.querySelector('parsererror, .language-icon')).toBeNull();
   });
 });
