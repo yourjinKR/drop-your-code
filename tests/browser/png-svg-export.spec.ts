@@ -83,6 +83,103 @@ test('downloads PNG and standalone SVG with the preview styling at 320px', async
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
 });
 
+test('preserves spaces and tab stops in downloaded and copied snapshots', async ({ browserName, context, page }) => {
+  const lines = ['class  Probe {', '    void run() {', '        value.call("A  A");', ' \t  }', '}'];
+  const cells = [
+    { row: 0, column: 5, ink: false }, // two spaces after a highlighted keyword
+    { row: 0, column: 6, ink: false },
+    { row: 0, column: 7, ink: true },
+    { row: 1, column: 8, ink: false }, // one space at a token boundary
+    { row: 1, column: 9, ink: true },
+    { row: 2, column: 0, ink: false }, // eight leading spaces
+    { row: 2, column: 8, ink: true },
+    { row: 2, column: 21, ink: false }, // two spaces within the string
+    { row: 2, column: 22, ink: false },
+    { row: 2, column: 23, ink: true },
+    { row: 3, column: 0, ink: false }, // a space and tab reach column 2, then two more spaces
+    { row: 3, column: 3, ink: false },
+    { row: 3, column: 4, ink: true },
+  ];
+  await page.goto('/');
+  await page.getByRole('combobox', { name: 'Language' }).selectOption('java');
+  await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('Java');
+  await page.getByRole('textbox', { name: 'Code editor' }).focus();
+  await page.keyboard.insertText(lines.join('\n'));
+  await page.locator('summary').getByText('Export', { exact: true }).click();
+  const format = page.getByRole('combobox', { name: 'Format' });
+  const supportsWebp = await page.evaluate(() => new Promise((resolve) => {
+    document.createElement('canvas').toBlob((blob) => resolve(blob?.type === 'image/webp'), 'image/webp');
+  }));
+  const files = Object.entries({ svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', webp: 'image/webp' });
+  const downloads = [];
+  for (const [name, mime] of files) {
+    if (name === 'webp' && !supportsWebp) continue;
+    await format.selectOption(name);
+    const { bytes } = await downloadImage(page);
+    downloads.push({ name, url: `data:${mime};base64,${bytes.toString('base64')}` });
+  }
+
+  const readClipboard = browserName === 'chromium';
+  if (readClipboard) {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.getByRole('button', { name: 'Copy Image' }).click();
+    await expect(page.getByRole('status', { name: 'Image output status' })).toHaveText('Image copied.');
+  }
+
+  const result = await page.evaluate(async ({ downloads, cells, readClipboard }) => {
+    const svgSource = await (await fetch(downloads[0]!.url)).text();
+    const svg = new DOMParser().parseFromString(svgSource, 'image/svg+xml').documentElement;
+    const rows = [...svg.querySelectorAll('.code-row')];
+    const code = rows[0]!.parentElement!;
+    const [frameX, frameY] = svg.querySelector('g[transform]')!.getAttribute('transform')!.match(/\d+/g)!.map(Number);
+    const left = frameX! + Number(rows[0]!.querySelector('text')!.getAttribute('x'));
+    const baselines = rows.map((row) => frameY! + Number(row.querySelector('text')!.getAttribute('y')));
+    const width = Number(svg.getAttribute('width'));
+    const font = `${code.getAttribute('font-size')}px ${code.getAttribute('font-family')}`;
+
+    async function readCells(url: string) {
+      const image = new Image();
+      image.src = url;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext('2d')!;
+      ctx.font = font;
+      const scale = canvas.width / width;
+      const cellWidth = ctx.measureText('0').width;
+      ctx.drawImage(image, 0, 0);
+      return cells.map(({ row, column }) => {
+        // Sample inside the cell to avoid neighboring glyph edges and compression artifacts.
+        const x = Math.ceil((left + (column + 0.25) * cellWidth) * scale);
+        const y = Math.round((baselines[row]! - 13) * scale);
+        return ctx.getImageData(x, y, Math.ceil(cellWidth * 0.5 * scale), 16 * scale).data
+          .some((red, index) => index % 4 === 0 && red > 125);
+      });
+    }
+
+    const outputs = [];
+    for (const { name, url } of downloads) outputs.push({ name, ink: await readCells(url) });
+    if (readClipboard) {
+      const items = await navigator.clipboard.read();
+      const png = await items.find(({ types }) => types.includes('image/png'))!.getType('image/png');
+      const url = URL.createObjectURL(png);
+      try {
+        outputs.push({ name: 'PNG clipboard', ink: await readCells(url) });
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+    return { outputs, sourceLines: rows.map((row) => row.textContent) };
+  }, { downloads, cells, readClipboard });
+  expect(result.sourceLines).toEqual(lines);
+  for (const { name, ink } of result.outputs) {
+    cells.forEach((cell, index) => {
+      expect.soft(ink[index], `${name} line ${cell.row + 1}, column ${cell.column + 1}`).toBe(cell.ink);
+    });
+  }
+});
+
 test('exports all 300 lines and the long row from either mode regardless of scroll and zoom', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/');
