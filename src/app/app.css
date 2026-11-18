@@ -93,6 +93,49 @@ button, select, input[type="checkbox"] { touch-action: manipulation; }
 .copy-button:active { background: var(--ui-pressed); }
 .export-button[aria-disabled="true"], .copy-button[aria-disabled="true"] { opacity: 0.65; cursor: default; }
 
+.export-split {
+  position: relative;
+  display: flex;
+}
+
+.export-split .export-button {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.export-settings { display: flex; }
+
+.export-settings .export-settings-trigger {
+  border-color: var(--ui-control-border);
+  border-inline-start: 0;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  background: var(--ui-surface-raised);
+}
+
+.export-settings .export-settings-trigger:hover,
+.export-settings .export-settings-trigger[aria-expanded="true"] {
+  background: var(--ui-hover);
+  color: var(--ui-text);
+}
+
+.export-split button:focus-visible { position: relative; z-index: 1; }
+
+.export-settings-panel:not([hidden]) {
+  position: absolute;
+  z-index: 4;
+  inset: calc(100% + var(--space-2)) 0 auto auto;
+  display: grid;
+  gap: var(--space-2);
+  width: 280px;
+  padding: var(--space-3);
+  border: var(--border-width) solid var(--ui-control-border);
+  border-radius: var(--radius-overlay);
+  background: var(--ui-surface);
+}
+
+.export-settings-panel .property-field { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+
 .export-feedback { grid-area: feedback; background: var(--ui-surface); }
 .export-feedback p:not(:empty) { padding: var(--space-1) var(--space-4); color: var(--ui-text-secondary); }
 .export-feedback p[role="alert"] { color: var(--ui-danger); }
@@ -371,6 +414,8 @@ select, .property-field input, .language-error button, .preview-message button {
 .icon-button:focus-visible + .icon-tooltip { visibility: visible; }
 .activity-bar .icon-tooltip { inset: auto auto 0 100%; }
 .export-actions .icon-tooltip { display: none; }
+.export-settings .icon-tooltip { display: block; }
+.export-settings-trigger[aria-expanded="true"] + .icon-tooltip { visibility: hidden; }
 
 @media (prefers-reduced-motion: no-preference) {
   .copy-progress { animation: copy-progress 800ms linear infinite; }
@@ -436,6 +481,9 @@ select, .property-field input, .language-error button, .preview-message button {
   .activity-bar .icon-tooltip { inset: 100% 0 auto auto; }
   .workspace-tabs svg { display: none; }
   .workspace-header { flex-wrap: wrap; }
+  .app-header { position: relative; }
+  .export-split { position: static; }
+  .export-settings-panel:not([hidden]) { inset-inline-end: var(--space-2); width: min(280px, calc(100% - var(--space-4))); }
 }
 
 @media (max-width: 479px) {
@@ -444,6 +492,13 @@ select, .property-field input, .language-error button, .preview-message button {
   .copy-button span { display: none; }
   .export-actions .icon-tooltip { display: block; }
   .copy-button:focus-visible + .icon-tooltip { visibility: visible; }
+}
+
+@media (max-width: 359px) and (pointer: coarse) {
+  .app-header { gap: var(--space-1); }
+  .app-header .brand-mark { width: 24px; height: 24px; }
+  .export-actions { gap: var(--space-1); }
+  .export-button { gap: var(--space-1); }
 }
 
 @media (pointer: coarse) {

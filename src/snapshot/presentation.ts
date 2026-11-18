@@ -1,5 +1,8 @@
 export const snapshotFonts = {
-  default: { label: 'System monospace', family: 'Consolas, "SFMono-Regular", Menlo, monospace' },
+  default: {
+    label: 'System monospace',
+    family: '"Cascadia Mono", "Cascadia Code", Consolas, "SFMono-Regular", Menlo, monospace',
+  },
   consolas: { label: 'Consolas', family: 'Consolas, monospace' },
   courier: { label: 'Courier New', family: '"Courier New", monospace' },
   menlo: { label: 'Menlo', family: 'Menlo, monospace' },

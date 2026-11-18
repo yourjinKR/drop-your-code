@@ -35,7 +35,7 @@ test('applies window, background and type controls to the preview and editor', a
 
   await page.getByText('Typography', { exact: true }).click();
   const font = page.getByRole('combobox', { name: 'Font', exact: true });
-  await expect(font).toHaveAccessibleDescription(/Font stack: Consolas/);
+  await expect(font).toHaveAccessibleDescription(/^Font stack: "Cascadia Mono", "Cascadia Code", Consolas/);
   await expect(font.getByRole('option', { name: 'Courier New' })).toHaveCount(1);
   await font.selectOption('courier');
   await expect.poll(() => svg(image)).toContain('&quot;Courier New&quot;, monospace');

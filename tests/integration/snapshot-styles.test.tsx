@@ -20,7 +20,7 @@ it('commits valid style, preserves invalid drafts, and leaves editor selection a
   expect(typography.parentElement).not.toHaveAttribute('open');
   fireEvent.click(typography);
   const fontSize = screen.getByRole('textbox', { name: 'Font size' });
-  expect(screen.getByRole('combobox', { name: 'Font' })).toHaveAccessibleDescription(/Font stack: Consolas/);
+  expect(screen.getByRole('combobox', { name: 'Font' })).toHaveAccessibleDescription(/^Font stack: "Cascadia Mono", "Cascadia Code", Consolas/);
   expect(screen.getByRole('combobox', { name: 'Font' })).toHaveValue('default');
   await waitFor(() => expect(buildSnapshotModel).toHaveBeenLastCalledWith(expect.objectContaining({ code: 'original' }), expect.anything()));
   const lastCall = vi.mocked(buildSnapshotModel).mock.calls.length;

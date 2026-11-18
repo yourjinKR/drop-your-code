@@ -66,8 +66,8 @@ describe('image download', () => {
 });
 
 describe('image copy', () => {
-  it('copies the clicked input as default PNG and blocks downloads until the write completes', async () => {
-    const view = renderOutput({ input, preview: null, options: { format: 'jpg', scale: 4, backgroundColor: '#123456' } });
+  it('copies the clicked input as a 4× PNG and blocks downloads until the write completes', async () => {
+    const view = renderOutput({ input, preview: null, options: { format: 'jpg', scale: 2, backgroundColor: '#123456' } });
     let encode!: () => Promise<Blob>;
     let finish!: () => void;
     vi.mocked(copySnapshotPng).mockImplementationOnce((createPng) => {
@@ -84,7 +84,7 @@ describe('image copy', () => {
     await act(async () => { await view.result.current.exportImage(); });
     await expect(encode()).resolves.toBe(png);
     expect(buildSnapshotModel).toHaveBeenCalledExactlyOnceWith(input);
-    expect(encodeSnapshot).toHaveBeenCalledExactlyOnceWith(model, pngOptions);
+    expect(encodeSnapshot).toHaveBeenCalledExactlyOnceWith(model, { format: 'png', scale: 4 });
     expect(downloadSnapshot).not.toHaveBeenCalled();
     expect(view.result.current.message).toBe('');
     await act(async () => { finish(); });
