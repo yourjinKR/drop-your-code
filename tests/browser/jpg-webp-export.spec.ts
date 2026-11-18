@@ -33,7 +33,7 @@ function expectColor(pixel: number[], target: number[], tolerance: number) {
   target.forEach((channel, index) => expect(Math.abs(pixel[index]! - channel)).toBeLessThanOrEqual(tolerance));
 }
 
-test('JPG preview and export composite the chosen color and preserve opaque snapshot backgrounds', async ({ page }) => {
+test('JPG canvas and export composite the chosen color and preserve opaque snapshot backgrounds', async ({ page }) => {
   await page.goto('/');
   await page.getByText('Background', { exact: true }).click();
   const transparent = page.getByRole('checkbox', { name: 'Transparent' });
@@ -45,9 +45,8 @@ test('JPG preview and export composite the chosen color and preserve opaque snap
   const jpgBackground = page.getByLabel('JPG background');
   await expect(jpgBackground).toHaveValue('#ffffff');
   await jpgBackground.fill('#f4d2a0');
-  await page.getByRole('tab', { name: 'Preview' }).click();
-  const preview = page.getByRole('img', { name: 'Code snapshot' });
-  await expect(preview).toHaveCSS('background-color', 'rgb(244, 210, 160)');
+  const composition = page.locator('.canvas-composition');
+  await expect(composition).toHaveCSS('background-color', 'rgb(244, 210, 160)');
   const points: [number, number][] = [[12, 12], [416, 332], [416, 300]];
   const jpg = await readExport(page, 'jpg');
   expect(jpg.subarray(0, 3).toString('hex')).toBe('ffd8ff');
@@ -61,7 +60,7 @@ test('JPG preview and export composite the chosen color and preserve opaque snap
   await format.selectOption('webp');
   await expect(jpgBackground).toHaveCount(0);
   await expect(transparent).toBeChecked();
-  await expect(preview).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(composition).toHaveAttribute('data-transparent', 'true');
   await format.selectOption('jpg');
   await expect(jpgBackground).toHaveValue('#f4d2a0');
   await transparent.uncheck();

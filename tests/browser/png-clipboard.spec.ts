@@ -30,9 +30,7 @@ test('copies transparent PNG from Editor with JPG selected and uses the latest d
   await page.getByRole('button', { name: 'Export settings' }).click();
   await page.getByRole('combobox', { name: 'Format' }).selectOption('jpg');
   await page.getByLabel('JPG background').fill('#ff0000');
-  await page.getByRole('tab', { name: 'Preview' }).click();
-  await expect(page.getByRole('img', { name: 'Code snapshot' })).toBeVisible();
-  await page.getByRole('tab', { name: 'Editor' }).click();
+  await expect(page.locator('.canvas-composition')).toHaveCSS('background-color', 'rgb(255, 0, 0)');
 
   await page.evaluate(() => {
     const load = document.fonts.load.bind(document.fonts);
@@ -109,7 +107,7 @@ test('shows a PNG download fallback when clipboard permission is denied', async 
   await expect(page.getByRole('alert')).toHaveCount(0);
 });
 
-test('previews, downloads four formats, and copies PNG offline once the language is loaded', async ({ context, page }) => {
+test('edits, downloads four formats, and copies PNG offline once the language is loaded', async ({ context, page }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/');
   await page.getByRole('combobox', { name: 'Language' }).selectOption('javascript');
@@ -121,8 +119,7 @@ test('previews, downloads four formats, and copies PNG offline once the language
   await context.setOffline(true);
   await page.getByRole('textbox', { name: 'Code editor' }).focus();
   await page.keyboard.insertText('const offlineSnapshot = true;');
-  await page.getByRole('tab', { name: 'Preview' }).click();
-  await expect(page.getByRole('img', { name: 'Code snapshot' })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'Code editor' })).toContainText('const offlineSnapshot = true;');
   const settings = page.getByRole('button', { name: 'Export settings' });
   const format = page.getByRole('combobox', { name: 'Format' });
   for (const type of ['png', 'svg', 'jpg', 'webp']) {

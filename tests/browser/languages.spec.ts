@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { getBasicTheme } from '../../src/theme/basicThemes';
 import { languageFixtures } from '../fixtures/code/languages';
+import { downloadImage } from './helpers/download';
 
 function controls(page: Page) {
   return {
@@ -85,11 +86,11 @@ test('matches Java annotation, declaration and string colors in the editor and S
   await select.selectOption('java');
   await expect(status).toContainText('Java');
   const theme = page.getByRole('combobox', { name: 'Syntax theme' });
-  const image = page.getByRole('img', { name: 'Code snapshot' });
+  await page.getByRole('button', { name: 'Export settings' }).click();
+  await page.getByRole('combobox', { name: 'Format' }).selectOption('svg');
 
   for (const themeId of ['dark', 'light'] as const) {
     await theme.selectOption(themeId);
-    await page.getByRole('tab', { name: 'Editor' }).click();
     const colors = getBasicTheme(themeId).syntax;
     const samples = [
       ['@Service', colors.annotation], ['@Profile', colors.annotation], ['@Override', colors.annotation],
@@ -102,14 +103,13 @@ test('matches Java annotation, declaration and string colors in the editor and S
         .toHaveCSS('color', cssRgb(color));
     }
 
-    await page.getByRole('tab', { name: 'Preview' }).click();
-    await expect(image).toBeVisible();
-    await expect.poll(() => image.evaluate(async (node: HTMLImageElement, names) => {
-      const source = await (await fetch(node.src)).text();
+    const { bytes } = await downloadImage(page);
+    const exported = await page.evaluate(({ source, names }) => {
       const svg = new DOMParser().parseFromString(source, 'image/svg+xml');
       const spans = [...svg.querySelectorAll('.code-row text')];
       return names.map((name) => spans.find((span) => span.textContent?.trim() === name)?.getAttribute('fill'));
-    }, samples.map(([text]) => text))).toEqual(samples.map(([, color]) => color));
+    }, { source: bytes.toString(), names: samples.map(([text]) => text) });
+    expect(exported).toEqual(samples.map(([, color]) => color));
   }
 });
 

@@ -1,18 +1,8 @@
-import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { expect, test } from '@playwright/test';
-import type { Page } from '@playwright/test';
+import { downloadImage } from './helpers/download';
 
-async function downloadImage(page: Page) {
-  const [download] = await Promise.all([
-    page.waitForEvent('download'),
-    page.getByRole('button', { name: 'Export', exact: true }).click(),
-  ]);
-  const path = await download.path();
-  return { bytes: await readFile(path), download, filename: download.suggestedFilename() };
-}
-
-test('downloads PNG and standalone SVG with the preview styling at 320px', async ({ page, context }, testInfo) => {
+test('downloads PNG and standalone SVG with the canvas styling at 320px', async ({ page, context }, testInfo) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/');
   await page.getByRole('combobox', { name: 'Language' }).selectOption('javascript');
@@ -58,13 +48,10 @@ test('downloads PNG and standalone SVG with the preview styling at 320px', async
   await format.selectOption('svg');
   await expect(page.getByText('SVG uses the snapshot size.')).toBeVisible();
   await settings.press('Escape');
-  await page.getByRole('tab', { name: 'Preview' }).click();
-  const preview = page.getByRole('img', { name: 'Code snapshot' });
-  await expect(preview).toBeVisible();
+  await expect(page.locator('.canvas-composition')).toHaveAttribute('data-transparent', 'true');
+  await expect(page.locator('.code-window-title')).toHaveText('example / code.js');
   const svg = await downloadImage(page);
   expect(svg.filename).toBe('example _ code.svg');
-  const source = svg.bytes.toString();
-  expect(source).toBe(await preview.evaluate(async (image: HTMLImageElement) => (await fetch(image.src)).text()));
 
   const reopened = await context.newPage();
   const savedPath = testInfo.outputPath(svg.filename);
@@ -187,7 +174,7 @@ test('preserves spaces and tab stops in downloaded and copied snapshots', async 
   }
 });
 
-test('exports all 300 lines and the long row from either mode regardless of scroll and zoom', async ({ page }) => {
+test('exports all 300 lines and the long row regardless of canvas scroll and zoom', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/');
   const editor = page.getByRole('textbox', { name: 'Code editor' });
@@ -196,8 +183,8 @@ test('exports all 300 lines and the long row from either mode regardless of scro
   await editor.focus();
   await page.keyboard.insertText(code);
   await editor.press('Control+End');
-  const scroller = page.locator('.cm-scroller');
-  await expect.poll(() => scroller.evaluate((element) => element.scrollTop)).toBeGreaterThan(500);
+  const canvas = page.getByRole('region', { name: 'Snapshot canvas' });
+  await expect(editor.getByText('LAST_LINE_MARKER', { exact: true })).toBeInViewport();
   const before = await downloadImage(page);
 
   const settings = page.getByRole('button', { name: 'Export settings' });
@@ -238,10 +225,8 @@ test('exports all 300 lines and the long row from either mode regardless of scro
   await settings.click();
   await format.selectOption('png');
   await settings.press('Escape');
-  await page.getByRole('tab', { name: 'Preview' }).click();
-  await expect(page.getByRole('img', { name: 'Code snapshot' })).toBeVisible();
   await page.getByRole('button', { name: 'Zoom in' }).click();
-  await page.getByRole('region', { name: 'Snapshot canvas' }).evaluate((element) => { element.scrollTop = element.scrollHeight; });
+  await canvas.evaluate((element) => { element.scrollTop = element.scrollHeight; });
   expect((await downloadImage(page)).bytes.equals(before.bytes)).toBe(true);
 });
 
