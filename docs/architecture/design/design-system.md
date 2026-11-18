@@ -83,7 +83,7 @@ UI font: `"Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif`.
 | Button / IconButton | 기본 ghost, 보조 outlined, 주 동작 Export만 accent. 아이콘16px + 라벨8px 간격; icon-only에 영어 accessible name과 hover/focus tooltip. `type="button"` 기본 |
 | Select / TextInput / NumberInput | raised 면, control-border, 6px 반경. 외부 label 연결, placeholder는 label 대용 금지. 단위는 suffix로 표시하고 accessible description에도 제공. 네이티브 select 우선 |
 | Switch / Checkbox | label 전체가 target. switch는 `checked`/`aria-checked`, on/off 위치와 색 병행. off 경계는 control-border. 장식 thumb는 배경 대비3:1 이상인 text 또는 on-accent 토큰 사용 |
-| Mode tabs | `Editor`/`Preview`, 선택 면 + 하단2px 표시. tablist, roving tabindex, Left/Right·Home/End, Enter/Space 활성화; 화살표 탐색만으로 editor를 재생성하지 않음 |
+| Canvas navigation | `Pan mode`, 배율 감소·증가, `Fit`, `Reset view`. 버튼 이름과 포커스 표시 제공 |
 | Accordion section | 제목 button + chevron + `aria-expanded`/`aria-controls`. 섹션 간1px 경계. 패널만 스크롤하고 제목 hit target40/44px |
 | Menu / Popover | button으로 열고 Escape/외부 클릭으로 닫음. 초점 복귀. 메뉴는 화살표 탐색, 네이티브 select는 플랫폼 동작 유지 |
 | Drawer / Dialog | 이름과 Close, Escape, 내부 초점 유지, 배경 inert, 닫은 후 trigger 복귀. 하나의 모달만 열며 다른 패널로 전환 시 이전 것 닫음 |
@@ -113,7 +113,7 @@ UI font: `"Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif`.
 | History / Shortcuts | `History` / `Keyboard` |
 | Properties / UI theme | `SlidersHorizontal` / `Moon`, `Sun` |
 | 좌우 접기·복원 | `PanelLeftClose`, `PanelLeftOpen`, `PanelRightClose`, `PanelRightOpen` |
-| Preview / Zoom | `Eye` / `Minus`, `Plus`, `Maximize` |
+| Canvas navigation | `Hand`, `Minus`, `Plus`, `Maximize`, `LocateFixed` |
 | 선택·오류·닫기 | `Check`, `CircleAlert`, `X` |
 
 Lucide의 실제 export 이름은 설치할 버전에서 확인한다. 브랜드와 인터랙티브 UI에 Lucide를 사용한다. 코드 창은 왼쪽의 macOS traffic lights를 비상호작용 장식으로 제공하고, 창 제목에는 텍스트를 사용한다.

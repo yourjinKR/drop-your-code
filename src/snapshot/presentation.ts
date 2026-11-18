@@ -52,7 +52,20 @@ export const defaultSnapshotPresentation: SnapshotPresentation = Object.freeze({
 
 export const titleFont = '"Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif';
 export const windowHeaderHeight = 44;
+export const minSnapshotWindowWidth = 320;
 export const snapshotTabSize = 2;
+
+export function snapshotInsets(presentation: SnapshotPresentation) {
+  const shadow = snapshotShadows[presentation.shadowStrength];
+  const offset = presentation.shadowEnabled ? shadow.offsetY : 0;
+  // Leave enough room for the visible shadow, including with zero background padding.
+  const blurInset = presentation.shadowEnabled ? Math.ceil(2.5 * shadow.blur) : 0;
+  return {
+    x: Math.max(presentation.backgroundPadding, blurInset),
+    top: Math.max(presentation.backgroundPadding, blurInset - offset),
+    bottom: Math.max(presentation.backgroundPadding, blurInset + offset),
+  };
+}
 
 export function validPresentationNumber(key: PresentationNumber, value: number) {
   const { min, max, step } = presentationRanges[key];

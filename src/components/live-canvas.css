@@ -1,0 +1,71 @@
+.live-canvas {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.canvas-viewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overflow-anchor: none;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  outline-offset: -2px;
+  background-color: var(--ui-canvas);
+  background-image: radial-gradient(var(--ui-border) 0.7px, transparent 0.7px);
+  background-size: 20px 20px;
+}
+
+.canvas-viewport[data-pan-mode="true"] { cursor: grab; }
+.canvas-viewport[data-pan-mode="true"] .canvas-composition { pointer-events: none; }
+.canvas-viewport[data-dragging="true"] { cursor: grabbing; user-select: none; }
+.canvas-stage { position: relative; cursor: grab; }
+.canvas-viewport[data-dragging="true"] .canvas-stage { cursor: grabbing; }
+.canvas-piece { position: absolute; overflow: clip; }
+.canvas-composition { position: absolute; top: 0; left: 0; transform-origin: top left; cursor: default; }
+
+.canvas-composition[data-transparent="true"] {
+  background-color: var(--ui-surface);
+  background-image: conic-gradient(var(--ui-surface-raised) 25%, transparent 0 50%, var(--ui-surface-raised) 0 75%, transparent 0);
+  background-size: 16px 16px;
+}
+
+.canvas-toolbar, .canvas-controls, .canvas-metadata, .canvas-notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.canvas-toolbar {
+  flex-shrink: 0;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-3);
+  border-top: var(--border-width) solid var(--ui-border);
+  background: var(--ui-surface);
+  color: var(--ui-text-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.canvas-metadata { flex-wrap: wrap; gap: var(--space-1) var(--space-3); }
+.canvas-dimensions { white-space: nowrap; }
+.canvas-controls { margin-inline-start: auto; gap: var(--space-1); }
+.canvas-controls .icon-tooltip { inset: auto 0 100% auto; }
+.canvas-controls button[aria-pressed="true"] { background: var(--ui-selected); color: var(--ui-text); }
+.canvas-controls button:disabled { opacity: 0.5; cursor: default; }
+.canvas-scale { min-width: 40px; text-align: center; }
+.canvas-overflow-note { color: var(--ui-text-secondary); }
+.canvas-notice { flex-wrap: wrap; padding: var(--space-2) var(--space-4); color: var(--ui-danger); }
+
+@media (max-width: 1023px), (max-height: 439px) {
+  .canvas-viewport { flex: none; height: max(240px, 53dvh); }
+}
+
+@media (max-width: 540px) {
+  .canvas-toolbar { flex-wrap: wrap; }
+  .canvas-metadata:empty { display: none; }
+}

@@ -1,6 +1,5 @@
 .code-window {
-  width: min(100%, var(--code-window-width));
-  margin-inline: auto;
+  width: var(--code-window-width);
   border: 1px solid var(--code-border);
   border-radius: var(--code-radius);
   overflow: hidden;
@@ -71,8 +70,7 @@ input.code-window-title {
   max-width: 100%;
 }
 
-.editor-surface .cm-editor { max-height: min(53dvh, 540px); }
-.editor-surface .cm-scroller { min-height: min(var(--code-content-height), 53dvh, 540px); }
+.editor-surface .cm-scroller { min-height: var(--code-content-height); }
 
 .editor-surface .cm-scroller {
   overflow: auto;

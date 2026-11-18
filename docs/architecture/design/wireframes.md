@@ -12,13 +12,13 @@ CodeSnap은 도구 중심 정보 밀도와 코드 이미지의 시각적 우선�
 
 ## 2. Desktop 전체 구조
 
-1600 × 1000, History와 Properties가 모두 열리고 Preview를 선택한 예시다. 아래 이름은 영역을 설명하는 명세이며 모든 이름을 화면에 제목으로 표시하지 않는다.
+1600 × 1000에서 History와 Properties가 모두 열린 캔버스 예시다. History가 추가되는 단계의 배치를 함께 보여 준다.
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ Drop Your Code                                      Copy Image   Export ▾   │ 56
 ├─────┬────────────────┬───────────────────────────────────┬────────────────────┤
-│     │ History     [<]│ Editor  Preview   Keymap [VS Code]│ Properties      [>]│ 48
+│     │ History     [<]│ Canvas            Keymap [VS Code]│ Properties      [>]│ 48
 │ [E] │────────────────│───────────────────────────────────│────────────────────│
 │ [H] │ Recent entries │                                   │ Code               │
 │     │                │       scrollable canvas           │ Window             │
@@ -43,9 +43,9 @@ CodeSnap은 도구 중심 정보 밀도와 코드 이미지의 시각적 우선�
 | Left Activity Bar | x0, y56, 56 × 916 | Editor로 복귀, History 열기/닫기, Shortcuts 접근. 사용자 인터페이스 설정은 구현된 경우에만 하단 접근 제공 |
 | Left Context Panel | x56, y56, 224 × 916 | 브라우저 로컬의 최근 History 목록. 편집 문서 자체를 보관하는 영역이 아님 |
 | Main Workspace | x280, y56, 1020 × 916 | 모드 헤더와 독립 스크롤 작업면. 패널이 접히면 반환된 폭을 사용 |
-| Workspace header | x280, y56, 1020 × 48 | `Editor` / `Preview`, `Keymap`, 접힌 Properties 복원 버튼 |
+| Workspace header | x280, y56, 1020 × 48 | `Canvas`, `Keymap`, 접힌 Properties 복원 버튼 |
 | Right Properties Panel | x1300, y56, 300 × 916 | Code·Window·Background·Typography 설정. 헤더와 내부 세로 스크롤 |
-| Status Bar | x0, y972, 1600 × 28 | 실제 언어, 논리 줄 수. Preview에서만 표시 배율·Fit·논리 출력 치수 |
+| Status Bar | x0, y972, 1600 × 28 | 실제 언어와 논리 줄 수. 배율과 치수는 캔버스 하단에 표시 |
 
 큰 페이지 제목, 카드 그리드, 기능 소개, 온보딩 문단을 추가하지 않는다. 브랜드 외 화면 제목은 `History`, `Properties` 등 위치를 구분하는 짧은 패널 이름으로 제한한다. 창 장식과 코드가 주된 시각적 초점이다.
 
@@ -81,36 +81,24 @@ Language 변경 컨트롤은 Properties에 한 번만 둔다. Status Bar의 언�
 
 UI theme 선택은 작업6부터 rail 하단의 `Switch to light mode` / `Switch to dark mode` 버튼으로 제공하고 Mobile에서는 Menu의 `UI theme`으로 옮긴다. 버튼은 변경할 대상 모드를 이름으로 알린다. 이 단일 설정 때문에 별도 Settings 화면을 만들지 않는다. Phase3의 History 저장 제어 등 실제 앱 설정이 생기면 Settings 접근을 추가할 수 있다.
 
-## 4. Editor와 Preview
+## 4. 라이브 캔버스
 
-| 상태 | Main의 내용 | 표시·포커스 규칙 |
-|---|---|---|
-| Editor | CodeMirror 입력 면과 기본 코드 창 | 텍스트 선택·커서·입력 스크롤·편집 단축키. 입력 면의 텍스트를 CSS transform으로 축소하지 않음 |
-| Preview | 전체 코드로 만든 깨끗한 출력 composition | 읽기 전용. 커서·선택·스크롤바·포커스 링·편집기 검색 UI를 출력 영역에 넣지 않음 |
-| Preview 갱신 중 | 마지막 정상 결과와 비출력 영역의 짧은 상태 | Editor 입력을 막지 않음. 오래된 렌더 결과가 최신 상태를 덮어쓰지 않음 |
-| Preview 실패 | 마지막 정상 결과가 있으면 유지, 영문 오류와 재시도 | 현재 코드·설정은 유지. 낡은 결과를 최신 출력이라고 표시하지 않음 |
-
-두 모드는 같은 코드·설정을 사용한다. 전환은 문서 교체나 새 Undo 항목이 아니며 선택 위치·편집 Undo와 각 면의 viewport를 보존한다. 모드 전환 후 포커스는 선택한 탭에 남긴다. 사용자가 Editor 내용으로 진입할 때 저장된 선택 위치를 복구한다. Editor를 삭제·재생성해 선택과 Undo를 잃는 방식으로 패널이나 탭을 전환하지 않는다.
-
-두 면이 실제로 존재하는 Phase 2부터 WAI-ARIA 탭 패턴의 `Editor` / `Preview`를 표시한다. 방향키로 탭을 이동하고 선택 상태·tabpanel 관계를 노출한다. Phase 1은 `Editor`만 표시하며 동작하지 않는 Preview 탭은 두지 않는다. Editor 이외 영역에서는 IDE 편집 단축키를 가로채지 않는다.
+사용자는 캔버스에 놓인 코드 창에서 코드를 입력하고 같은 자리에서 이미지 스타일을 확인한다. 배율과 패널을 바꾸거나 캔버스를 이동해도 텍스트 선택과 Undo를 보존한다. 캔버스 치수 계산에 실패하면 기존 창에서 계속 편집할 수 있으며 `Retry`로 재시도한다.
 
 ### 코드 창과 화면 크기의 분리
 
-Phase 2에서 논리 코드 창의 너비는 실제 폰트의 최장 행·코드 패딩·줄 번호 공간을 측정해 결정하고, 높이는 시각적 줄 수·line-height·타이틀바·패딩에서 계산한다. 최소 320px·최대 960px은 기존 명세의 초기 검증 후보이며 최종 렌더러 검증 전에 고정 제품 제약이라고 주장하지 않는다. wrap 여부가 원문을 바꾸지는 않는다.
+논리 코드 창은 실제 폰트의 최장 행·코드 패딩·줄 번호 공간을 반영해 320–960px 사이로 조절한다. 높이는 표시 줄 수, 줄 높이, 창 상단과 패딩을 반영한다. 줄 바꿈 설정으로 원문을 바꾸지 않는다.
 
-줄 바꿈을 켜면 선택된 논리 창 너비에서 다시 배치한다. 끄면 긴 행을 작업면 안에서 가로 스크롤할 수 있게 하며 출력 시 행 끝을 잘라 내지 않는다. 최대 창 너비를 넘는 행의 전체 출력 방식은 Phase 2에서 크기 제한·wrap 정책과 함께 검증해 명세를 확정한다. 어떤 정책도 화면에 보이는 DOM만 내보내거나 조용히 코드를 누락해서는 안 된다.
+줄 바꿈을 끈 상태에서는 긴 줄을 코드 창에서 가로 스크롤한다. 최대 창 너비를 초과한 행은 내보낼 때 나누어 전체 내용을 표시한다.
 
-출력 composition은 불투명 코드 창과 바깥쪽 Background padding으로 구성한다. 화면의 여유 공간, dotted grid, 투명 안내 체크무늬, 치수 안내는 앱 chrome이며 이미지에 포함하지 않는다. 기본 canvas는 단색이며 점무늬는 필수 요소가 아니다. 투명 배경에서도 코드 창 자체는 불투명하고 그림자는 보존한다.
+출력 영역은 불투명 코드 창과 바깥쪽 Background padding으로 구성한다. 점 격자, 투명 배경의 체크무늬, 치수와 편집 UI는 화면에서만 표시한다. 투명 배경에서도 이미지의 코드 창은 불투명하고 그림자를 보존한다.
 
-### Zoom과 Fit
+### 이동과 배율
 
-Zoom/Fit은 Preview가 구현된 뒤 Status Bar의 한 위치에서만 제공한다. `Zoom out`, 표시 배율, `Zoom in`, `Fit`을 한 그룹으로 배치하고 언어·줄 수와 시각적으로 분리한다. Editor에는 Preview zoom을 적용하지 않는다. Editor 상태에서는 이 그룹을 숨긴다.
-
-- 수동 배율 제안: 25%, 50%, 75%, 100%, 125%, 150%, 200%. 유효 범위를 벗어난 증감 버튼만 비활성화한다. 이 숫자는 출력 배율 1×–4×와 별개다.
-- Fit은 남은 canvas의 양축에 composition 전체가 보이도록, 최대 100%까지 축소한다. 매우 큰 출력에는 25%보다 작은 Fit도 허용한다. 첫 Preview 진입과 Mobile의 기본값은 Fit이다.
-- Fit 상태에서는 패널 열기·닫기와 viewport 변경 때 다시 계산한다. 수동 zoom 상태에서는 배율을 유지하고 스크롤 범위만 조정한다. 배율 변경 전 canvas 중심이 가리키던 콘텐츠 위치를 보존한다.
-- composition이 canvas보다 작으면 가운데 놓고, 크면 왼쪽 위 바깥 여백부터 접근할 수 있게 한다. 음수 중앙 정렬로 상단·왼쪽 콘텐츠가 스크롤 범위 밖으로 사라지지 않아야 한다.
-- 예시 `888 × 496 px`은 export scale 적용 전 논리 치수다. 코드 창 792 × 400과 바깥 패딩 48px이면 해당 치수가 된다. PNG 2×는 1776 × 992px이며 표시 zoom은 이를 바꾸지 않는다. 이 예시 때문에 Java 코드나 코드 창을 792 × 400으로 강제하지 않는다.
+- 처음엔 100%로 가운데 배치하고, 좁은 화면에서는 기본 코드 창과 패딩이 들어오도록 축소한다. 창이 화면보다 크면 왼쪽 위 여백부터 접근할 수 있다.
+- `Zoom out`과 `Zoom in`은 보이는 중심을 기준으로 12.5%, 25%, 50%, 75%, 100%, 125%, 150%, 200% 사이에서 이동한다. `Fit`은 실행 시점의 전체 영역을 화면에 맞추고 `Reset view`는 최초 위치와 반응형 초기 배율을 복원한다.
+- 빈 영역은 마우스로 끌어 이동한다. `Pan mode`에서는 코드 창 위에서도 마우스나 터치로 끌 수 있다. 포커스된 캔버스에는 기본 스크롤 키가 적용된다.
+- 배율과 스크롤 위치는 이미지 치수에 영향을 주지 않는다. 예를 들어 논리 치수 `888 × 496 px`의 PNG 2×는 `1776 × 992 px`이다.
 
 ## 5. 반응형 규칙
 
@@ -133,10 +121,10 @@ Tablet drawer 너비는 `min(360px, viewport − 56px)`이고 작업면 위에 �
 ┌──────────────────────────────────────────────────────┐
 │ Drop Your Code                  Copy Image  Export ▾  │
 ├─────┬────────────────────────────────────────────────┤
-│ [E] │ Editor  Preview   Keymap [VS Code]          [P] │
+│ [E] │ Canvas            Keymap [VS Code]          [P] │
 │ [H] ├────────────────────────────────────────────────┤
 │     │                                                │
-│     │             Editor / fitted Preview            │
+│     │             Editable code window               │
 │ [K] │                                                │
 ├─────┴────────────────────────────────────────────────┤
 │ Java   12 lines                  −  100%  +  Fit      │
@@ -151,10 +139,10 @@ Tablet drawer 너비는 `min(360px, viewport − 56px)`이고 작업면 위에 �
 ┌────────────────────────────────────────┐
 │ Drop Your Code         [Copy] Export ▾  │ 56
 ├────────────────────────────────────────┤
-│ [Menu] Editor Preview       [Properties]│ 48
+│ [Menu] Canvas               [Properties]│ 48
 ├────────────────────────────────────────┤
 │                                        │
-│        Editor / fitted Preview         │
+│          Editable code window          │
 │                                        │
 ├────────────────────────────────────────┤
 │ Java   12 lines       [Zoom] [Fit]     │ min 44
@@ -186,7 +174,7 @@ Sheet는 viewport 전체 폭·사용 가능한 높이를 사용하며 라벨과 
 
 ## 6. 키보드와 접근성 계약
 
-- 순서는 `Skip to editor` → Toolbar → Activity/navigation → 열린 Context Panel → Workspace header → Editor 또는 Preview → Properties → Status controls다. CSS 배치 때문에 DOM의 읽기 순서를 뒤집지 않는다.
+- 순서는 `Skip to editor` → Toolbar → Activity/navigation → 열린 Context Panel → Canvas 헤더 → 캔버스와 편집기 → 캔버스 도구 → Properties다.
 - 아이콘은 이름 있는 button이며, 현재 활동·탭·패널 상태는 색상 외 표시선과 `aria-current` / `aria-selected` / `aria-expanded` 중 해당 의미로 전달한다. 보조 설명은 tooltip으로 제공하되 label을 tooltip에만 맡기지 않는다.
 - 모달 drawer/sheet를 열면 제목 또는 첫 입력으로 포커스를 옮긴다. Tab은 내부를 순환하고 배경은 inert로 처리한다. Escape·보이는 Close로 닫으며 opener로 포커스를 돌린다. 원래 opener가 breakpoint 변경으로 사라졌다면 같은 역할의 현재 버튼을 사용한다.
 - 키맵의 Tab 들여쓰기와 Editor 탈출은 함께 보장한다. CodeMirror 선택 버전의 `Escape`, 그 다음 `Tab` 경로는 실제 구현 때 검증하고 짧은 접근성 안내로 제공한다. 이를 모달 닫기와 혼동하지 않는다. 패널의 입력 필드에는 Editor 키맵이 적용되지 않는다.
@@ -212,7 +200,7 @@ Sheet는 viewport 전체 폭·사용 가능한 높이를 사용하며 라벨과 
 1. 1600 × 1000에서 두 패널을 연 기하 구조, 각각 접기·복원, Main 폭 반환, 포커스·문서·Undo 보존.
 2. 1440·1439·1024·1023·768·767·360·320px 및 200% 확대에서 접근 버튼·닫기·scroll 범위 유지. 좁은 Desktop의 동시 도킹 제한과 넓은 화면 복귀.
 3. Tablet/Mobile의 모달 배경 비활성·Tab trap·Escape·포커스 반환, 가상 키보드·safe-area 대응.
-4. Editor/Preview 전환으로 코드와 selection/Undo가 변하지 않음. 화면 밖의 전체 줄·끝 개행·긴 행을 Preview/export에 포함.
+4. 캔버스 확대와 이동으로 코드·선택·Undo가 변하지 않음. 화면 밖의 전체 줄·끝 개행·긴 행을 출력에 포함.
 5. Fit과 수동 zoom에서 패널 변경·viewport 변경·가로/세로 스크롤이 조합되더라도 콘텐츠 누락 없음. zoom이 출력 치수에 영향 없음.
 6. UI theme × syntax theme 네 조합, 영어 label·error·tooltip, Lucide 아이콘 이름, 키맵의 Editor 포커스 경계.
 7. 실제 구현된 기능만 표시하며 저장 성공·출력 성공이 실제 결과와 일치. 내보내기 세부 검증은 [UI 명세](ui-spec.md)와 [검증 전략](../testing/strategy.md)을 따름.

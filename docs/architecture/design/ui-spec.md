@@ -1,6 +1,6 @@
 # UI 명세
 
-갱신일: 2026-11-13 · 상태 **Phase 2 네 가지 출력 형식과 PNG 복사 구현**
+갱신일 2026-11-18 · 라이브 캔버스와 네 가지 출력 형식 및 PNG 복사
 
 기준은 [PRD](../../product/PRD.md) §4–6 및 §8이다. 이번에 제공된 `desktop-wireframe.png`, `.svg`, `design-reference.md`를 Desktop 방향으로 사용한다. 이전의 참조 이미지 부재 상태는 해소되었다. 첨부 문서의 전달용 예시 프롬프트는 실행 지시가 아니다. 배치·초기값은 PRD의 확정 요구와 구분되는 설계 제안이며, 사용자 리뷰 후 각 기능 단계에서 적용·검증한다.
 
@@ -8,7 +8,7 @@
 
 시각 토큰·Primitive는 [디자인 시스템](design-system.md), 영역 치수·패널·Desktop/Tablet/Mobile 동선은 [와이어프레임](wireframes.md)이 단일 기준이다. **Minimal Developer Workspace**를 지향한다. Dark-first/Light 지원, Lucide UI 아이콘, compact controls, 평면 패널과 코드 중심 위계를 사용한다. 큰 제목·설명 카드·마케팅 섹션·장식용 그라데이션을 두지 않는다. 스냅샷의 선택적 그라데이션 배경은 별도 제품 설정이다.
 
-## 1. 화면 구조와 편집·미리보기 관계
+## 1. 화면 구조와 라이브 캔버스
 
 PRD §5.1의 Header / Main / Settings Panel을 다음 역할로 세분화한다. Header에 나열된 keymap/history/settings 접근은 바로 아래 workspace header/rail로 이동하며 기능 접근 요구는 유지한다.
 
@@ -17,17 +17,17 @@ PRD §5.1의 Header / Main / Settings Panel을 다음 역할로 세분화한다.
 | Global Toolbar | Brand, 4× PNG `Copy Image`, 현재 형식 `Export`, `Export settings` 드롭다운 | FR-EXPORT-01/02/03 |
 | Left Activity Bar | `Editor`, `History`, `Shortcuts`, 구현 시 앱 설정 접근. Mobile에서는 Menu로 통합 | FR-EDIT-02, FR-STORAGE-02 |
 | Left Context Panel | 최근 스니펫과 History를 하나의 로컬 목록으로 표시. 접기·복원 | FR-STORAGE-02 |
-| Main Workspace | `Editor` / `Preview`, code window·canvas scroll. 헤더에 `Keymap`과 접힌 Properties 복원 | FR-EDIT-01–03, FR-EXPORT-04 |
+| Main Workspace | 편집 가능한 코드 창을 담은 `Canvas`. 헤더에 `Keymap`과 접힌 Properties 복원, 하단에 출력 치수와 이동·배율 도구 | FR-EDIT-01–03, FR-EXPORT-04 |
 | Right Properties Panel | `Code`, `Window`, `Background`, `Typography` accordion. 구현된 필드만 표시 | FR-LANG-01/03, FR-STYLE-01–03 |
-| Status Bar | 읽기 전용 Language·논리 Line count. Preview에서만 Zoom/Fit·논리 출력 치수 | FR-EDIT-03, FR-EXPORT-04 |
+| Status Bar | 읽기 전용 언어와 논리 줄 수 | FR-EDIT-03 |
 
-기본 작업면은 Editor다. Phase 2에서 두 면이 실제로 존재한 뒤 `Editor` / `Preview` 탭을 제공하고, 전환해도 코드·설정·선택 위치·편집 Undo 이력을 보존한다. 미리보기는 이미지에 들어갈 내용만 표시하는 별도 렌더링 면이며, CodeMirror의 커서·선택·스크롤바·검색 UI를 이미지에 포함하지 않는다. 두 면은 별도 코드 사본을 소유하지 않고 공통 코드·설정 상태를 읽는다(FR-EDIT-01, PRD §7). Language 선택은 Properties, Keymap은 workspace header, Preview Zoom/Fit은 Status Bar에 각각 한 번만 둔다.
+캔버스의 코드 창에서 바로 편집하면서 스타일과 바깥 배경을 확인한다. 편집과 출력은 공통 코드·설정 상태를 읽는다. Language 선택은 Properties, Keymap은 Canvas 헤더, `Pan mode`, Zoom, `Fit`, `Reset view`는 캔버스 하단에 제공한다.
 
-입력·키맵 처리는 편집기에 남긴다. 스타일 변경은 같은 설정 상태를 통해 편집 창과 미리보기에 반영하고, 미리보기 갱신이 입력을 기다리게 하지 않는다. 출력 시에는 사용자가 실행한 시점의 전체 코드·설정을 고정해 처리한다. 이전 요청의 결과가 늦게 도착하면 현재 미리보기를 그 결과로 덮어쓰지 않는다.
+입력·키맵은 CodeMirror가 처리한다. 스타일은 즉시 라이브 코드 창에 적용한다. 출력은 사용자가 실행한 시점의 전체 코드·설정으로 생성하며 편집 커서, 선택색, 스크롤바, 검색 UI는 이미지 범위에서 제외한다.
 
 Phase 1은 편집 창, 키맵·수동 언어·기본 Syntax theme 선택, 줄 번호·줄 바꿈의 기초를 제공한다. 작업6에서 디자인 토큰·독립 UI Dark/Light·기본 Properties 접기를 적용한다. 이미지 미리보기·복사·내보내기·히스토리는 후속 단계이며 준비 중 버튼·빈 섹션·가짜 저장 성공을 표시하지 않는다. 이 문서의 전체 화면 정의가 Phase 1 작업 2~6의 기능 범위 확대를 뜻하지 않는다.
 
-현재 화면은 56px 브랜드 바, Editor 진입과 UI 테마 전환, Editor 헤더의 `Keymap`, 기본 코드 창, `Properties`와 읽기 전용 상태 표시줄로 구성된다. `Properties`는 1024px 이상에서 오른쪽에, 그 미만에서는 편집기 아래에 놓인다. `Collapse Properties`로 접고 Editor 헤더의 `Show Properties`로 복원한다. 기본값은 UI Dark와 Syntax Dark다. 코드 창의 `untitled` 제목은 Phase 1에서 고정이다.
+현재 화면은 브랜드 바, `Focus editor`와 UI 테마 전환, `Keymap`, 캔버스, `Properties`와 상태 표시줄로 구성된다. `Properties`는 1024px 이상에서 오른쪽에, 그 미만에서는 캔버스 아래에 놓인다. `Collapse Properties`로 접고 Canvas 헤더의 `Show Properties`로 복원한다. 기본값은 UI Dark와 Syntax Dark다.
 
 `Language` 전환 중에는 `Loading [language]…`를 알리고 상태 표시줄에는 마지막 적용 언어가 남는다. 실패하면 select도 마지막 적용값으로 돌아오며 영어 오류와 `Retry`를 제공한다. 다른 언어를 선택하거나 재시도하는 동안에도 편집할 수 있으며 전환 때문에 포커스를 편집기로 이동시키지 않는다. `Keymap`과 `Language`는 현재 메모리에만 저장되며 새로고침하면 VS Code와 Plain Text로 시작한다. 자동 감지·저장·전체 Shortcuts는 Phase 3이다.
 
@@ -53,7 +53,7 @@ Phase 2의 자동 크기 계산은 전체 줄 수와 가장 긴 줄의 측정값
 
 화면의 스크롤 높이와 이미지의 전체 콘텐츠 높이를 구분한다. 화면 밖 줄·긴 줄·마지막 빈 줄도 출력 모델에 포함하고 편집기 화면에 보이는 DOM만으로 출력 범위를 정하지 않는다.
 
-최대 창 너비를 넘는 unwrapped 행의 전체 출력 정책은 Phase2 실험에서 확정한다. 조용히 잘라내거나 화면에 보이는 DOM만 출력하지 않는다. Preview의 Zoom/Fit은 화면 표시만 바꾸고 문서·출력 scale·픽셀 치수와 무관하다. Editor에는 Preview zoom의 CSS transform을 적용하지 않는다. canvas의 스크롤·Fit·패널 변경 규칙은 와이어프레임 §4를 따른다.
+최대 창 너비를 넘는 행은 내보낼 때 줄을 나눠 전체를 포함한다. 배율과 이동은 캔버스 표시만 바꾼다. 캔버스의 스크롤·Fit·패널 변경 규칙은 와이어프레임 §4를 따른다.
 
 ## 3. 설정 패널
 
@@ -68,13 +68,13 @@ Phase 2의 자동 크기 계산은 전체 줄 수와 가장 긴 줄의 측정값
 
 Code를 기본으로 펼치고 다른 섹션은 접는다. 복수 펼침은 허용한다. 구현된 필드가 없는 섹션은 숨긴다. 유효한 설정은 같은 프레젠테이션에 즉시 반영하며 별도 Apply는 없다. 패널 닫기가 이미 적용한 값을 취소하지 않는다. 숫자 필드는 부분 입력을 허용하고 blur/Enter에서 검증하며, 실패하면 입력값과 마지막 유효 프레젠테이션을 보존한다.
 
-`UI theme`는 앱 설정이며 Code의 `Syntax theme`와 별개다. UI Light + Syntax Dark 등 네 조합을 지원한다. 기존 `themeId` / `EditorThemeId`는 Syntax 계약으로 유지한다. UI theme·패널·accordion·mode·preview zoom은 작은 App UI state로 두고 SnapshotInput에서 제외한다. keymap·로딩·오류·저장 상태도 출력 입력이 아니다. 패널은 값·action만 받고 별도 코드 사본을 소유하지 않는다. 토큰 적용이나 패널 이동으로 EditorView를 재생성하지 않는다. 파일 경계 제안은 디자인 시스템 §7을 따른다.
+`UI theme`와 Code의 `Syntax theme`는 독립적으로 설정한다. UI 테마, 패널, 배율과 위치는 화면 상태로 관리한다. 패널 이동과 토큰 변경에도 같은 EditorView를 유지한다. 파일 경계 제안은 디자인 시스템 §7을 따른다.
 
 언어·테마를 로딩하는 동안 코드 입력은 계속 허용한다. 로딩 실패 시 텍스트와 선택을 보존하고 재시도와 사용 가능한 대체 상태를 알린다. 오프라인에서 아직 준비되지 않은 리소스에 대해 선택 성공으로 표시하지 않는다. 열린 페이지에서 주요 기능을 오프라인으로 사용할 수 있어야 한다는 PRD §6.2의 충족 범위와 사전 준비 방식은 [기술 결정](../decisions/0001-foundation.md)의 실험으로 확정한다.
 
 ## 4. 복사·내보내기 동선
 
-`Export`는 옆 화살표의 `Export settings`에서 선택한 PNG·SVG·JPG·WebP를 다운로드한다. 드롭다운은 논리 크기와 래스터 형식의 2× 픽셀 크기, JPG의 불투명 대체색을 표시한다. JPG의 기본 대체색은 `#ffffff`이며 Preview에서 합성을 확인할 수 있다. 도구 모음 바로 아래에서 다운로드 시작과 오류를 알린다. 좁은 화면에서는 브랜드를 아이콘으로 축약하며 제목의 접근성 이름을 유지한다.
+`Export`는 옆 화살표의 `Export settings`에서 선택한 PNG·SVG·JPG·WebP를 다운로드한다. 드롭다운은 논리 크기와 래스터 형식의 2× 픽셀 크기, JPG의 불투명 대체색을 표시한다. JPG의 기본 대체색은 `#ffffff`이며 투명 배경을 선택한 경우 캔버스에서 합성을 확인할 수 있다. 도구 모음 바로 아래에서 다운로드 시작과 오류를 알린다. 좁은 화면에서는 브랜드를 아이콘으로 축약하며 제목의 접근성 이름을 유지한다.
 
 `Copy Image`는 Global Toolbar에서 접근하는 독립 버튼이며 PNG를 복사한다. 편집기에서 `Ctrl+C` / `Cmd+C`는 계속 텍스트 복사다(FR-EXPORT-03). 이미지 복사 버튼이 일반 편집 단축키를 재정의하지 않는다.
 
@@ -82,7 +82,7 @@ Code를 기본으로 펼치고 다른 섹션은 접는다. 복수 펼침은 허�
 
 내보내기는 현재 페이지에서 형식·배율·필요한 배경색을 확인하고 파일 저장을 실행한다. PNG·SVG·WebP는 외부 투명을 지원하고, JPG에는 지정된 불투명 대체 배경색을 사용한다. SVG에는 배율을 적용하지 않는다(FR-EXPORT-01/02).
 
-`Export`는 현재 형식으로 바로 저장하고, 옆 화살표는 설정을 연다. 키보드로 화살표를 연 뒤 Tab으로 설정에 진입한다. 바깥 클릭이나 포커스 이동으로 닫을 수 있으며 Escape로 닫으면 화살표로 포커스가 돌아간다. WebP는 실제 encoder/MIME를 확인하고 미지원일 때 다른 형식으로 조용히 대체하지 않는다. JPG 선택 시 지정된 불투명 배경으로 합성될 모습을 Preview에서 확인할 경로를 제공한다.
+`Export`는 현재 형식으로 바로 저장하고, 옆 화살표는 설정을 연다. 키보드로 화살표를 연 뒤 Tab으로 설정에 진입한다. 바깥 클릭이나 포커스 이동으로 닫을 수 있으며 Escape로 닫으면 화살표로 포커스가 돌아간다. WebP는 실제 encoder/MIME를 확인하고 지원 여부를 알린다.
 
 복사·출력 중에는 해당 실행의 진행 상태를 표시하고 중복 실행을 막는다. 성공은 실제 클립보드 쓰기 또는 파일 생성 결과를 확인한 뒤 알린다. 권한·보안 컨텍스트·인코딩·폰트 로딩·용량 관련 실패 시 원인을 읽을 수 있는 메시지와 재시도 경로를 제공하며, 입력한 코드는 유지한다. 클립보드 실패 시 파일 저장을 대안으로 안내한다. HTTPS 또는 localhost 등 보안 컨텍스트와 실제 브라우저 지원 여부를 확인한다.
 

@@ -2,7 +2,7 @@ import type { SnapshotInput } from '../state/workspace';
 import { getBasicTheme } from '../theme/basicThemes';
 import type { HighlightSpan, SyntaxStyle } from '../theme/syntaxHighlighting';
 import type { MeasureText } from './measureText';
-import { snapshotFonts, snapshotShadows, snapshotTabSize, windowHeaderHeight } from './presentation';
+import { minSnapshotWindowWidth, snapshotFonts, snapshotInsets, snapshotShadows, snapshotTabSize, windowHeaderHeight } from './presentation';
 import { formatWindowTitle } from './windowTitle';
 
 export type SnapshotRun = Readonly<{ text: string; x: number; width: number; style?: SyntaxStyle | undefined }>;
@@ -126,7 +126,7 @@ export function layoutSnapshot(
     longest = Math.max(longest, width);
     return { pieces, unwrapped, width };
   });
-  const windowWidth = Math.min(960, Math.max(320, Math.ceil(longest + fixedWidth)));
+  const windowWidth = Math.min(960, Math.max(minSnapshotWindowWidth, Math.ceil(longest + fixedWidth)));
   const availableWidth = windowWidth - fixedWidth;
   const rows: SnapshotRow[] = [];
   laidOut.forEach(({ pieces, unwrapped, width }, index) => {
@@ -141,11 +141,7 @@ export function layoutSnapshot(
   const contentHeight = (count: number) => Math.ceil(2 * presentation.codePadding + count * lineHeight);
   const windowHeight = 2 + windowHeaderHeight + contentHeight(rows.length);
   const shadow = snapshotShadows[presentation.shadowStrength];
-  // Keep the portion of the blur visible at 8-bit alpha even with zero background padding.
-  const shadowInset = presentation.shadowEnabled ? Math.ceil(2.5 * shadow.blur) : 0;
-  const insetX = Math.max(presentation.backgroundPadding, shadowInset);
-  const insetTop = Math.max(presentation.backgroundPadding, shadowInset - shadow.offsetY);
-  const insetBottom = Math.max(presentation.backgroundPadding, shadowInset + (presentation.shadowEnabled ? shadow.offsetY : 0));
+  const { x: insetX, top: insetTop, bottom: insetBottom } = snapshotInsets(presentation);
   const titleLimit = (windowWidth - 34) / 2;
   const title = presentation.showTitle ? formatWindowTitle(presentation.title, input.languageId) : '';
   const displayTitle = measureTitle(title) <= titleLimit ? title

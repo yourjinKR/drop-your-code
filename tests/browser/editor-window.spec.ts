@@ -73,6 +73,9 @@ test('properties_toggle_preserves_editor_state', async ({ page }) => {
 
   await editor.press('Escape');
   await editor.press('Tab');
+  await expect(page.getByRole('button', { name: 'Pan mode' })).toBeFocused();
+  await page.getByRole('button', { name: 'Reset view' }).focus();
+  await page.keyboard.press('Tab');
   const collapse = page.getByRole('button', { name: 'Collapse Properties' });
   await expect(collapse).toBeFocused();
   await expect(collapse).toHaveCSS('outline-style', 'solid');

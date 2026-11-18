@@ -1,9 +1,9 @@
 import { useCallback, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { CodeXml, Copy, Download, Eye, LoaderCircle, Maximize, Minus, Moon, PanelRightOpen, Plus, SquareCode, Sun } from 'lucide-react';
-import type { KeyboardEvent } from 'react';
+import { CodeXml, Copy, Download, LoaderCircle, Moon, PanelRightOpen, SquareCode, Sun } from 'lucide-react';
 import { CodeWindow } from '../components/CodeWindow';
 import { EditorSettings } from '../components/EditorSettings';
 import { ExportSettings } from '../components/ExportSettings';
+import { LiveCanvas } from '../components/LiveCanvas';
 import { IconButton } from '../components/ui/IconButton';
 import { EditorSurface } from '../editor/EditorSurface';
 import { detectPlatform } from '../editor/keymaps';
@@ -12,28 +12,19 @@ import type { LoadedLanguage } from '../editor/languages';
 import { DEFAULT_JPG_BACKGROUND, DEFAULT_RASTER_SCALE } from '../export/encodeSnapshot';
 import type { SnapshotExportOptions } from '../export/encodeSnapshot';
 import { useSnapshotExport } from '../export/useSnapshotExport';
-import { SnapshotPreview, previewZoomLevels } from '../snapshot/SnapshotPreview';
 import { useSnapshotModel } from '../snapshot/useSnapshotModel';
 import { createInitialWorkspace, selectSnapshotInput, workspaceReducer } from '../state/workspace';
 import type { LanguageId } from '../state/workspace';
 
 type UiTheme = 'dark' | 'light';
-type Mode = 'editor' | 'preview';
 
 export function App() {
   const [workspace, dispatch] = useReducer(workspaceReducer, undefined, createInitialWorkspace);
   const [language, setLanguage] = useState<LoadedLanguage | null>(null);
   const [uiTheme, setUiTheme] = useState<UiTheme>('dark');
   const [propertiesOpen, setPropertiesOpen] = useState(true);
-  const [mode, setMode] = useState<Mode>('editor');
-  const [tabStop, setTabStop] = useState<Mode>('editor');
-  const [zoom, setZoom] = useState<number | null>(null);
   const [format, setFormat] = useState<SnapshotExportOptions['format']>('png');
   const [jpgBackground, setJpgBackground] = useState(DEFAULT_JPG_BACKGROUND);
-  const [previewDisplay, setPreviewDisplay] = useState({ scale: 1, width: 0, height: 0 });
-  const editorTab = useRef<HTMLButtonElement>(null);
-  const previewTab = useRef<HTMLButtonElement>(null);
-  const focusEditorOnShow = useRef(false);
   const editorFocus = useRef<(() => void) | null>(null);
   const showProperties = useRef<HTMLButtonElement>(null);
   const collapseProperties = useRef<HTMLButtonElement>(null);
@@ -50,9 +41,6 @@ export function App() {
     : { format, scale: DEFAULT_RASTER_SCALE };
   const output = useSnapshotExport(input, currentModel, exportOptions);
   const copyLabel = output.action === 'copy' ? 'Copying…' : 'Copy Image';
-  const previewActive = mode === 'preview';
-  const zoomIn = previewZoomLevels.find((value) => value > previewDisplay.scale);
-  const zoomOut = previewZoomLevels.filter((value) => value < previewDisplay.scale).at(-1);
   const lineCount = workspace.document.code.split('\n').length;
   const isMac = detectPlatform() === 'macos';
   const keymapHint = isMac
@@ -68,17 +56,6 @@ export function App() {
     dispatch({ type: 'languageChanged', languageId: id });
   }, []);
   const onCodeChange = useCallback((code: string) => dispatch({ type: 'codeChanged', code }), []);
-  const onDisplay = useCallback((scale: number, width: number, height: number) => {
-    setPreviewDisplay((previous) => previous.scale === scale && previous.width === width && previous.height === height
-      ? previous : { scale, width, height });
-  }, []);
-
-  useLayoutEffect(() => {
-    if (mode === 'editor' && focusEditorOnShow.current) {
-      focusEditorOnShow.current = false;
-      editorFocus.current?.();
-    }
-  }, [mode]);
 
   useLayoutEffect(() => {
     const root = document.documentElement;
@@ -102,28 +79,12 @@ export function App() {
     setPropertiesOpen((open) => !open);
   }
 
-  function activateTab(next: Mode) {
-    setMode(next);
-    setTabStop(next);
-  }
-
-  function moveTab(event: KeyboardEvent<HTMLDivElement>) {
-    let next: Mode;
-    switch (event.key) {
-      case 'Home': next = 'editor'; break;
-      case 'End': next = 'preview'; break;
-      case 'ArrowRight':
-      case 'ArrowLeft': next = event.target === editorTab.current ? 'preview' : 'editor'; break;
-      default: return;
-    }
-    event.preventDefault();
-    setTabStop(next);
-    (next === 'editor' ? editorTab : previewTab).current?.focus();
-  }
-
   return (
     <div className="app-shell">
-      <a className="skip-link" href="#workspace" onClick={() => activateTab('editor')}>Skip to editor</a>
+      <a className="skip-link" href="#workspace" onClick={(event) => {
+        event.preventDefault();
+        editorFocus.current?.();
+      }}>Skip to editor</a>
 
       <header className="app-header">
         <span className="brand-mark"><CodeXml size={20} aria-hidden="true" /></span>
@@ -152,12 +113,7 @@ export function App() {
       </div>
 
       <div className="activity-bar" role="group" aria-label="Workspace controls">
-        <IconButton label="Focus editor" onClick={() => {
-          if (previewActive) {
-            focusEditorOnShow.current = true;
-            activateTab('editor');
-          } else editorFocus.current?.();
-        }}>
+        <IconButton label="Focus editor" onClick={() => editorFocus.current?.()}>
           <SquareCode size={18} aria-hidden="true" />
         </IconButton>
         <IconButton
@@ -177,19 +133,7 @@ export function App() {
       >
         <section className="workspace-editor" aria-label="Code workspace">
           <div className="workspace-header">
-            <div className="workspace-tabs" role="tablist" aria-label="Workspace view" onKeyDown={moveTab}
-              onBlur={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget)) setTabStop(mode);
-              }}>
-              <button type="button" role="tab" ref={editorTab} id="editor-tab" aria-controls="editor-panel"
-                aria-selected={!previewActive} tabIndex={tabStop === 'editor' ? 0 : -1} onClick={() => activateTab('editor')}>
-                <SquareCode size={16} aria-hidden="true" />Editor
-              </button>
-              <button type="button" role="tab" ref={previewTab} id="preview-tab" aria-controls="preview-panel"
-                aria-selected={previewActive} tabIndex={tabStop === 'preview' ? 0 : -1} onClick={() => activateTab('preview')}>
-                <Eye size={16} aria-hidden="true" />Preview
-              </button>
-            </div>
+            <h2>Canvas</h2>
             <div className="workspace-controls">
               <div className="keymap-control">
                 <label htmlFor="keymap">Keymap</label>
@@ -221,7 +165,8 @@ export function App() {
               )}
             </div>
           </div>
-          <div className="editor-canvas" id="editor-panel" role="tabpanel" aria-labelledby="editor-tab" hidden={previewActive}>
+          <LiveCanvas presentation={presentation} model={snapshot.model} failed={snapshot.status === 'error'}
+            retry={snapshot.retry} jpgBackground={format === 'jpg' ? jpgBackground : undefined}>
             <CodeWindow presentation={presentation} languageId={languageId} themeId={themeId} model={snapshot.model}
               onTitleChange={(title) => dispatch({ type: 'presentationChanged', presentation: { ...presentation, title } })}>
               <EditorSurface
@@ -230,13 +175,10 @@ export function App() {
                 language={language}
                 onCodeChange={onCodeChange}
                 focusRef={editorFocus}
-                visible={!previewActive}
               />
             </CodeWindow>
-            <p id="editor-help" className="editor-help">Tab indents. Press Escape, then Tab to leave the editor.</p>
-          </div>
-          <SnapshotPreview active={previewActive} {...snapshot} zoom={zoom} onDisplay={onDisplay}
-            backgroundColor={format === 'jpg' ? jpgBackground : undefined} />
+          </LiveCanvas>
+          <p id="editor-help" className="sr-only">Tab indents. Press Escape, then Tab to leave the editor.</p>
         </section>
         <EditorSettings
           settings={settings}
@@ -253,15 +195,6 @@ export function App() {
           <span>{languages[languageId].label}</span>
           <span>{lineCount} {lineCount === 1 ? 'line' : 'lines'}</span>
         </div>
-        {previewActive && <div className="preview-zoom" role="group" aria-label="Preview zoom">
-          {previewDisplay.width > 0 && <span className="preview-dimensions">{previewDisplay.width} × {previewDisplay.height} px</span>}
-          <IconButton label="Zoom out" disabled={zoomOut === undefined || !previewDisplay.width}
-            onClick={() => zoomOut !== undefined && setZoom(zoomOut)}><Minus size={14} aria-hidden="true" /></IconButton>
-          <span className="preview-scale">{previewDisplay.width ? `${Number((previewDisplay.scale * 100).toFixed(1))}%` : '—'}</span>
-          <IconButton label="Zoom in" disabled={zoomIn === undefined || !previewDisplay.width}
-            onClick={() => zoomIn !== undefined && setZoom(zoomIn)}><Plus size={14} aria-hidden="true" /></IconButton>
-          <IconButton label="Fit" aria-pressed={zoom === null} onClick={() => setZoom(null)}><Maximize size={14} aria-hidden="true" /></IconButton>
-        </div>}
       </footer>
     </div>
   );

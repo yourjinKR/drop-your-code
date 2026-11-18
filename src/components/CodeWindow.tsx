@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import type { EditorThemeId, LanguageId } from '../state/workspace';
 import type { SnapshotModel } from '../snapshot/model';
-import { snapshotFonts, snapshotShadows, snapshotTabSize, windowHeaderHeight } from '../snapshot/presentation';
+import { minSnapshotWindowWidth, snapshotFonts, snapshotShadows, snapshotTabSize, windowHeaderHeight } from '../snapshot/presentation';
 import type { SnapshotPresentation } from '../snapshot/presentation';
 import { formatWindowTitle } from '../snapshot/windowTitle';
 import { getBasicTheme } from '../theme/basicThemes';
@@ -69,8 +69,8 @@ export function CodeWindow({ presentation, languageId, themeId, model, onTitleCh
     '--code-header': theme.header,
     '--code-border': theme.border,
     '--code-title': theme.muted,
-    '--code-window-width': `${model?.window.width ?? 320}px`,
-    '--code-content-height': `${model?.editorContentHeight ?? 69}px`,
+    '--code-window-width': `${model?.window.width ?? minSnapshotWindowWidth}px`,
+    '--code-content-height': `${model?.editorContentHeight ?? Math.ceil(2 * codePadding + fontSize * lineHeight)}px`,
     '--code-header-height': `${windowHeaderHeight}px`,
     '--code-font': snapshotFonts[fontId].family,
     '--code-font-size': `${fontSize}px`,

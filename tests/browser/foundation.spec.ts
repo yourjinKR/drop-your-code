@@ -103,13 +103,10 @@ test('lets keyboard users skip directly to the workspace', async ({ page }) => {
   await expect(skipLink).toBeFocused();
   await expect(skipLink).toBeInViewport();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('main', { name: 'Workspace' })).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(page.getByRole('tab', { name: 'Editor' })).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(page.getByRole('combobox', { name: 'Keymap' })).toBeFocused();
-  await page.keyboard.press('Tab');
   await expect(page.getByRole('textbox', { name: 'Code editor' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Pan mode' })).toBeFocused();
 });
 
 for (const width of [360, 768, 1280]) {

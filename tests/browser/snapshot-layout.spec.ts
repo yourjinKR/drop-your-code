@@ -34,5 +34,6 @@ test('a narrow editor scrolls through 300 lines and wraps only when requested', 
   await expect.poll(overflowX).toBe(false);
   await editor.press('Control+End');
   await expect(editor.getByText('line 300', { exact: true })).toBeInViewport();
-  await expect.poll(() => scroller.evaluate((element) => element.scrollTop)).toBeGreaterThan(1000);
+  const canvas = page.getByRole('region', { name: 'Snapshot canvas' });
+  await expect.poll(() => canvas.evaluate((element) => element.scrollTop)).toBeGreaterThan(1000);
 });

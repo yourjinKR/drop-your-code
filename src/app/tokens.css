@@ -42,7 +42,6 @@
   --status-height: 28px;
   --control-height: 32px;
   --touch-target: 44px;
-  --canvas-inset: var(--space-6);
   --ui-transition: 120ms ease-out;
 }
 
@@ -68,10 +67,6 @@
   --ui-warning: #805300;
   --ui-success: #236a3b;
   --ui-scrim: rgb(0 0 0 / 32%);
-}
-
-@media (max-width: 767px) {
-  :root { --canvas-inset: var(--space-4); }
 }
 
 @media (pointer: coarse) {
