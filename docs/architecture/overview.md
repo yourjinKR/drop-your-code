@@ -22,6 +22,8 @@
 
 `getBasicTheme(themeId)`는 DOM에 의존하지 않는 색 데이터를 반환한다. 편집 창은 이 값으로 창 테두리와 제목을 그리고 CodeMirror는 구문색과 편집기 전경·배경을 적용한다. 구문 테마, 줄 번호와 줄 바꿈은 별도 compartment를 통해 같은 EditorView에 반영한다. UI 테마와 Properties 표시 여부는 App의 UI 상태로 관리한다.
 
+언어를 선택하면 편집 명령용 CodeMirror 언어 모듈과 Shiki의 TextMate 문법을 불러온다. Plain Text는 두 리소스를 로드하지 않는다. 편집기의 CodeMirror 범위 장식과 스냅샷은 같은 토큰 범위와 IntelliJ 계열 Dark·Light 색상 규칙을 사용한다. 입력 시 장식 갱신을 짧게 지연하고 최신 코드·언어·테마의 토큰만 메모리에 재사용한다. 엔진과 문법은 정적 자산이고 토큰화는 브라우저에서 실행한다.
+
 창 제목은 `presentation.title` 원문과 `showTitle` 표시 설정으로 관리한다. 편집 창과 스냅샷 모델은 `formatWindowTitle` 및 언어 레지스트리의 확장명으로 표시용 제목을 계산한다. 창에서 직접 편집할 때 Enter 또는 포커스 이동으로 커밋하고, Escape로 닫으면 제목 버튼에 포커스를 돌린다. 빈 제목은 편집 창의 `Add title` 동작으로 다시 입력할 수 있다. 이미지 파일명은 제목 원문을 사용한다.
 
 ### 현재 편집기 어댑터

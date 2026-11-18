@@ -1,7 +1,7 @@
 import { PanelRightClose } from 'lucide-react';
-import type { LanguageSupport } from '@codemirror/language';
 import type { Dispatch, Ref } from 'react';
 import { LanguageSelect } from '../editor/LanguageSelect';
+import type { LoadedLanguage } from '../editor/languages';
 import type { EditorSettings as Settings, LanguageId, WorkspaceAction } from '../state/workspace';
 import { IconButton } from './ui/IconButton';
 import { PropertyGroup, SnapshotStyleSettings } from './SnapshotStyleSettings';
@@ -11,7 +11,7 @@ type EditorSettingsProps = {
   open: boolean;
   collapseRef: Ref<HTMLButtonElement>;
   onCollapse: () => void;
-  onLanguageApplied: (id: LanguageId, support: LanguageSupport | null) => void;
+  onLanguageApplied: (id: LanguageId, language: LoadedLanguage | null) => void;
   dispatch: Dispatch<WorkspaceAction>;
 };
 

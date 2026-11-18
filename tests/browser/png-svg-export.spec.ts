@@ -45,7 +45,7 @@ test('downloads PNG and standalone SVG with the preview styling at 320px', async
     ctx.drawImage(image, 0, 0);
     const at = (x: number, y: number) => Array.from(ctx.getImageData(x, y, 1, 1).data);
     const pixels = ctx.getImageData(145, 230, 74, 35).data;
-    const hasKeyword = pixels.some((red, i) => i % 4 === 0 && red === 215 && pixels[i + 1] === 169 && pixels[i + 2] === 240);
+    const hasKeyword = pixels.some((red, i) => i % 4 === 0 && red === 207 && pixels[i + 1] === 142 && pixels[i + 2] === 109);
     return { width: canvas.width, height: canvas.height, corner: at(0, 0), shadow: at(416, 332),
       window: at(416, 300), hasKeyword };
   }, png.bytes.toString('base64'));
@@ -160,7 +160,8 @@ test('preserves spaces and tab stops in downloaded and copied snapshots', async 
         const x = Math.ceil((left + (column + 0.25) * cellWidth) * scale);
         const y = Math.round((baselines[row]! - 13) * scale);
         return ctx.getImageData(x, y, Math.ceil(cellWidth * 0.5 * scale), 16 * scale).data
-          .some((red, index) => index % 4 === 0 && red > 125);
+          .some((red, index, rgba) => index % 4 === 0
+            && 0.2126 * red + 0.7152 * rgba[index + 1]! + 0.0722 * rgba[index + 2]! > 125);
       });
     }
 

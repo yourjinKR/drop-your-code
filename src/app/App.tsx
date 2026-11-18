@@ -1,6 +1,5 @@
 import { useCallback, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { CodeXml, Copy, Download, Eye, LoaderCircle, Maximize, Minus, Moon, PanelRightOpen, Plus, SquareCode, Sun } from 'lucide-react';
-import type { LanguageSupport } from '@codemirror/language';
 import type { KeyboardEvent } from 'react';
 import { CodeWindow } from '../components/CodeWindow';
 import { EditorSettings } from '../components/EditorSettings';
@@ -9,6 +8,7 @@ import { IconButton } from '../components/ui/IconButton';
 import { EditorSurface } from '../editor/EditorSurface';
 import { detectPlatform } from '../editor/keymaps';
 import { languages } from '../editor/languages';
+import type { LoadedLanguage } from '../editor/languages';
 import { DEFAULT_JPG_BACKGROUND, DEFAULT_RASTER_SCALE } from '../export/encodeSnapshot';
 import type { SnapshotExportOptions } from '../export/encodeSnapshot';
 import { useSnapshotExport } from '../export/useSnapshotExport';
@@ -22,7 +22,7 @@ type Mode = 'editor' | 'preview';
 
 export function App() {
   const [workspace, dispatch] = useReducer(workspaceReducer, undefined, createInitialWorkspace);
-  const [languageSupport, setLanguageSupport] = useState<LanguageSupport | null>(null);
+  const [language, setLanguage] = useState<LoadedLanguage | null>(null);
   const [uiTheme, setUiTheme] = useState<UiTheme>('dark');
   const [propertiesOpen, setPropertiesOpen] = useState(true);
   const [mode, setMode] = useState<Mode>('editor');
@@ -63,8 +63,8 @@ export function App() {
       ? 'In the editor, Ctrl+Y deletes a line. Ctrl+Shift+Z is Redo.'
       : 'In the editor, Ctrl+Y is Redo.';
 
-  const onLanguageApplied = useCallback((id: LanguageId, support: LanguageSupport | null) => {
-    setLanguageSupport(support);
+  const onLanguageApplied = useCallback((id: LanguageId, loaded: LoadedLanguage | null) => {
+    setLanguage(loaded);
     dispatch({ type: 'languageChanged', languageId: id });
   }, []);
   const onCodeChange = useCallback((code: string) => dispatch({ type: 'codeChanged', code }), []);
@@ -227,7 +227,7 @@ export function App() {
               <EditorSurface
                 code={workspace.document.code}
                 settings={settings}
-                languageSupport={languageSupport}
+                language={language}
                 onCodeChange={onCodeChange}
                 focusRef={editorFocus}
                 visible={!previewActive}

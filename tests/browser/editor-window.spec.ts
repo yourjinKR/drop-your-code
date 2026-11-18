@@ -144,19 +144,19 @@ test('UI and syntax themes can be combined independently', async ({ page }) => {
 
   await expect(root).toHaveCSS('color-scheme', 'dark');
   await expect(canvas).toHaveCSS('background-color', 'rgb(29, 31, 36)');
-  await expect(keyword).toHaveCSS('color', 'rgb(215, 169, 240)');
+  await expect(keyword).toHaveCSS('color', 'rgb(207, 142, 109)');
   await page.getByRole('button', { name: 'Switch to light mode' }).click();
   await expect(root).toHaveCSS('color-scheme', 'light');
   await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', '#f3f4f6');
-  await expect(keyword).toHaveCSS('color', 'rgb(215, 169, 240)');
+  await expect(keyword).toHaveCSS('color', 'rgb(207, 142, 109)');
   await syntax.selectOption('light');
   await expect(root).toHaveCSS('color-scheme', 'light');
   await expect(canvas).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-  await expect(keyword).toHaveCSS('color', 'rgb(116, 40, 148)');
+  await expect(keyword).toHaveCSS('color', 'rgb(0, 51, 179)');
   await page.getByRole('button', { name: 'Switch to dark mode' }).click();
   await expect(root).toHaveCSS('color-scheme', 'dark');
   await expect(canvas).toHaveCSS('background-color', 'rgb(255, 255, 255)');
-  await expect(keyword).toHaveCSS('color', 'rgb(116, 40, 148)');
+  await expect(keyword).toHaveCSS('color', 'rgb(0, 51, 179)');
 });
 
 test('wrap removes horizontal scrolling without changing logical lines on a narrow screen', async ({ page }) => {

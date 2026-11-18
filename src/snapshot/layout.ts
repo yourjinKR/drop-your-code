@@ -1,7 +1,6 @@
 import type { SnapshotInput } from '../state/workspace';
 import { getBasicTheme } from '../theme/basicThemes';
-import type { SyntaxStyle } from '../theme/syntaxHighlighting';
-import type { HighlightSpan } from './highlight';
+import type { HighlightSpan, SyntaxStyle } from '../theme/syntaxHighlighting';
 import type { MeasureText } from './measureText';
 import { snapshotFonts, snapshotShadows, snapshotTabSize, windowHeaderHeight } from './presentation';
 import { formatWindowTitle } from './windowTitle';

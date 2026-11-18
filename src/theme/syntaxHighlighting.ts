@@ -1,5 +1,4 @@
-import { tags } from '@lezer/highlight';
-import type { Tag } from '@lezer/highlight';
+import type { ThemeRegistrationRaw } from '@shikijs/primitive';
 import type { EditorThemeId } from '../state/workspace';
 import { getBasicTheme } from './basicThemes';
 
@@ -10,18 +9,35 @@ export type SyntaxStyle = Readonly<{
   textDecoration?: 'line-through';
 }>;
 
-export function syntaxRules(id: EditorThemeId): (SyntaxStyle & { tag: Tag | Tag[] })[] {
-  const colors = getBasicTheme(id).syntax;
-  return [
-    { tag: [tags.keyword, tags.modifier], color: colors.keyword },
-    { tag: [tags.string, tags.special(tags.string)], color: colors.string },
-    { tag: tags.comment, color: colors.comment },
-    { tag: [tags.number, tags.bool, tags.null, tags.atom], color: colors.literal },
-    { tag: [tags.typeName, tags.className, tags.tagName, tags.heading], color: colors.type },
-    { tag: [tags.propertyName, tags.attributeName, tags.function(tags.variableName), tags.link], color: colors.property },
-    { tag: [tags.regexp, tags.escape], color: colors.escape },
-    { tag: tags.emphasis, fontStyle: 'italic' },
-    { tag: tags.strong, fontWeight: 'bold' },
-    { tag: tags.strikethrough, textDecoration: 'line-through' },
-  ];
+export type HighlightSpan = Readonly<{ from: number; to: number; style: SyntaxStyle }>;
+export type Highlighter = (code: string, theme: EditorThemeId) => readonly HighlightSpan[];
+
+export function textMateTheme(id: EditorThemeId): ThemeRegistrationRaw {
+  const { syntax, background, foreground } = getBasicTheme(id);
+  return {
+    name: id,
+    type: id,
+    colors: { 'editor.background': background, 'editor.foreground': foreground },
+    settings: [
+      { scope: ['keyword', 'storage', 'constant.language'], settings: { foreground: syntax.keyword } },
+      { scope: ['keyword.operator', 'storage.type.function.arrow', 'storage.modifier.package', 'storage.modifier.import'],
+        settings: { foreground } },
+      { scope: ['string', 'punctuation.definition.string'], settings: { foreground: syntax.string } },
+      { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: syntax.comment } },
+      { scope: ['constant.numeric', 'constant.character'], settings: { foreground: syntax.literal } },
+      { scope: ['support.type', 'entity.name.type', 'entity.name.tag', 'markup.heading', 'storage.type.java'],
+        settings: { foreground: syntax.type } },
+      { scope: ['entity.name.type.class'], settings: { foreground: syntax.className } },
+      { scope: ['entity.name.function', 'support.function', 'meta.function-call.generic'],
+        settings: { foreground: syntax.function } },
+      { scope: ['support.type.property-name', 'punctuation.support.type.property-name', 'entity.other.attribute-name', 'entity.name.tag.yaml'],
+        settings: { foreground: syntax.property } },
+      { scope: ['storage.type.annotation', 'punctuation.definition.annotation', 'meta.annotation', 'meta.decorator'],
+        settings: { foreground: syntax.annotation } },
+      { scope: ['constant.character.escape', 'string.regexp'], settings: { foreground: syntax.escape } },
+      { scope: 'markup.italic', settings: { fontStyle: 'italic' } },
+      { scope: 'markup.bold', settings: { fontStyle: 'bold' } },
+      { scope: 'markup.strikethrough', settings: { fontStyle: 'strikethrough' } },
+    ],
+  };
 }

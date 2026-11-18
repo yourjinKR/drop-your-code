@@ -1,14 +1,10 @@
-// @vitest-environment jsdom
+// @vitest-environment node
 import { EditorState } from '@codemirror/state';
 import { ensureSyntaxTree, indentUnit } from '@codemirror/language';
 import { indentMore, insertNewlineAndIndent, toggleComment } from '@codemirror/commands';
-import { highlightTree } from '@lezer/highlight';
 import { describe, expect, it, vi } from 'vitest';
 import { languageIds, languages, loadLanguage } from '../../src/editor/languages';
-import { createHighlightStyle } from '../../src/editor/languageHighlighting';
 import { languageFixtures } from '../fixtures/code/languages';
-
-const editorHighlightStyle = createHighlightStyle('dark');
 
 describe('language registry', () => {
   it('covers the full initial language list and treats Plain Text as unparsed', async () => {
@@ -44,26 +40,17 @@ describe('language registry', () => {
 
   it.each(languageFixtures)('$label highlights, indents and comments as supported', async (fixture) => {
     const { code, tokens, indent, comment } = fixture;
-    const support = await loadLanguage(fixture.id);
-    const extensions = [support?.extension ?? [], indentUnit.of('  ')];
+    const language = await loadLanguage(fixture.id);
+    const extensions = [language?.support.extension ?? [], indentUnit.of('  ')];
     const parsed = EditorState.create({ doc: code, extensions });
-    const styled = new Map<string, string>();
-    if (support) {
-      const tree = ensureSyntaxTree(parsed, parsed.doc.length, 1_000);
-      if (!tree) throw new Error(`Could not parse the ${fixture.label} fixture`);
-      highlightTree(tree, editorHighlightStyle, (from, to, classes) => {
-        styled.set(code.slice(from, to), classes);
-      });
-    }
-    const fixtureClasses = tokens.map(([token]) => styled.get(token));
-    if (fixture.id === 'plaintext') expect(styled.size).toBe(0);
-    else {
-      expect(fixtureClasses).not.toContain(undefined);
-      expect(new Set(fixtureClasses).size).toBe(fixtureClasses.length);
+    const spans = language?.highlight(code, 'dark') ?? [];
+    for (const [token, color] of tokens) {
+      expect(spans.some(({ from, to, style }) => code.slice(from, to).trim() === token && style.color === color), token)
+        .toBe(true);
     }
 
     let state = EditorState.create({ doc: indent.before, selection: { anchor: indent.before.length }, extensions });
-    if (support) expect(ensureSyntaxTree(state, state.doc.length, 1_000)).not.toBeNull();
+    if (language) expect(ensureSyntaxTree(state, state.doc.length, 1_000)).not.toBeNull();
     const commandTarget = () => ({ state, dispatch: (transaction: ReturnType<EditorState['update']>) => {
       state = transaction.state;
     } });

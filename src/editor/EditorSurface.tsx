@@ -1,11 +1,11 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import type { RefObject } from 'react';
 import { Compartment, EditorSelection } from '@codemirror/state';
 import { EditorView, keymap } from '@codemirror/view';
 import { createEditor, externalCodeChange, lineNumberGutter, noExtension } from './createEditor';
 import type { EditorCompartments, EditorSurfaceProps } from './createEditor';
 import { buildKeymap, detectPlatform } from './keymaps';
-import { editorThemes } from './languageHighlighting';
+import { editorThemes, textMateDecorations } from './languageHighlighting';
 import type { KeymapPreset } from '../state/workspace';
 
 export type { EditorSurfaceProps } from './createEditor';
@@ -33,6 +33,7 @@ export function EditorSurface(props: EditorSurfaceProps & { focusRef?: RefObject
     const compartments: EditorCompartments = {
       keymap: new Compartment(),
       language: new Compartment(),
+      highlighting: new Compartment(),
       theme: new Compartment(),
       lineNumbers: new Compartment(),
       wrap: new Compartment(),
@@ -71,14 +72,17 @@ export function EditorSurface(props: EditorSurfaceProps & { focusRef?: RefObject
     appliedKeymapRef.current = props.settings.keymap;
   }, [props.settings.keymap]);
 
-  const languageSupport = props.languageSupport ?? null;
+  const language = props.language ?? null;
   const { themeId, lineNumbers, wrap } = props.settings;
+  const highlighting = useMemo(() => language ? textMateDecorations(language.highlight, themeId) : noExtension,
+    [language, themeId]);
   useLayoutEffect(() => {
     const view = viewRef.current;
     const compartments = compartmentsRef.current;
     if (!view || !compartments) return;
     const extensions = [
-      [compartments.language, languageSupport?.extension ?? noExtension],
+      [compartments.language, language?.support.extension ?? noExtension],
+      [compartments.highlighting, highlighting],
       [compartments.theme, editorThemes[themeId]],
       [compartments.lineNumbers, lineNumbers ? lineNumberGutter : noExtension],
       [compartments.wrap, wrap ? EditorView.lineWrapping : noExtension],
@@ -87,7 +91,7 @@ export function EditorSurface(props: EditorSurfaceProps & { focusRef?: RefObject
       .filter(([compartment, extension]) => compartment.get(view.state) !== extension)
       .map(([compartment, extension]) => compartment.reconfigure(extension));
     if (effects.length) view.dispatch({ effects });
-  }, [languageSupport, themeId, lineNumbers, wrap]);
+  }, [language, highlighting, themeId, lineNumbers, wrap]);
 
   useLayoutEffect(() => {
     const view = viewRef.current;
