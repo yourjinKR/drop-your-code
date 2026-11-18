@@ -67,7 +67,7 @@ test('all_visible_controls_have_english_names', async ({ page }) => {
   }
   await page.getByRole('button', { name: 'Focus editor' }).click();
   await expect(page.getByRole('textbox', { name: 'Code editor' })).toBeFocused();
-  await expect(page.getByRole('button', { name: 'Export' })).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Copy Image' })).toBeEnabled();
   await expect(page.getByRole('button', { name: /history/i })).toHaveCount(0);
 });
@@ -79,7 +79,9 @@ test('keeps keyboard focus visible in forced colors and respects reduced motion'
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Copy Image' })).toBeFocused();
   await page.keyboard.press('Tab');
-  await expect(page.getByRole('button', { name: 'Export' })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: 'Export settings' })).toBeFocused();
   await page.keyboard.press('Tab');
   const focus = page.getByRole('button', { name: 'Focus editor' });
   await expect(focus).toBeFocused();

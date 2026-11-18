@@ -38,7 +38,8 @@ test('JPG preview and export composite the chosen color and preserve opaque snap
   await page.getByText('Background', { exact: true }).click();
   const transparent = page.getByRole('checkbox', { name: 'Transparent' });
   await transparent.check();
-  await page.locator('summary').getByText('Export', { exact: true }).click();
+  const settings = page.getByRole('button', { name: 'Export settings' });
+  await settings.click();
   const format = page.getByRole('combobox', { name: 'Format' });
   await format.selectOption('jpg');
   const jpgBackground = page.getByLabel('JPG background');
@@ -56,6 +57,7 @@ test('JPG preview and export composite the chosen color and preserve opaque snap
   expectColor(decoded.pixels[1]!, [211, 181, 138], 14);
   expectColor(decoded.pixels[2]!, [29, 31, 36], 5);
 
+  await settings.click();
   await format.selectOption('webp');
   await expect(jpgBackground).toHaveCount(0);
   await expect(transparent).toBeChecked();
@@ -72,7 +74,7 @@ test('WebP preserves alpha and the final row of a 300-line snapshot when the enc
   await page.goto('/');
   await page.getByText('Background', { exact: true }).click();
   await page.getByRole('checkbox', { name: 'Transparent' }).check();
-  await page.locator('summary').getByText('Export', { exact: true }).click();
+  await page.getByRole('button', { name: 'Export settings' }).click();
   await page.getByRole('combobox', { name: 'Format' }).selectOption('webp');
   await page.getByRole('textbox', { name: 'Code editor' }).focus();
   await page.keyboard.insertText([...Array.from({ length: 299 }, (_, index) => `line ${index + 1}`), 'ZZZZZZZZZZZZZZZZ'].join('\n'));
@@ -107,13 +109,15 @@ test('reports WebP MIME fallback without downloading and allows PNG recovery', a
     };
   });
   await page.goto('/');
-  await page.locator('summary').getByText('Export', { exact: true }).click();
+  const settings = page.getByRole('button', { name: 'Export settings' });
+  await settings.click();
   const format = page.getByRole('combobox', { name: 'Format' });
   await format.selectOption('webp');
   const downloads: string[] = [];
   page.on('download', (file) => downloads.push(file.suggestedFilename()));
   await page.getByRole('button', { name: 'Export', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText(webpUnavailable);
+  await settings.click();
   await format.selectOption('png');
   const png = await readExport(page, 'png');
   expect(png.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');

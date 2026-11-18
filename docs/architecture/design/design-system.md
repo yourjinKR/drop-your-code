@@ -47,7 +47,7 @@
 | 상태·도움말·tooltip | 12 / 16px | 400 | 12px 아래 사용하지 않음 |
 | 코드 초기값 | 14 / 21px | 400 | 이후 Typography로 조정, UI scale과 독립 |
 
-UI font: `"Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif`. 코드 font: `Consolas, "SFMono-Regular", Menlo, monospace`. 원격 폰트 요청을 추가하지 않는다. UI에 불필요한 display font·자간 효과·전면 monospace 라벨을 쓰지 않는다. 치수·배율·행 수에는 tabular numbers를 쓴다. 브라우저 글자 확대와 사용자 설정을 차단하지 않는다.
+UI font: `"Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif`. 코드의 기본 시스템 글꼴 순서는 `"Cascadia Mono", "Cascadia Code", Consolas, "SFMono-Regular", Menlo, monospace`다. 설치된 글꼴을 사용한다. UI에 불필요한 display font·자간 효과·전면 monospace 라벨을 쓰지 않는다. 치수·배율·행 수에는 tabular numbers를 쓴다. 브라우저 글자 확대와 사용자 설정을 차단하지 않는다.
 
 코드 font fallback은 플랫폼마다 지표가 다르다. 실제 선택된 글꼴로 렌더러가 측정해야 하며 고정 문자 수로 폭을 계산하지 않는다. 존재하지 않는 폰트를 선택된 것으로 표시하지 않는다. 폰트 파일을 묶거나 SVG에 임베딩할 경우 라이선스·용량·독립 뷰어 호환성을 Phase 2에서 검증한다. 제공 이미지의 Consolas 16/24px은 예시이며 기존 14/21px 기본값을 대체하지 않는다.
 

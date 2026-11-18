@@ -16,7 +16,7 @@ CodeSnap은 도구 중심 정보 밀도와 코드 이미지의 시각적 우선�
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ Drop Your Code                                      Copy Image    Export     │ 56
+│ Drop Your Code                                      Copy Image   Export ▾   │ 56
 ├─────┬────────────────┬───────────────────────────────────┬────────────────────┤
 │     │ History     [<]│ Editor  Preview   Keymap [VS Code]│ Properties      [>]│ 48
 │ [E] │────────────────│───────────────────────────────────│────────────────────│
@@ -24,7 +24,7 @@ CodeSnap은 도구 중심 정보 밀도와 코드 이미지의 시각적 우선�
 │     │                │       scrollable canvas           │ Window             │
 │     │                │   ┌───────────────────────────┐   │ Background         │
 │     │                │   │ output background/padding │   │ Typography         │
-│     │                │   │ ┌───────────────────────┐ │   │ Export             │
+│     │                │   │ ┌───────────────────────┐ │   │                    │
 │     │                │   │ │ title / code window   │ │   │                    │
 │     │                │   │ └───────────────────────┘ │   │                    │
 │ [K] │                │   └───────────────────────────┘   │                    │
@@ -39,17 +39,17 @@ CodeSnap은 도구 중심 정보 밀도와 코드 이미지의 시각적 우선�
 
 | 영역 | 1600 × 1000 기준 위치·크기 | 책임 |
 |---|---|---|
-| Global Toolbar | x0, y0, 1600 × 56 | 브랜드, PNG `Copy Image`, 현재 형식 `Export`. 문서 제목은 공간이 있을 때만 보조 정보로 표시 |
+| Global Toolbar | x0, y0, 1600 × 56 | 브랜드, 4× PNG `Copy Image`, 현재 형식 `Export`와 설정 화살표. 문서 제목은 공간이 있을 때만 보조 정보로 표시 |
 | Left Activity Bar | x0, y56, 56 × 916 | Editor로 복귀, History 열기/닫기, Shortcuts 접근. 사용자 인터페이스 설정은 구현된 경우에만 하단 접근 제공 |
 | Left Context Panel | x56, y56, 224 × 916 | 브라우저 로컬의 최근 History 목록. 편집 문서 자체를 보관하는 영역이 아님 |
 | Main Workspace | x280, y56, 1020 × 916 | 모드 헤더와 독립 스크롤 작업면. 패널이 접히면 반환된 폭을 사용 |
 | Workspace header | x280, y56, 1020 × 48 | `Editor` / `Preview`, `Keymap`, 접힌 Properties 복원 버튼 |
-| Right Properties Panel | x1300, y56, 300 × 916 | Code·Window·Background·Typography·Export 설정. 헤더와 내부 세로 스크롤 |
+| Right Properties Panel | x1300, y56, 300 × 916 | Code·Window·Background·Typography 설정. 헤더와 내부 세로 스크롤 |
 | Status Bar | x0, y972, 1600 × 28 | 실제 언어, 논리 줄 수. Preview에서만 표시 배율·Fit·논리 출력 치수 |
 
 큰 페이지 제목, 카드 그리드, 기능 소개, 온보딩 문단을 추가하지 않는다. 브랜드 외 화면 제목은 `History`, `Properties` 등 위치를 구분하는 짧은 패널 이름으로 제한한다. 창 장식과 코드가 주된 시각적 초점이다.
 
-Global Toolbar의 Export는 단일 실행 버튼으로 한다. 형식·배율은 Properties의 Export 섹션에서 설정한다. 참조 이미지의 split-button 화살표를 맞추기 위해 중복 출력 메뉴를 추가하지 않는다. Undo/Redo는 편집기 명령으로 제공하며, 참조 이미지에 있다는 이유로 별도 전역 버튼을 추가하지 않는다.
+Global Toolbar의 `Export`는 선택한 형식으로 바로 저장한다. 옆 화살표를 열면 형식, 픽셀 치수와 JPG 배경을 확인할 수 있다. Undo/Redo는 편집기 명령으로 제공한다.
 
 ## 3. 패널과 스크롤
 
@@ -74,7 +74,6 @@ History의 기본 행은 제목 또는 구분 가능한 코드 일부, 언어, �
 | Window | Title, Language icon, Radius, Shadow. macOS 장식은 기본 프리셋 | 고정 프리셋은 작업 6, 사용자 조정 필드는 Phase 2 |
 | Background | Color, Background padding, Transparent. 선택적 그라데이션은 별도 결정 | Phase 2 |
 | Typography | Font, Font size, Line height, Code padding | Phase 2. 작업 6은 고정 기본값만 사용 |
-| Export | Format, 출력 치수, JPG background. Scale은 Phase 3 | Phase 2, 1×–4× 선택은 Phase 3 |
 
 구현된 필드만 있는 섹션을 표시하고 빈 아코디언은 숨긴다. Code를 기본으로 펼치며, 나머지는 첫 사용 때 접힌 상태로 시작한다. 사용자가 펼친 섹션은 여러 개를 동시에 유지할 수 있다. 참조 이미지처럼 모든 그룹을 열어 놓는 것은 예시이며 기본으로 강제하지 않는다. 각 섹션은 얇은 구분선으로 나누고 중첩 카드로 감싸지 않는다. 조밀한 Desktop에서는 라벨과 컨트롤을 두 열에 두며 긴 라벨·오류·큰 글자에서는 한 열로 재배치한다.
 
@@ -132,7 +131,7 @@ Tablet drawer 너비는 `min(360px, viewport − 56px)`이고 작업면 위에 �
 
 ```text
 ┌──────────────────────────────────────────────────────┐
-│ Drop Your Code                   Copy Image   Export  │
+│ Drop Your Code                  Copy Image  Export ▾  │
 ├─────┬────────────────────────────────────────────────┤
 │ [E] │ Editor  Preview   Keymap [VS Code]          [P] │
 │ [H] ├────────────────────────────────────────────────┤
@@ -150,7 +149,7 @@ Tablet drawer 너비는 `min(360px, viewport − 56px)`이고 작업면 위에 �
 
 ```text
 ┌────────────────────────────────────────┐
-│ Drop Your Code          [Copy]  Export  │ 56
+│ Drop Your Code         [Copy] Export ▾  │ 56
 ├────────────────────────────────────────┤
 │ [Menu] Editor Preview       [Properties]│ 48
 ├────────────────────────────────────────┤
@@ -179,7 +178,7 @@ Tablet drawer 너비는 `min(360px, viewport − 56px)`이고 작업면 위에 �
 
 Mobile 첫 행의 Copy는 Lucide 아이콘으로 축약하되 접근성 이름·tooltip은 `Copy Image`로 유지한다. Export는 텍스트를 유지한다. 둘 다 실제 기능 도입 후 표시한다. 브랜드는 필요하면 아이콘으로 축약해도 접근성 이름 `Drop Your Code`를 보존한다. Workspace header의 `[Menu]`는 Keymap과 구현된 History·Shortcuts·Settings를 나열하며, 항목이 없으면 메뉴 자체를 숨긴다.
 
-두 번째 행은 44px 터치 target을 보장한다. Mobile의 Keymap은 텍스트 입력이 아닌 이름 있는 Menu 항목으로 옮긴다. Mode와 Properties 접근은 남긴다. Status Bar는 상호작용 컨트롤이 있거나 coarse pointer 환경이면 최소 44px로 높이고, Preview의 개별 −/+는 이름 있는 `Zoom` 메뉴로 합쳐 동일 배율 선택을 제공한다. 낮은 우선순위인 저장 상세·치수는 Export 섹션에서 확인할 수 있다. 줄 수·언어는 유지하고 줄 바꿈을 허용한다. 320px에서도 앱 chrome의 가로 스크롤을 만들지 않는다. 코드와 canvas의 의도된 가로 스크롤은 별개다.
+두 번째 행은 44px 터치 target을 보장한다. Mobile의 Keymap은 텍스트 입력이 아닌 이름 있는 Menu 항목으로 옮긴다. Mode와 Properties 접근은 남긴다. Status Bar는 상호작용 컨트롤이 있거나 coarse pointer 환경이면 최소 44px로 높이고, Preview의 개별 −/+는 이름 있는 `Zoom` 메뉴로 합쳐 동일 배율 선택을 제공한다. 저장 상세와 치수는 상단 Export 화살표에서 확인할 수 있다. 줄 수·언어는 유지하고 줄 바꿈을 허용한다. 320px에서도 앱 chrome의 가로 스크롤을 만들지 않는다. 코드와 canvas의 의도된 가로 스크롤은 별개다.
 
 Sheet는 viewport 전체 폭·사용 가능한 높이를 사용하며 라벨과 입력을 한 열에 둔다. 상단에 이름과 명시적인 `Close` 버튼을 두고 본문을 스크롤한다. 별도의 Apply 없이 유효한 Properties 변경을 반영한다. 닫기나 Escape가 이미 반영된 설정을 취소한다는 의미를 부여하지 않는다.
 

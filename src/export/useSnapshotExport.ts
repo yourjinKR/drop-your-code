@@ -4,12 +4,16 @@ import { buildSnapshotModel } from '../snapshot/model';
 import type { SnapshotInput } from '../state/workspace';
 import { copySnapshotPng } from './copyPng';
 import { downloadSnapshot, snapshotFilename } from './downloadSnapshot';
-import { DEFAULT_RASTER_SCALE, encodeSnapshot, SnapshotExportError } from './encodeSnapshot';
+import { encodeSnapshot, SnapshotExportError } from './encodeSnapshot';
 import type { SnapshotExportOptions } from './encodeSnapshot';
 
 type OutputAction = 'export' | 'copy';
 
-export function useSnapshotExport(input: SnapshotInput, preview: SnapshotModel | null, options: SnapshotExportOptions) {
+export function useSnapshotExport(
+  input: SnapshotInput,
+  preview: SnapshotModel | null,
+  options: SnapshotExportOptions,
+) {
   const running = useRef(false);
   const [action, setAction] = useState<OutputAction | null>(null);
   const [message, setMessage] = useState('');
@@ -30,7 +34,7 @@ export function useSnapshotExport(input: SnapshotInput, preview: SnapshotModel |
     setError('');
     try {
       if (next === 'copy') {
-        await copySnapshotPng(() => createImage({ format: 'png', scale: DEFAULT_RASTER_SCALE }));
+        await copySnapshotPng(() => createImage({ format: 'png', scale: 4 }));
         setMessage('Image copied.');
       } else {
         const blob = await createImage(options);

@@ -23,7 +23,8 @@ test('downloads PNG and standalone SVG with the preview styling at 320px', async
   await page.getByRole('textbox', { name: 'Title' }).fill('example / code');
   await page.getByText('Background', { exact: true }).click();
   await page.getByRole('checkbox', { name: 'Transparent' }).check();
-  await page.locator('summary').getByText('Export', { exact: true }).click();
+  const settings = page.getByRole('button', { name: 'Export settings' });
+  await settings.click();
   const format = page.getByRole('combobox', { name: 'Format' });
   await expect(format).toHaveValue('png');
   await expect(page.getByText('Snapshot size 416 × 211 px')).toBeVisible();
@@ -52,8 +53,10 @@ test('downloads PNG and standalone SVG with the preview styling at 320px', async
   expect(sample.shadow[3]).toBeLessThan(255);
   await expect(page.getByRole('status', { name: 'Image output status' })).toHaveText('Download started.');
 
+  await settings.click();
   await format.selectOption('svg');
   await expect(page.getByText('SVG uses the snapshot size.')).toBeVisible();
+  await settings.press('Escape');
   await page.getByRole('tab', { name: 'Preview' }).click();
   const preview = page.getByRole('img', { name: 'Code snapshot' });
   await expect(preview).toBeVisible();
@@ -105,7 +108,7 @@ test('preserves spaces and tab stops in downloaded and copied snapshots', async 
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('Java');
   await page.getByRole('textbox', { name: 'Code editor' }).focus();
   await page.keyboard.insertText(lines.join('\n'));
-  await page.locator('summary').getByText('Export', { exact: true }).click();
+  const settings = page.getByRole('button', { name: 'Export settings' });
   const format = page.getByRole('combobox', { name: 'Format' });
   const supportsWebp = await page.evaluate(() => new Promise((resolve) => {
     document.createElement('canvas').toBlob((blob) => resolve(blob?.type === 'image/webp'), 'image/webp');
@@ -114,6 +117,7 @@ test('preserves spaces and tab stops in downloaded and copied snapshots', async 
   const downloads = [];
   for (const [name, mime] of files) {
     if (name === 'webp' && !supportsWebp) continue;
+    await settings.click();
     await format.selectOption(name);
     const { bytes } = await downloadImage(page);
     downloads.push({ name, url: `data:${mime};base64,${bytes.toString('base64')}` });
@@ -193,7 +197,8 @@ test('exports all 300 lines and the long row from either mode regardless of scro
   await expect.poll(() => scroller.evaluate((element) => element.scrollTop)).toBeGreaterThan(500);
   const before = await downloadImage(page);
 
-  await page.locator('summary').getByText('Export', { exact: true }).click();
+  const settings = page.getByRole('button', { name: 'Export settings' });
+  await settings.click();
   const format = page.getByRole('combobox', { name: 'Format' });
   await format.selectOption('svg');
   const svg = await downloadImage(page);
@@ -227,7 +232,9 @@ test('exports all 300 lines and the long row from either mode regardless of scro
   }, { base64: before.bytes.toString('base64'), ...samples });
   expect(raster).toEqual({ width: samples.width * 2, height: samples.height * 2, bottom: true, right: true });
 
+  await settings.click();
   await format.selectOption('png');
+  await settings.press('Escape');
   await page.getByRole('tab', { name: 'Preview' }).click();
   await expect(page.getByRole('img', { name: 'Code snapshot' })).toBeVisible();
   await page.getByRole('button', { name: 'Zoom in' }).click();
@@ -241,7 +248,7 @@ test('measures click-to-download for 200 JavaScript lines on the production buil
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('JavaScript');
   await page.getByRole('textbox', { name: 'Code editor' }).focus();
   await page.keyboard.insertText(Array.from({ length: 200 }, (_, i) => `const item${i} = { value: ${i} };`).join('\n'));
-  await page.locator('summary').getByText('Export', { exact: true }).click();
+  await page.getByRole('button', { name: 'Export settings' }).click();
   await expect(page.getByText(/^2× output \d/)).toBeVisible();
 
   const results: number[] = [];

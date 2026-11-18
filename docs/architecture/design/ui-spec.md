@@ -14,11 +14,11 @@ PRD §5.1의 Header / Main / Settings Panel을 다음 역할로 세분화한다.
 
 | 영역 | 내용과 동작 | 연결 요구사항 |
 |---|---|---|
-| Global Toolbar | Brand, PNG `Copy Image`, 현재 형식 `Export`. 같은 페이지에서 실행 | FR-EXPORT-01/03 |
+| Global Toolbar | Brand, 4× PNG `Copy Image`, 현재 형식 `Export`, `Export settings` 드롭다운 | FR-EXPORT-01/02/03 |
 | Left Activity Bar | `Editor`, `History`, `Shortcuts`, 구현 시 앱 설정 접근. Mobile에서는 Menu로 통합 | FR-EDIT-02, FR-STORAGE-02 |
 | Left Context Panel | 최근 스니펫과 History를 하나의 로컬 목록으로 표시. 접기·복원 | FR-STORAGE-02 |
 | Main Workspace | `Editor` / `Preview`, code window·canvas scroll. 헤더에 `Keymap`과 접힌 Properties 복원 | FR-EDIT-01–03, FR-EXPORT-04 |
-| Right Properties Panel | `Code`, `Window`, `Background`, `Typography`, `Export` accordion. 구현된 필드만 표시 | FR-LANG-01/03, FR-STYLE-01–03, FR-EXPORT-01/02 |
+| Right Properties Panel | `Code`, `Window`, `Background`, `Typography` accordion. 구현된 필드만 표시 | FR-LANG-01/03, FR-STYLE-01–03 |
 | Status Bar | 읽기 전용 Language·논리 Line count. Preview에서만 Zoom/Fit·논리 출력 치수 | FR-EDIT-03, FR-EXPORT-04 |
 
 기본 작업면은 Editor다. Phase 2에서 두 면이 실제로 존재한 뒤 `Editor` / `Preview` 탭을 제공하고, 전환해도 코드·설정·선택 위치·편집 Undo 이력을 보존한다. 미리보기는 이미지에 들어갈 내용만 표시하는 별도 렌더링 면이며, CodeMirror의 커서·선택·스크롤바·검색 UI를 이미지에 포함하지 않는다. 두 면은 별도 코드 사본을 소유하지 않고 공통 코드·설정 상태를 읽는다(FR-EDIT-01, PRD §7). Language 선택은 Properties, Keymap은 workspace header, Preview Zoom/Fit은 Status Bar에 각각 한 번만 둔다.
@@ -66,7 +66,6 @@ Phase 2의 자동 크기 계산은 전체 줄 수와 가장 긴 줄의 측정값
 | Window | Title, Language icon, Radius, Shadow, Shadow strength | 기본 제목 `untitled`, 아이콘과 그림자 켜짐, Radius 12px (0–32px), Shadow strength Medium (Low/Medium/High) |
 | Background | Color, Background padding, Transparent | 기본 `#242427`, 48px (0–128px), 투명 꺼짐. 그림자의 표시 여백은 composition에 확보하고 투명 배경에서도 창은 불투명하게 유지한다. |
 | Typography | Font, Font size, Line height, Code padding | 기본 System monospace, 14px (10–32px), 1.5 (1.2–2.0, 0.1 단위), 24px (0–64px). 로컬 글꼴은 사용 가능할 때 표시하고 적용 스택을 안내한다. |
-| Export | Format, 논리 출력 치수, JPG background. Phase3 Scale | Phase2 기본 **2x**, Phase3 **1x/2x/3x/4x**. SVG는 scale 무관임을 안내하고 선택 비활성 |
 
 Code를 기본으로 펼치고 다른 섹션은 접는다. 복수 펼침은 허용한다. 구현된 필드가 없는 섹션은 숨긴다. 유효한 설정은 같은 프레젠테이션에 즉시 반영하며 별도 Apply는 없다. 패널 닫기가 이미 적용한 값을 취소하지 않는다. 숫자 필드는 부분 입력을 허용하고 blur/Enter에서 검증하며, 실패하면 입력값과 마지막 유효 프레젠테이션을 보존한다.
 
@@ -76,15 +75,15 @@ Code를 기본으로 펼치고 다른 섹션은 접는다. 복수 펼침은 허�
 
 ## 4. 복사·내보내기 동선
 
-`Export`는 Properties에서 선택한 PNG·SVG·JPG·WebP를 다운로드한다. `Export` 그룹은 논리 크기와 래스터 형식의 2× 픽셀 크기를 표시한다. JPG의 불투명 대체색은 기본 `#ffffff`이며 Preview 이미지 경계 안에서 합성을 확인할 수 있다. 도구 모음 바로 아래에서 다운로드 시작과 오류를 알린다. 좁은 화면에서는 브랜드를 아이콘으로 축약하며 제목의 접근성 이름을 유지한다.
+`Export`는 옆 화살표의 `Export settings`에서 선택한 PNG·SVG·JPG·WebP를 다운로드한다. 드롭다운은 논리 크기와 래스터 형식의 2× 픽셀 크기, JPG의 불투명 대체색을 표시한다. JPG의 기본 대체색은 `#ffffff`이며 Preview에서 합성을 확인할 수 있다. 도구 모음 바로 아래에서 다운로드 시작과 오류를 알린다. 좁은 화면에서는 브랜드를 아이콘으로 축약하며 제목의 접근성 이름을 유지한다.
 
 `Copy Image`는 Global Toolbar에서 접근하는 독립 버튼이며 PNG를 복사한다. 편집기에서 `Ctrl+C` / `Cmd+C`는 계속 텍스트 복사다(FR-EXPORT-03). 이미지 복사 버튼이 일반 편집 단축키를 재정의하지 않는다.
 
-`Copy Image`는 현재 편집 내용과 공통 스타일을 2× PNG로 복사한다. 다운로드 형식과 JPG 대체색은 파일 저장에 적용한다. 480px 미만에서는 복사 버튼을 아이콘으로 표시하며 버튼 이름과 툴팁을 유지한다.
+`Copy Image`는 현재 편집 내용과 공통 스타일을 항상 고화질 4× PNG로 복사한다. 다운로드 형식과 JPG 대체색은 파일 저장에 적용한다. 480px 미만에서는 복사 버튼을 아이콘으로 표시하며 버튼 이름과 툴팁을 유지한다.
 
 내보내기는 현재 페이지에서 형식·배율·필요한 배경색을 확인하고 파일 저장을 실행한다. PNG·SVG·WebP는 외부 투명을 지원하고, JPG에는 지정된 불투명 대체 배경색을 사용한다. SVG에는 배율을 적용하지 않는다(FR-EXPORT-01/02).
 
-`Export`는 현재 Format의 단일 실행 버튼이다. Format/Scale은 Properties에 모아 split-menu 중복을 피한다. 구현 완료한 형식만 노출하되 최종 MVP 네 포맷 요구는 유지한다. WebP는 실제 encoder/MIME를 확인하고 미지원일 때 다른 형식으로 조용히 대체하지 않는다. JPG 선택 시 지정된 불투명 배경으로 합성될 모습을 Preview에서 확인할 경로를 제공한다.
+`Export`는 현재 형식으로 바로 저장하고, 옆 화살표는 설정을 연다. 키보드로 화살표를 연 뒤 Tab으로 설정에 진입한다. 바깥 클릭이나 포커스 이동으로 닫을 수 있으며 Escape로 닫으면 화살표로 포커스가 돌아간다. WebP는 실제 encoder/MIME를 확인하고 미지원일 때 다른 형식으로 조용히 대체하지 않는다. JPG 선택 시 지정된 불투명 배경으로 합성될 모습을 Preview에서 확인할 경로를 제공한다.
 
 복사·출력 중에는 해당 실행의 진행 상태를 표시하고 중복 실행을 막는다. 성공은 실제 클립보드 쓰기 또는 파일 생성 결과를 확인한 뒤 알린다. 권한·보안 컨텍스트·인코딩·폰트 로딩·용량 관련 실패 시 원인을 읽을 수 있는 메시지와 재시도 경로를 제공하며, 입력한 코드는 유지한다. 클립보드 실패 시 파일 저장을 대안으로 안내한다. HTTPS 또는 localhost 등 보안 컨텍스트와 실제 브라우저 지원 여부를 확인한다.
 

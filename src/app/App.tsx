@@ -4,6 +4,7 @@ import type { LanguageSupport } from '@codemirror/language';
 import type { KeyboardEvent } from 'react';
 import { CodeWindow } from '../components/CodeWindow';
 import { EditorSettings } from '../components/EditorSettings';
+import { ExportSettings } from '../components/ExportSettings';
 import { IconButton } from '../components/ui/IconButton';
 import { EditorSurface } from '../editor/EditorSurface';
 import { detectPlatform } from '../editor/keymaps';
@@ -134,10 +135,14 @@ export function App() {
               : <Copy size={16} aria-hidden="true" />}
             <span aria-hidden="true">{copyLabel}</span>
           </IconButton>
-          <button className="export-button" type="button" aria-disabled={output.busy} aria-busy={output.action === 'export'}
-            onClick={output.exportImage}>
-            <Download size={16} aria-hidden="true" />{output.action === 'export' ? 'Exporting…' : 'Export'}
-          </button>
+          <div className="export-split" role="group" aria-label="Download">
+            <button className="export-button" type="button" aria-disabled={output.busy} aria-busy={output.action === 'export'}
+              onClick={output.exportImage}>
+              <Download size={16} aria-hidden="true" />{output.action === 'export' ? 'Exporting…' : 'Export'}
+            </button>
+            <ExportSettings format={format} onFormatChange={setFormat} jpgBackground={jpgBackground}
+              onJpgBackgroundChange={setJpgBackground} dimensions={currentModel} />
+          </div>
         </div>
       </header>
 
@@ -234,11 +239,6 @@ export function App() {
         </section>
         <EditorSettings
           settings={settings}
-          format={format}
-          onFormatChange={setFormat}
-          jpgBackground={jpgBackground}
-          onJpgBackgroundChange={setJpgBackground}
-          dimensions={currentModel}
           open={propertiesOpen}
           collapseRef={collapseProperties}
           onCollapse={toggleProperties}
