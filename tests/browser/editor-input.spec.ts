@@ -116,6 +116,105 @@ test('accepts input, selection, replacement, deletion and Undo/Redo', async ({ p
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('1 line');
 });
 
+test('automatically closes typed pairs and overtypes the generated closer', async ({ page }) => {
+  await page.goto('/');
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  await editor.focus();
+  for (const [open, close] of [['(', ')'], ['[', ']'], ['{', '}'], ['"', '"']] as const) {
+    await page.keyboard.press('ControlOrMeta+a');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.type(open);
+    await expect(editor).toHaveText(open + close);
+    await page.keyboard.type('x');
+    await expect(editor).toHaveText(open + 'x' + close);
+    await page.keyboard.type(close + '.');
+    await expect(editor).toHaveText(open + 'x' + close + '.');
+  }
+});
+
+test('wraps a selection in one undo step and preserves literal pasted brackets', async ({ page }) => {
+  await page.goto('/');
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  await pasteCode(editor, 'alpha\nbeta');
+  await page.keyboard.press('ControlOrMeta+a');
+  await page.keyboard.type('{');
+  expect(await copyAllCode(page, editor)).toBe('{alpha\nbeta}');
+  await page.keyboard.press('ControlOrMeta+z');
+  expect(await copyAllCode(page, editor)).toBe('alpha\nbeta');
+
+  await pasteCode(editor, '(');
+  await expect(editor).toHaveText('(');
+  await page.keyboard.press('ControlOrMeta+a');
+  await pasteCode(editor, '()');
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.type(')');
+  await expect(editor).toHaveText('())');
+});
+
+for (const [preset, windowsRedo] of [['vscode', 'Control+y'], ['intellij', 'Control+Shift+z']] as const) {
+  test(`undoes and redoes a pair and deletes both characters from between in ${preset}`, async ({ page }) => {
+    await page.goto('/');
+    const editor = page.getByRole('textbox', { name: 'Code editor' });
+    await page.getByRole('combobox', { name: 'Keymap' }).selectOption(preset);
+    await editor.focus();
+    await page.keyboard.type('[');
+    await expect(editor).toHaveText('[]');
+    await page.keyboard.press('ControlOrMeta+z');
+    await expect(editor).toHaveText('');
+    await page.keyboard.press(process.platform === 'darwin' ? 'Meta+Shift+z' : windowsRedo);
+    await expect(editor).toHaveText('[]');
+    await page.keyboard.press('Home');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Backspace');
+    await expect(editor).toHaveText('');
+  });
+}
+
+test('uses the current language rules for single quotes and backticks', async ({ page }) => {
+  await page.goto('/');
+  const language = page.getByRole('combobox', { name: 'Language' });
+  const status = page.getByRole('status', { name: 'Editor status' });
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  await language.selectOption('javascript');
+  await expect(status).toContainText('JavaScript');
+  await editor.focus();
+  await page.keyboard.type("''`");
+  await expect(editor).toHaveText("''``");
+  await page.keyboard.press('ControlOrMeta+a');
+  await page.keyboard.press('Backspace');
+
+  await language.selectOption('json');
+  await expect(status).toContainText('JSON');
+  await editor.focus();
+  await page.keyboard.type("'`");
+  await expect(editor).toHaveText("'`");
+});
+
+test('keeps escaped quotes inside a Java string and apostrophes in comments', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('combobox', { name: 'Language' }).selectOption('java');
+  await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('Java');
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  await pasteCode(editor, 'String text = ');
+  await page.keyboard.type(`"say \\"hi\\"";`);
+  await expect(editor).toHaveText(String.raw`String text = "say \"hi\"";`);
+
+  await page.keyboard.press('Enter');
+  await page.keyboard.type("// don't");
+  expect(await copyAllCode(page, editor)).toBe(String.raw`String text = "say \"hi\"";` + "\n// don't");
+});
+
+test('does not auto-close characters inserted during composition', async ({ page }) => {
+  await page.goto('/');
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  await editor.focus();
+  await editor.dispatchEvent('compositionstart', { data: '', bubbles: true });
+  await page.keyboard.insertText('(');
+  await editor.dispatchEvent('compositionend', { data: '(', bubbles: true });
+  await expect(editor).toHaveText('(');
+  expect(await copyAllCode(page, editor)).toBe('(');
+});
+
 test('keeps basic auto-indent, Tab/Shift+Tab and a keyboard exit path', async ({ page }) => {
   await page.goto('/');
   const editor = page.getByRole('textbox', { name: 'Code editor' });
