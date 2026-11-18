@@ -17,7 +17,8 @@ export function renderSnapshotSvg(model: SnapshotModel, viewport = { width: mode
       const italic = style?.fontStyle ? ` font-style="${style.fontStyle}"` : '';
       const weight = style?.fontWeight ? ` font-weight="${style.fontWeight}"` : '';
       const decoration = style?.textDecoration ? ` text-decoration="${style.textDecoration}"` : '';
-      return `<text x="${position(x)}" y="${position(baseline)}"${color}${italic}${weight}${decoration}>${escapeXml(text)}</text>`;
+      // Apply whitespace preservation directly to each run for SVG image rendering.
+      return `<text x="${position(x)}" y="${position(baseline)}" style="white-space:pre"${color}${italic}${weight}${decoration}>${escapeXml(text)}</text>`;
     }).join('');
     return `<g class="code-row">${number}${code}</g>`;
   }).join('');
@@ -39,7 +40,7 @@ ${windowShadow}
 <path d="M0 ${windowHeaderHeight + 0.5}H${frame.width}" stroke="${theme.border}"/>
 ${lights}${icon}${title}
 ${model.gutter ? `<path d="M${model.gutter + 0.5} ${windowHeaderHeight + 1}V${frame.height}" stroke="${theme.border}"/>` : ''}
-<g font-family="${escapeXml(model.fontFamily)}" font-size="${fontSize}" fill="${theme.foreground}" style="white-space:pre;font-variant-ligatures:none">${rows}</g>
+<g font-family="${escapeXml(model.fontFamily)}" font-size="${fontSize}" fill="${theme.foreground}" style="font-variant-ligatures:none">${rows}</g>
 </g>
 <rect x="0.5" y="0.5" width="${frame.width - 1}" height="${frame.height - 1}" rx="${Math.max(0, radius - 0.5)}" fill="none" stroke="${theme.border}"/>
 </g></svg>`;
