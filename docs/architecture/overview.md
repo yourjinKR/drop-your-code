@@ -26,6 +26,8 @@
 
 `src/editor/createEditor.ts`는 history·선택한 preset keymap·Tab 들여쓰기·변경 listener를 구성한다. `src/editor/EditorSurface.tsx`는 mount/cleanup에서 view를 생성/정리하고 최신 commit의 callback을 참조한다. App은 lazy reducer와 안정적인 callback으로 변경을 반영한다. 키 입력·부모 echo·callback 교체 때문에 view를 다시 만들지 않는다.
 
+자동 닫기는 `@codemirror/autocomplete`의 `closeBrackets()`를 사용하며 짝 문자는 현재 언어 모드의 규칙을 따른다. 여는 문자로 선택을 감싸고 자동 삽입된 닫는 문자 앞에서 같은 문자를 입력하면 커서를 넘긴다. 빈 짝의 Backspace 바인딩은 두 IDE 프리셋에서 기본 탐색·삭제 명령보다 먼저 처리하며 포커스와 IME 검사를 공유한다. 붙여넣기는 편집기의 기본 입력 경로를 사용한다.
+
 외부 교체는 다른 문서일 때 한 transaction에 `externalCodeChange` annotation을 붙이고 selection의 anchor/head를 새 길이에 맞춘다. listener는 이 변경을 다시 onCodeChange로 보내지 않는다. 현재 외부 교체는 기본 history에 들어가며 인접 편집과 묶일 수 있다. Phase 3의 History 복원 Undo 정책을 이미 확정한 것으로 보지 않는다.
 
 keymap/language/theme/lineNumbers/wrap Compartment는 생성 시 한 번 등록한다. keymap은 preset 변경 때 그 slot만 reconfigure하고 같은 view·문서·선택·Undo를 유지한다. 이미 적용한 preset은 다시 구성하지 않는다. 나머지 slot은 비어 있으며 작업 5~6의 연결 지점이다. Escape는 바인딩하지 않아 선택이 있는 경우에도 내장 Escape 다음 Tab 탈출을 사용한다.

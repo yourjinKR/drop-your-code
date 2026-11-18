@@ -1,3 +1,4 @@
+import { closeBrackets } from '@codemirror/autocomplete';
 import { Annotation, Compartment, EditorState } from '@codemirror/state';
 import { EditorView, keymap, lineNumbers } from '@codemirror/view';
 import { history, isolateHistory } from '@codemirror/commands';
@@ -44,6 +45,7 @@ export function createEditor(
       doc: props.code,
       extensions: [
         history(),
+        closeBrackets(),
         EditorState.transactionExtender.of((transaction) => (
           transaction.docChanged && lineEditEvents.some((event) => transaction.isUserEvent(event))
             ? { annotations: isolateHistory.of('full') }

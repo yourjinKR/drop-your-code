@@ -1,3 +1,4 @@
+import { closeBracketsKeymap } from '@codemirror/autocomplete';
 import {
   copyLineDown,
   deleteLine,
@@ -73,5 +74,5 @@ export function buildKeymap(preset: KeymapPreset, platform: EditorPlatform): rea
   // Preset bindings precede basic navigation. Never append a shared history map:
   // Ctrl+Y must not fall through to Redo in IntelliJ. Escape stays unbound.
   // Ctrl/Cmd+C/X use CodeMirror's native clipboard handlers, including linewise cut.
-  return [...bindings, ...standardKeymap].map(guarded);
+  return [...bindings, ...closeBracketsKeymap, ...standardKeymap].map(guarded);
 }
