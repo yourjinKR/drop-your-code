@@ -27,7 +27,7 @@ export type FontId = keyof typeof snapshotFonts;
 export type ShadowStrength = keyof typeof snapshotShadows;
 export type SnapshotPresentation = Readonly<Record<PresentationNumber, number> & {
   title: string;
-  showLanguageIcon: boolean;
+  showTitle: boolean;
   shadowEnabled: boolean;
   shadowStrength: ShadowStrength;
   backgroundColor: string;
@@ -37,7 +37,7 @@ export type SnapshotPresentation = Readonly<Record<PresentationNumber, number> &
 
 export const defaultSnapshotPresentation: SnapshotPresentation = Object.freeze({
   title: 'untitled',
-  showLanguageIcon: true,
+  showTitle: false,
   radius: 12,
   shadowEnabled: true,
   shadowStrength: 'medium',
@@ -62,7 +62,7 @@ export function validPresentationNumber(key: PresentationNumber, value: number) 
 
 export function validPresentation(value: SnapshotPresentation) {
   return typeof value.title === 'string'
-    && typeof value.showLanguageIcon === 'boolean'
+    && typeof value.showTitle === 'boolean'
     && typeof value.shadowEnabled === 'boolean'
     && typeof value.transparent === 'boolean'
     && Object.hasOwn(snapshotShadows, value.shadowStrength)

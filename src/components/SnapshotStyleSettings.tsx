@@ -121,15 +121,15 @@ export function SnapshotStyleSettings({ presentation, onChange }: {
   return (
     <>
       <PropertyGroup label="Window">
+        <label className="property-check">Show title
+          <input type="checkbox" checked={presentation.showTitle}
+            onChange={(event) => set('showTitle', event.currentTarget.checked)} />
+        </label>
         <div className="property-field">
           <label htmlFor="window-title">Title</label>
           <input id="window-title" type="text" value={presentation.title} translate="no"
             onChange={(event) => set('title', event.currentTarget.value)} />
         </div>
-        <label className="property-check">Language icon
-          <input type="checkbox" checked={presentation.showLanguageIcon}
-            onChange={(event) => set('showLanguageIcon', event.currentTarget.checked)} />
-        </label>
         {number('Radius', 'radius')}
         <label className="property-check">Shadow
           <input type="checkbox" checked={presentation.shadowEnabled}

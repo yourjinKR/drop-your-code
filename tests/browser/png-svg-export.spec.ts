@@ -21,6 +21,7 @@ test('downloads PNG and standalone SVG with the preview styling at 320px', async
   await page.keyboard.insertText('const example = "한글 👩‍💻";');
   await page.getByText('Window', { exact: true }).click();
   await page.getByRole('textbox', { name: 'Title' }).fill('example / code');
+  await page.getByRole('checkbox', { name: 'Show title' }).check();
   await page.getByText('Background', { exact: true }).click();
   await page.getByRole('checkbox', { name: 'Transparent' }).check();
   const settings = page.getByRole('button', { name: 'Export settings' });
@@ -74,6 +75,7 @@ test('downloads PNG and standalone SVG with the preview styling at 320px', async
   await reopened.goto(pathToFileURL(savedPath).href);
   const root = reopened.locator('svg');
   await expect(root).toHaveAttribute('viewBox', '0 0 416 211');
+  await expect(root.locator('.window-title')).toHaveText('example / code.js');
   await expect(root.locator('.code-row')).toContainText('const example');
   await expect(root.locator('[font-family]').last()).toHaveAttribute('font-family', /monospace$/);
   await expect(reopened.locator('parsererror, image, foreignObject, [href]')).toHaveCount(0);

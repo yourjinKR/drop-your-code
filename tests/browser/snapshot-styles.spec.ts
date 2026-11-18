@@ -20,16 +20,18 @@ test('applies window, background and type controls to the preview and editor', a
   await expect(image).toBeVisible();
   const original = await svg(image);
   expect(original).toContain('fill="#1d1f24"');
-  expect(original).toContain('class="language-icon"');
+  expect(original).not.toContain('class="window-title"');
   await page.getByText('Window', { exact: true }).click();
   const title = page.getByRole('textbox', { name: 'Title' });
   const longTitle = '<한글>&' + ' 긴 제목 👩‍💻'.repeat(30);
   await title.fill(longTitle);
+  const showTitle = page.getByRole('checkbox', { name: 'Show title' });
+  await showTitle.check();
   await expect.poll(() => svg(image)).toContain('&lt;한글&gt;&amp;');
   await expect.poll(() => svg(image)).toContain('…');
   await expect(title).toHaveValue(longTitle);
-  await page.getByRole('checkbox', { name: 'Language icon' }).uncheck();
-  await expect.poll(() => svg(image)).not.toContain('class="language-icon"');
+  await showTitle.uncheck();
+  await expect.poll(() => svg(image)).not.toContain('class="window-title"');
   await setNumber(page.getByRole('textbox', { name: 'Radius' }), '20');
   await expect.poll(() => svg(image)).toContain('rx="20"');
 

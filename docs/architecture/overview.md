@@ -22,6 +22,8 @@
 
 `getBasicTheme(themeId)`는 DOM에 의존하지 않는 색 데이터를 반환한다. 편집 창은 이 값으로 창 테두리와 제목을 그리고 CodeMirror는 구문색과 편집기 전경·배경을 적용한다. 구문 테마, 줄 번호와 줄 바꿈은 별도 compartment를 통해 같은 EditorView에 반영한다. UI 테마와 Properties 표시 여부는 App의 UI 상태로 관리한다.
 
+창 제목은 `presentation.title` 원문과 `showTitle` 표시 설정으로 관리한다. 편집 창과 스냅샷 모델은 `formatWindowTitle` 및 언어 레지스트리의 확장명으로 표시용 제목을 계산한다. 창에서 직접 편집할 때 Enter 또는 포커스 이동으로 커밋하고, Escape로 닫으면 제목 버튼에 포커스를 돌린다. 빈 제목은 편집 창의 `Add title` 동작으로 다시 입력할 수 있다. 이미지 파일명은 제목 원문을 사용한다.
+
 ### 현재 편집기 어댑터
 
 `src/editor/createEditor.ts`는 history·선택한 preset keymap·Tab 들여쓰기·변경 listener를 구성한다. `src/editor/EditorSurface.tsx`는 mount/cleanup에서 view를 생성/정리하고 최신 commit의 callback을 참조한다. App은 lazy reducer와 안정적인 callback으로 변경을 반영한다. 키 입력·부모 echo·callback 교체 때문에 view를 다시 만들지 않는다.
@@ -41,7 +43,7 @@ keymap/language/theme/lineNumbers/wrap Compartment는 생성 시 한 번 등록�
 1. Phase 1은 메모리 기본값으로 시작한다. Phase 3에서는 로컬 설정을 읽어 스키마·값 범위를 검증하고 기본값과 병합한다. 읽기 실패 시 기본값으로 편집을 시작하고 복원 실패를 알린다.
 2. 사용자 입력은 CodeMirror transaction → 변경 알림 → 공통 문서 `{ code, revision }` 갱신으로 흐른다. 편집기 내부 문서는 상호작용용 표현이며 별도 제품 원본이 아니다. React 갱신마다 편집기를 재생성하거나 동일 코드를 다시 dispatch하지 않는다.
 3. 언어·키맵·테마는 설정 상태 → 편집기 확장 재구성으로 반영한다. 코드·선택·Undo 이력을 보존한다. 외부 코드 복원은 명시적인 문서 교체 동작으로 구분해 순환 업데이트를 막는다. 복원 시 Undo 정책은 Phase 3에서 테스트와 함께 확정한다.
-4. `selectSnapshotInput(workspace)`는 전체 코드와 현재 언어·테마·줄 번호·줄 바꿈을 불변 입력으로 제공한다. Phase 2에서 창 제목·아이콘·폰트·패딩·배경 등 스타일 필드를 추가한다. 키맵이나 저장 상태는 이 입력에 넣지 않는다.
+4. `selectSnapshotInput(workspace)`는 전체 코드와 현재 언어·테마·줄 번호·줄 바꿈 및 창 제목·표시 여부·폰트·패딩·배경 등 스타일을 불변 입력으로 제공한다. 키맵이나 저장 상태는 이 입력에 넣지 않는다.
 5. Phase 2 렌더러는 전체 문서를 토큰화·측정한다. 화면에 보이는 CodeMirror DOM이나 viewport만 읽지 않는다. 폰트 준비 후 같은 모델을 미리보기와 출력에 사용한다. 오래된 비동기 결과는 revision/요청 식별자로 폐기한다.
 6. 복사·내보내기는 클릭 시 최신 입력을 고정하고 그 입력의 모델을 준비한다. 미리보기가 뒤처져도 오래된 이미지를 저장하지 않는다. 느린 측정·토큰화·인코딩이 입력 처리 경로를 막지 않도록 분리한다. 작업 분할/Worker 도입은 성능 실험 후 결정한다.
 7. Phase 3 저장은 변경 후 예약·중복 병합하여 실행한다. Undo 스택과 최근 스니펫 히스토리는 별개다. 복원은 공통 문서 교체로 들어오며 편집·미리보기·출력이 다시 같은 상태를 사용한다.

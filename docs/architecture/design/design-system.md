@@ -116,7 +116,7 @@ UI font: `"Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif`.
 | Preview / Zoom | `Eye` / `Minus`, `Plus`, `Maximize` |
 | 선택·오류·닫기 | `Check`, `CircleAlert`, `X` |
 
-Lucide의 실제 export 이름은 설치할 버전에서 확인한다. brand mark도 Lucide로 통일하고 현재 임시 코드 문자·손으로 그린 UI SVG는 후속 셸 적용 때 교체한다. 스냅샷 내부의 언어 아이콘은 별도 자산 규칙을 허용한다: 로컬 포함·라이선스 확인·외부 URL 없음·일정16px box, 없는 언어는 중립 Lucide 코드 아이콘. 언어 이름이 별도로 있으면 장식으로 숨긴다. macOS traffic lights는 비상호작용 장식이며 버튼이나 UI icon 체계로 취급하지 않는다.
+Lucide의 실제 export 이름은 설치할 버전에서 확인한다. 브랜드와 인터랙티브 UI에 Lucide를 사용한다. 코드 창은 왼쪽의 macOS traffic lights를 비상호작용 장식으로 제공하고, 창 제목에는 텍스트를 사용한다.
 
 ## 6. 반응형·모션·접근성
 

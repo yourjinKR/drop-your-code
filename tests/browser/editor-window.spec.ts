@@ -1,24 +1,62 @@
 import { expect, test } from '@playwright/test';
 
-test('shows an opaque code window with centered title and decorative local language icon', async ({ page }) => {
+test('shows a text-only title on demand and edits the same value in both places', async ({ page }) => {
   await page.goto('/');
   const window = page.locator('.code-window');
-  const title = window.getByText('untitled', { exact: true });
-  await expect(title).toBeVisible();
   await expect(window.locator('.window-lights')).toHaveAttribute('aria-hidden', 'true');
   await expect(window.locator('.window-lights i')).toHaveCount(3);
   await expect(window.getByRole('button')).toHaveCount(0);
   await expect(window).toHaveCSS('background-color', 'rgb(29, 31, 36)');
   await expect(window).toHaveCSS('border-radius', '12px');
+
+  await page.getByText('Window', { exact: true }).click();
+  const showTitle = page.getByRole('checkbox', { name: 'Show title' });
+  const propertiesTitle = page.getByRole('textbox', { name: 'Title', exact: true });
+  await expect(showTitle).not.toBeChecked();
+  await propertiesTitle.fill('Example');
+  const language = page.getByRole('combobox', { name: 'Language' });
+  await language.selectOption('java');
+  await showTitle.check();
+  const title = window.getByRole('button', { name: /edit title$/ });
+  await expect(title).toHaveText('Example.java');
+  await expect(window.locator('.code-window-header svg')).toHaveCount(0);
   const frame = await window.boundingBox();
-  const text = await title.boundingBox();
-  if (!frame || !text) throw new Error('Window and title should be visible');
-  expect(Math.abs(frame.x + frame.width / 2 - text.x - text.width / 2)).toBeLessThan(1);
-  await expect(window.locator('.code-window-title svg')).toHaveAttribute('aria-hidden', 'true');
-  await expect(window.locator('.lucide-file-code')).toBeVisible();
-  await page.getByRole('combobox', { name: 'Language' }).selectOption('shell');
-  await expect(window.locator('.lucide-terminal')).toBeVisible();
-  await expect(title).toHaveText('untitled');
+  const button = await title.boundingBox();
+  if (!frame || !button) throw new Error('Window and title should be visible');
+  expect(Math.abs(frame.x + frame.width / 2 - button.x - button.width / 2)).toBeLessThan(1);
+
+  await title.press('Enter');
+  const inline = window.getByRole('textbox', { name: 'Window title' });
+  await expect(inline).toBeFocused();
+  await expect(inline).toHaveValue('Example');
+  await inline.fill('Draft');
+  await inline.press('Escape');
+  await expect(title).toBeFocused();
+  await expect(propertiesTitle).toHaveValue('Example');
+
+  await title.click();
+  await inline.fill('Sample');
+  await inline.press('Enter');
+  await expect(title).toHaveText('Sample.java');
+  await expect(propertiesTitle).toHaveValue('Sample');
+  await language.selectOption('python');
+  await expect(title).toHaveText('Sample.py');
+  await language.selectOption('plaintext');
+  await expect(title).toHaveText('Sample');
+
+  await title.click();
+  await inline.fill('Sample.kt');
+  await propertiesTitle.click();
+  await expect(propertiesTitle).toHaveValue('Sample.kt');
+  await language.selectOption('java');
+  await expect(title).toHaveText('Sample.kt');
+  await showTitle.uncheck();
+  await expect(title).toHaveCount(0);
+  await expect(propertiesTitle).toHaveValue('Sample.kt');
+  await propertiesTitle.fill('');
+  await showTitle.check();
+  await window.getByRole('button', { name: 'Add title' }).click();
+  await expect(inline).toHaveValue('');
 });
 
 test('properties_toggle_preserves_editor_state', async ({ page }) => {
