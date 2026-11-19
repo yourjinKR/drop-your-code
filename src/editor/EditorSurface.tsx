@@ -115,5 +115,14 @@ export function EditorSurface(props: EditorSurfaceProps & { focusRef?: RefObject
     });
   }, [props.code]);
 
-  return <div className="editor-surface" ref={parentRef} />;
+  return <div className="editor-surface" ref={parentRef}
+    onMouseDownCapture={(event) => {
+      if (event.button !== 0 || !(event.target instanceof Element) || !event.target.closest('.cm-content')) return;
+      const surface = event.currentTarget;
+      surface.setAttribute('data-pointer-focus', '');
+      requestAnimationFrame(() => {
+        if (!surface.matches(':focus-within')) surface.removeAttribute('data-pointer-focus');
+      });
+    }}
+    onBlur={(event) => event.currentTarget.removeAttribute('data-pointer-focus')} />;
 }
