@@ -175,6 +175,7 @@ export function App() {
                 language={language}
                 onCodeChange={onCodeChange}
                 focusRef={editorFocus}
+                windowSize={snapshot.model?.window}
               />
             </CodeWindow>
           </LiveCanvas>

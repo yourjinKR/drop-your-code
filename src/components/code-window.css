@@ -2,7 +2,7 @@
   width: var(--code-window-width);
   border: 1px solid var(--code-border);
   border-radius: var(--code-radius);
-  overflow: hidden;
+  overflow: clip;
   background: var(--code-background);
   box-shadow: var(--code-shadow);
 }
@@ -73,7 +73,7 @@ input.code-window-title {
 .editor-surface .cm-scroller { min-height: var(--code-content-height); }
 
 .editor-surface .cm-scroller {
-  overflow: auto;
+  overflow: visible;
   font-family: var(--code-font);
   font-size: var(--code-font-size);
   line-height: var(--code-line-height);

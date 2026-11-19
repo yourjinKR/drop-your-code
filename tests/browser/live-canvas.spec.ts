@@ -96,3 +96,51 @@ test('fits a tall document in the live canvas and scrolls to the caret when edit
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('1 line');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
 });
+
+test('grows the window and follows an offscreen caret at the current zoom', async ({ page }) => {
+  await page.setViewportSize({ width: 420, height: 800 });
+  await page.goto('/');
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  const canvas = page.getByRole('region', { name: 'Snapshot canvas' });
+  const frame = page.locator('.code-window');
+  const scroller = page.locator('.cm-scroller');
+  const zoom = page.getByLabel('Canvas zoom');
+  const dimensions = page.locator('.canvas-dimensions');
+  const initialDimensions = await dimensions.innerText();
+  await page.getByRole('button', { name: 'Zoom in' }).click();
+  await expect(zoom).toHaveText('125%');
+
+  await editor.focus();
+  const code = [...Array.from({ length: 70 }, (_, index) => `line ${index + 1}`), `${'x'.repeat(260)} RIGHT_EDGE`].join('\n');
+  await page.keyboard.insertText(code);
+  await expect.poll(() => frame.evaluate((element) => element.clientWidth)).toBeGreaterThan(2100);
+  await expect.poll(() => frame.evaluate((element) => element.clientHeight)).toBeGreaterThan(1400);
+  await expect(zoom).toHaveText('125%');
+  await expect.poll(() => editor.evaluate((element) => {
+    const selection = getSelection();
+    if (!selection?.focusNode || !element.contains(selection.focusNode) || !selection.isCollapsed) return false;
+    const caret = selection.getRangeAt(0).getBoundingClientRect();
+    const viewport = element.closest('.canvas-viewport')!.getBoundingClientRect();
+    return caret.height > 0 && caret.left >= viewport.left - 1 && caret.right <= viewport.right + 1 &&
+      caret.top >= viewport.top - 1 && caret.bottom <= viewport.bottom + 1;
+  })).toBe(true);
+  expect(await scroller.evaluate((element) => ({ x: element.scrollLeft, y: element.scrollTop }))).toEqual({ x: 0, y: 0 });
+  expect(await canvas.evaluate((element) => element.scrollLeft)).toBeGreaterThan(500);
+
+  const expanded = await dimensions.innerText();
+  await page.getByRole('button', { name: 'Fit' }).click();
+  await expect(zoom).not.toHaveText('125%');
+  const fittedZoom = await zoom.innerText();
+  const viewport = (await canvas.boundingBox())!;
+  const fitted = (await frame.boundingBox())!;
+  expect(fitted.width).toBeLessThan(viewport.width);
+  expect(fitted.height).toBeLessThan(viewport.height);
+  await expect(dimensions).toHaveText(expanded);
+  await page.getByRole('button', { name: 'Focus editor' }).click();
+  await editor.press('ControlOrMeta+a');
+  await editor.press('Backspace');
+  await expect(frame).toHaveCSS('width', '320px');
+  await expect(dimensions).toHaveText(initialDimensions);
+  await expect(zoom).toHaveText(fittedZoom);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(420);
+});
