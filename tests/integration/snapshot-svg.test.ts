@@ -7,10 +7,11 @@ describe('snapshot SVG', () => {
   it('serializes all rows, styling and literal code as standalone vectors', () => {
     const code = `const  한글\t👩‍💻 <script>&"'\u0000\n${'x'.repeat(120)}last\n`;
     const input = selectSnapshotInput(createInitialWorkspace());
-    const model = layoutSnapshot({ ...input, code, lineNumbers: true,
+    const model = layoutSnapshot({ ...input, code, lineNumbers: true, wrap: true,
       presentation: { ...input.presentation, shadowEnabled: true },
     },
-      [{ from: 0, to: 5, style: { color: '#d7a9f0', fontWeight: 'bold' } }], (text) => text.length * 10);
+      [{ from: 0, to: 5, style: { color: '#d7a9f0', fontWeight: 'bold' } }], (text) => text.length * 10,
+      { measureWrap: () => [[87]] });
     const svg = new DOMParser().parseFromString(renderSnapshotSvg(model), 'image/svg+xml');
     expect(svg.querySelector('parsererror, script, foreignObject, image, [href]')).toBeNull();
     expect(svg.documentElement.getAttribute('viewBox')).toBe(`0 0 ${model.width} ${model.height}`);

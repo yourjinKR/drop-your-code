@@ -146,7 +146,6 @@ export function LiveCanvas({ presentation, model, failed, retry, jpgBackground, 
       <div className="canvas-toolbar">
         <div className="canvas-metadata">
           {model && <span className="canvas-dimensions">{model.width} × {model.height} px</span>}
-          {model?.hasOverflowWrap && <span className="canvas-overflow-note">Long lines wrap in exported images.</span>}
         </div>
         <div className="canvas-controls" role="group" aria-label="Canvas navigation">
           <IconButton label="Pan mode" aria-pressed={panMode} onClick={() => setPanMode((active) => !active)}>

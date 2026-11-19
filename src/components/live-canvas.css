@@ -58,7 +58,6 @@
 .canvas-controls button[aria-pressed="true"] { background: var(--ui-selected); color: var(--ui-text); }
 .canvas-controls button:disabled { opacity: 0.5; cursor: default; }
 .canvas-scale { min-width: 40px; text-align: center; }
-.canvas-overflow-note { color: var(--ui-text-secondary); }
 .canvas-notice { flex-wrap: wrap; padding: var(--space-2) var(--space-4); color: var(--ui-danger); }
 
 @media (max-width: 1023px), (max-height: 439px) {
