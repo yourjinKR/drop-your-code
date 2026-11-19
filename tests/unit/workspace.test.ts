@@ -63,6 +63,9 @@ describe('workspace state', () => {
         presentation: defaultSnapshotPresentation,
       },
     });
+    expect(first.settings.presentation).toMatchObject({
+      transparent: true, shadowEnabled: false, backgroundPadding: 0, codePadding: 24,
+    });
     expect(second).toEqual(first);
     expect(second).not.toBe(first);
     expect(second.document).not.toBe(first.document);

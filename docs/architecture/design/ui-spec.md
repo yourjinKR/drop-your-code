@@ -43,7 +43,7 @@ FR-STYLE-04의 기본 프리셋은 어두운 불투명 코드 창, 왼쪽의 빨
 | 글자 크기 / 줄 높이 | 14px / 1.5 | 편집기와 렌더러의 공통 값 사용 |
 | 코드 패딩 / 모서리 | 24px / 12px | 실제 글꼴·그림자 포함 출력 검증 후 조정 |
 | 줄 번호 / 줄 바꿈 | 끔 / 끔 | 설정 변경으로 코드 문자열을 바꾸지 않음 |
-| 외부 배경 / 외부 패딩 / 그림자 | 단색 `#242427` / 48px / 중간 강도 | Phase 2에서 검증. 투명 모드와 독립적으로 창 자체 배경색 유지 |
+| 외부 배경 / 외부 패딩 / 그림자 | 투명 / 0px / 꺼짐 | Properties에서 조절하며 투명 배경에서도 창은 불투명하게 유지 |
 
 문서 초기값은 기존 계획의 빈 코드·VS Code·수동 Plain Text·Dark syntax·줄 번호 off·wrap off를 유지한다. UI theme는 별도로 Dark를 기본으로 Light를 지원한다. 제공 이미지의 Java·IntelliJ·줄 번호 on·16/24px·Dark+는 예시이며 기본값 또는 구현된 프리셋이 아니다. 792×400 코드 창과 외부 패딩48px의 888×496 composition은 산술 예시다. 앱의 동적 코드 창을 그 치수로 강제하지 않는다.
 
@@ -62,8 +62,8 @@ Phase 2의 자동 크기 계산은 전체 줄 수와 가장 긴 줄의 측정값
 | 그룹 | 필드 | 상태·제약 |
 |---|---|---|
 | Code | Language, Syntax theme, Line numbers, Wrap lines. 이후 Language detection | 작업5는 수동 언어, 작업6은 테마/줄 번호/wrap. Phase3 자동 감지는 수동 선택을 덮어쓰지 않음 |
-| Window | Show title, Title, Radius, Shadow, Shadow strength | 제목 숨김, 원문 `untitled`, 그림자 켜짐, Radius 12px (0–32px), Shadow strength Medium (Low/Medium/High) |
-| Background | Color, Background padding, Transparent | 기본 `#242427`, 48px (0–128px), 투명 꺼짐. 그림자의 표시 여백은 composition에 확보하고 투명 배경에서도 창은 불투명하게 유지한다. |
+| Window | Show title, Title, Radius, Shadow, Shadow strength | 제목 숨김, 원문 `untitled`, 그림자 꺼짐, Radius 12px (0–32px), Shadow strength Medium (Low/Medium/High) |
+| Background | Color, Background padding, Transparent | 단색 선택 시 기본 `#242427`, 패딩 0px (0–128px), 투명 켜짐. 그림자를 켜면 표시 여백을 확보하고 투명 배경에서도 창은 불투명하게 유지한다. |
 | Typography | Font, Font size, Line height, Code padding | 기본 System monospace, 14px (10–32px), 1.5 (1.2–2.0, 0.1 단위), 24px (0–64px). 로컬 글꼴은 사용 가능할 때 표시하고 적용 스택을 안내한다. |
 
 Code를 기본으로 펼치고 다른 섹션은 접는다. 복수 펼침은 허용한다. 구현된 필드가 없는 섹션은 숨긴다. 유효한 설정은 같은 프레젠테이션에 즉시 반영하며 별도 Apply는 없다. 패널 닫기가 이미 적용한 값을 취소하지 않는다. 숫자 필드는 부분 입력을 허용하고 blur/Enter에서 검증하며, 실패하면 입력값과 마지막 유효 프레젠테이션을 보존한다.

@@ -15,7 +15,8 @@ async function clipboardImage(page: Page) {
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(image, 0, 0);
       return { type: png.type, width: canvas.width, height: canvas.height,
-        outer: Array.from(ctx.getImageData(0, 0, 1, 1).data), inner: Array.from(ctx.getImageData(832, 600, 1, 1).data) };
+        outer: Array.from(ctx.getImageData(0, 0, 1, 1).data),
+        inner: Array.from(ctx.getImageData(image.width / 2, image.height - 32, 1, 1).data) };
     } finally {
       image.close();
     }
@@ -25,8 +26,6 @@ async function clipboardImage(page: Page) {
 test('copies transparent PNG from Editor with JPG selected and uses the latest document', async ({ context, page }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/');
-  await page.getByText('Background', { exact: true }).click();
-  await page.getByRole('checkbox', { name: 'Transparent' }).check();
   await page.getByRole('button', { name: 'Export settings' }).click();
   await page.getByRole('combobox', { name: 'Format' }).selectOption('jpg');
   await page.getByLabel('JPG background').fill('#ff0000');
@@ -48,7 +47,7 @@ test('copies transparent PNG from Editor with JPG selected and uses the latest d
   await expect(copying).toHaveAttribute('aria-busy', 'true');
   await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeDisabled();
   await expect(page.getByRole('status', { name: 'Image output status' })).toHaveText('Image copied.');
-  expect(await clipboardImage(page)).toEqual({ type: 'image/png', width: 1664, height: 1012,
+  expect(await clipboardImage(page)).toEqual({ type: 'image/png', width: 1280, height: 628,
     outer: [0, 0, 0, 0], inner: [29, 31, 36, 255] });
 
   await editor.focus();
@@ -63,8 +62,6 @@ test('opens Export settings by keyboard and copies 4× PNG on a narrow screen', 
   await page.goto('/');
   await page.getByRole('textbox', { name: 'Code editor' }).focus();
   await page.keyboard.insertText('const highQuality = true;');
-  await page.getByText('Background', { exact: true }).click();
-  await page.getByRole('checkbox', { name: 'Transparent' }).check();
   await page.getByRole('button', { name: 'Collapse Properties' }).click();
   const settings = page.getByRole('button', { name: 'Export settings' });
   const format = page.getByRole('combobox', { name: 'Format' });
@@ -86,7 +83,7 @@ test('opens Export settings by keyboard and copies 4× PNG on a narrow screen', 
   await page.getByRole('button', { name: 'Copy Image', exact: true }).click();
   await expect(settings).toHaveAttribute('aria-expanded', 'false');
   await expect(page.getByRole('status', { name: 'Image output status' })).toHaveText('Image copied.');
-  expect(await clipboardImage(page)).toEqual({ type: 'image/png', width: 1664, height: 844,
+  expect(await clipboardImage(page)).toEqual({ type: 'image/png', width: 1280, height: 460,
     outer: [0, 0, 0, 0], inner: [29, 31, 36, 255] });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
 });
@@ -133,6 +130,6 @@ test('edits, downloads four formats, and copies PNG offline once the language is
   }
   await page.getByRole('button', { name: 'Copy Image' }).click();
   await expect(page.getByRole('status', { name: 'Image output status' })).toHaveText('Image copied.');
-  expect(await clipboardImage(page)).toMatchObject({ type: 'image/png', width: 1664, height: 844 });
+  expect(await clipboardImage(page)).toMatchObject({ type: 'image/png', width: 1280, height: 460 });
   expect(requests).toEqual([]);
 });

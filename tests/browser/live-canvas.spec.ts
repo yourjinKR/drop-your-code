@@ -7,6 +7,8 @@ test('pans and zooms the canvas while keeping editor selection, pointer input an
   const canvas = page.getByRole('region', { name: 'Snapshot canvas' });
   const window = page.locator('.code-window');
   const zoom = page.getByLabel('Canvas zoom');
+  const initialTime = new Date();
+  await page.clock.setFixedTime(initialTime);
   await expect(page.getByRole('tablist')).toHaveCount(0);
   await expect(zoom).toHaveText('100%');
   const original = await editor.elementHandle();
@@ -48,7 +50,9 @@ test('pans and zooms the canvas while keeping editor selection, pointer input an
     return { x: bounds.right + 3, y: bounds.top + bounds.height / 2 };
   });
   await page.mouse.click(end.x, end.y);
-  await page.keyboard.insertText(' // edit');
+  // Keep the two edits outside CodeMirror's typing history group on every browser.
+  await page.clock.setFixedTime(new Date(initialTime.getTime() + 1000));
+  await page.keyboard.type(' // edit');
   await expect(line).toHaveText('const value = 1; // edit');
   await editor.press('Control+z');
   await expect(line).toHaveText('const value = 1;');
@@ -57,8 +61,8 @@ test('pans and zooms the canvas while keeping editor selection, pointer input an
   await page.getByRole('button', { name: 'Focus editor' }).click();
   await expect(line).toBeInViewport();
   await page.getByRole('button', { name: 'Reset view' }).click();
-  await page.setViewportSize({ width: 360, height: 800 });
-  await expect(zoom).not.toHaveText('100%');
+  await page.setViewportSize({ width: 320, height: 800 });
+  await expect(zoom).toHaveText('88%');
   await expect(window).toBeInViewport({ ratio: 0.95 });
 });
 
