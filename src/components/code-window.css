@@ -85,6 +85,9 @@ input.code-window-title {
 .editor-surface .cm-line { padding-inline: var(--code-padding); }
 .editor-surface .cm-lineNumbers .cm-gutterElement { padding-inline: 12px; }
 
+.editor-surface[data-pointer-focus] .cm-editor.cm-focused,
+.editor-surface[data-pointer-focus] .cm-content:focus-visible { outline-style: none; }
+
 @media (forced-colors: active) {
   .code-window { border-color: CanvasText; }
   .editor-surface .cm-editor.cm-focused { outline-color: Highlight; }

@@ -1,5 +1,50 @@
 import { expect, test } from '@playwright/test';
 
+test('hides the code outline for pointer editing and restores it on keyboard entry', async ({ page }) => {
+  await page.goto('/');
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  const frame = page.locator('.cm-editor');
+  const canvas = page.getByRole('region', { name: 'Snapshot canvas' });
+  const keymap = page.getByRole('combobox', { name: 'Keymap' });
+
+  await canvas.focus();
+  await page.keyboard.press('Tab');
+  await expect(editor).toBeFocused();
+  await expect(frame).toHaveCSS('outline-style', 'solid');
+
+  await editor.click();
+  await expect(frame).toHaveCSS('outline-style', 'none');
+  await expect(editor).toHaveCSS('outline-style', 'none');
+  await page.keyboard.insertText('first line\nsecond line');
+  const line = editor.getByText('first line', { exact: true });
+  const text = await line.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const { left, right, top, height } = range.getBoundingClientRect();
+    return { left, right, y: top + height / 2 };
+  });
+  await page.mouse.move(text.left + 1, text.y);
+  await page.mouse.down();
+  await page.mouse.move(text.right + 1, text.y, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(() => page.evaluate(() => getSelection()?.toString())).toBe('first line');
+  await expect(frame).toHaveCSS('outline-style', 'none');
+
+  await keymap.selectOption('intellij');
+  await page.getByRole('button', { name: 'Switch to light mode' }).click();
+  await page.emulateMedia({ forcedColors: 'active' });
+  await canvas.focus();
+  await page.keyboard.press('Tab');
+  await expect(editor).toBeFocused();
+  await expect(frame).toHaveCSS('outline-style', 'solid');
+  await expect(frame).toHaveCSS('outline-width', '2px');
+  await editor.click();
+  await expect(frame).toHaveCSS('outline-style', 'none');
+  await editor.press('Control+End');
+  await editor.press('Control+y');
+  await expect(editor).toHaveText('first line');
+});
+
 test('shows a text-only title on demand and edits the same value in both places', async ({ page }) => {
   await page.goto('/');
   const window = page.locator('.code-window');
