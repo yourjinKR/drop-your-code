@@ -6,7 +6,10 @@ import { createInitialWorkspace, selectSnapshotInput } from '../../src/state/wor
 describe('snapshot SVG', () => {
   it('serializes all rows, styling and literal code as standalone vectors', () => {
     const code = `const  한글\t👩‍💻 <script>&"'\u0000\n${'x'.repeat(120)}last\n`;
-    const model = layoutSnapshot({ ...selectSnapshotInput(createInitialWorkspace()), code, lineNumbers: true },
+    const input = selectSnapshotInput(createInitialWorkspace());
+    const model = layoutSnapshot({ ...input, code, lineNumbers: true,
+      presentation: { ...input.presentation, shadowEnabled: true },
+    },
       [{ from: 0, to: 5, style: { color: '#d7a9f0', fontWeight: 'bold' } }], (text) => text.length * 10);
     const svg = new DOMParser().parseFromString(renderSnapshotSvg(model), 'image/svg+xml');
     expect(svg.querySelector('parsererror, script, foreignObject, image, [href]')).toBeNull();

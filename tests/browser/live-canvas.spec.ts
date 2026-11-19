@@ -57,8 +57,8 @@ test('pans and zooms the canvas while keeping editor selection, pointer input an
   await page.getByRole('button', { name: 'Focus editor' }).click();
   await expect(line).toBeInViewport();
   await page.getByRole('button', { name: 'Reset view' }).click();
-  await page.setViewportSize({ width: 360, height: 800 });
-  await expect(zoom).not.toHaveText('100%');
+  await page.setViewportSize({ width: 320, height: 800 });
+  await expect(zoom).toHaveText('88%');
   await expect(window).toBeInViewport({ ratio: 0.95 });
 });
 
