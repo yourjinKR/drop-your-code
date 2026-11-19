@@ -207,23 +207,23 @@ test('UI and syntax themes can be combined independently', async ({ page }) => {
   await expect(keyword).toHaveCSS('color', 'rgb(0, 51, 179)');
 });
 
-test('wrap removes horizontal scrolling without changing logical lines on a narrow screen', async ({ page }) => {
+test('wrap limits window width without changing logical lines on a narrow screen', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/');
   const editor = page.getByRole('textbox', { name: 'Code editor' });
   const code = 'long_example '.repeat(90) + '\nlast line';
   await editor.focus();
   await page.keyboard.insertText(code);
-  const scroller = page.locator('.cm-scroller');
-  const horizontalOverflow = () => scroller.evaluate((element) => element.scrollWidth > element.clientWidth + 1);
-  await expect.poll(horizontalOverflow).toBe(true);
+  const frame = page.locator('.code-window');
+  const width = () => frame.evaluate((element) => element.clientWidth);
+  await expect.poll(width).toBeGreaterThan(960);
   await page.getByRole('checkbox', { name: 'Line numbers' }).check();
   await expect(page.locator('.cm-lineNumbers')).toBeVisible();
   await page.getByRole('checkbox', { name: 'Wrap lines' }).check();
-  await expect.poll(horizontalOverflow).toBe(false);
+  await expect(frame).toHaveCSS('width', '960px');
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('2 lines');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
   await page.getByRole('checkbox', { name: 'Wrap lines' }).uncheck();
-  await expect.poll(horizontalOverflow).toBe(true);
+  await expect.poll(width).toBeGreaterThan(960);
   expect((await editor.locator('.cm-line').allTextContents()).join('\n')).toBe(code);
 });

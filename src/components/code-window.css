@@ -83,6 +83,7 @@ input.code-window-title {
 
 .editor-surface .cm-content { padding-block: var(--code-padding); }
 .editor-surface .cm-line { padding-inline: var(--code-padding); }
+.editor-surface .cm-gutters { width: var(--code-gutter-width); flex-shrink: 0; }
 .editor-surface .cm-lineNumbers .cm-gutterElement { padding-inline: 12px; }
 
 .editor-surface[data-pointer-focus] .cm-editor.cm-focused,

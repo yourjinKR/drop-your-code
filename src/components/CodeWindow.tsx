@@ -71,6 +71,7 @@ export function CodeWindow({ presentation, languageId, themeId, model, onTitleCh
     '--code-title': theme.muted,
     '--code-window-width': `${model?.window.width ?? minSnapshotWindowWidth}px`,
     '--code-content-height': `${model?.editorContentHeight ?? Math.ceil(2 * codePadding + fontSize * lineHeight)}px`,
+    '--code-gutter-width': model?.gutter ? `${model.gutter}px` : 'auto',
     '--code-header-height': `${windowHeaderHeight}px`,
     '--code-font': snapshotFonts[fontId].family,
     '--code-font-size': `${fontSize}px`,

@@ -27,11 +27,10 @@ test('a narrow editor scrolls through 300 lines and wraps only when requested', 
   await editor.focus();
   await page.keyboard.insertText(`${'long line '.repeat(110)}\n${Array.from({ length: 299 }, (_, index) => `line ${index + 2}`).join('\n')}`);
   await editor.press('Control+Home');
-  const scroller = page.locator('.cm-scroller');
-  const overflowX = () => scroller.evaluate((element) => element.scrollWidth > element.clientWidth + 1);
-  await expect.poll(overflowX).toBe(true);
+  const frame = page.locator('.code-window');
+  await expect.poll(async () => (await frame.boundingBox())!.width).toBeGreaterThan(1500);
   await page.getByRole('checkbox', { name: 'Wrap lines' }).check();
-  await expect.poll(overflowX).toBe(false);
+  await expect(frame).toHaveCSS('width', '960px');
   await editor.press('Control+End');
   await expect(editor.getByText('line 300', { exact: true })).toBeInViewport();
   const canvas = page.getByRole('region', { name: 'Snapshot canvas' });

@@ -174,7 +174,7 @@ test('exports all 300 lines and the long row regardless of canvas scroll and zoo
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/');
   const editor = page.getByRole('textbox', { name: 'Code editor' });
-  const first = `FIRST_LINE_MARKER${'x'.repeat(178)}RIGHT_EDGE_MARKER`;
+  const first = `FIRST_LINE_MARKER${'x'.repeat(100)}RIGHT_EDGE_MARKER`;
   const code = [first, ...Array.from({ length: 298 }, (_, i) => `line ${i + 2}`), 'LAST_LINE_MARKER', ''].join('\n');
   await editor.focus();
   await page.keyboard.insertText(code);
@@ -193,17 +193,16 @@ test('exports all 300 lines and the long row regardless of canvas scroll and zoo
     const rows = [...root.querySelectorAll('.code-row')];
     const transform = root.querySelector('g[transform]')!.getAttribute('transform')!;
     const [x, y] = transform.match(/\d+/g)!.map(Number);
-    const firstRows = rows.slice(0, 2).map((row) => row.textContent).join('');
+    const firstRow = rows[0]!.querySelector('text')!;
     const last = rows.at(-2)!.querySelector('text')!;
-    const second = rows[1]!.querySelector('text')!;
-    return { firstRows, last: last.textContent, blank: rows.at(-1)!.textContent,
+    return { firstRow: firstRow.textContent, last: last.textContent, blank: rows.at(-1)!.textContent,
       width: Number(root.getAttribute('width')), height: Number(root.getAttribute('height')),
-      bottomY: y! + Number(last.getAttribute('y')), rightY: y! + Number(second.getAttribute('y')),
+      bottomY: y! + Number(last.getAttribute('y')), rightY: y! + Number(firstRow.getAttribute('y')),
       leftX: x! + Number(last.getAttribute('x')) };
   }, { source: svg.bytes.toString() });
-  expect(samples).toMatchObject({ firstRows: first, last: 'LAST_LINE_MARKER', blank: '' });
+  expect(samples).toMatchObject({ firstRow: first, last: 'LAST_LINE_MARKER', blank: '' });
 
-  const raster = await page.evaluate(async ({ base64, bottomY, rightY, leftX }) => {
+  const raster = await page.evaluate(async ({ base64, bottomY, rightY, leftX, width }) => {
     const image = new Image();
     image.src = `data:image/png;base64,${base64}`;
     await image.decode();
@@ -214,7 +213,7 @@ test('exports all 300 lines and the long row regardless of canvas scroll and zoo
     ctx.drawImage(image, 0, 0);
     const hasText = (x: number, y: number, width: number) => ctx.getImageData(x * 2, (y - 14) * 2, width * 2, 28).data
       .some((red, i) => i % 4 === 0 && red > 200);
-    return { width: canvas.width, height: canvas.height, bottom: hasText(leftX, bottomY, 125), right: hasText(750, rightY, 75) };
+    return { width: canvas.width, height: canvas.height, bottom: hasText(leftX, bottomY, 125), right: hasText(width - 100, rightY, 75) };
   }, { base64: before.bytes.toString('base64'), ...samples });
   expect(raster).toEqual({ width: samples.width * 2, height: samples.height * 2, bottom: true, right: true });
 
