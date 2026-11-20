@@ -82,14 +82,15 @@ for (const fixture of languageFixtures) {
 test('matches Java annotation, declaration and string colors in the editor and SVG', async ({ page }) => {
   await page.goto('/');
   const { editor, select, status } = controls(page);
-  await paste(editor, languageFixtures.find(({ id }) => id === 'java')!.code);
+  await editor.focus();
+  await page.keyboard.insertText(languageFixtures.find(({ id }) => id === 'java')!.code);
   await select.selectOption('java');
   await expect(status).toContainText('Java');
   const theme = page.getByRole('combobox', { name: 'Syntax theme' });
   await page.getByRole('button', { name: 'Export settings' }).click();
   await page.getByRole('combobox', { name: 'Format' }).selectOption('svg');
 
-  for (const themeId of ['dark', 'light'] as const) {
+  for (const themeId of ['dark', 'light', 'vscode-dark', 'vscode-light'] as const) {
     await theme.selectOption(themeId);
     const colors = getBasicTheme(themeId).syntax;
     const samples = [

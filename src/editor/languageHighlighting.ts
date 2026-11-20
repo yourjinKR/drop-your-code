@@ -1,4 +1,5 @@
 import { StateEffect } from '@codemirror/state';
+import type { Extension } from '@codemirror/state';
 import { Decoration, EditorView, ViewPlugin } from '@codemirror/view';
 import type { DecorationSet, ViewUpdate } from '@codemirror/view';
 import type { EditorThemeId } from '../state/workspace';
@@ -57,13 +58,18 @@ export function textMateDecorations(highlight: Highlighter, theme: EditorThemeId
 function createEditorTheme(id: EditorThemeId) {
   const colors = getBasicTheme(id);
   return EditorView.theme({
-    '&': { backgroundColor: colors.background, color: colors.foreground, colorScheme: id },
+    '&': { backgroundColor: colors.background, color: colors.foreground, colorScheme: colors.appearance },
     '&.cm-focused': { outline: `2px solid ${colors.focus}`, outlineOffset: '-2px' },
     '.cm-content': { caretColor: colors.foreground },
     '.cm-cursor, .cm-dropCursor': { borderLeftColor: colors.foreground },
     '.cm-content ::selection, .cm-line::selection, .cm-selectionBackground': { backgroundColor: colors.selection },
     '.cm-gutters': { backgroundColor: colors.background, color: colors.muted, borderRightColor: colors.border },
-  }, { dark: id === 'dark' });
+  }, { dark: colors.appearance === 'dark' });
 }
 
-export const editorThemes = { dark: createEditorTheme('dark'), light: createEditorTheme('light') };
+export const editorThemes = {
+  dark: createEditorTheme('dark'),
+  light: createEditorTheme('light'),
+  'vscode-dark': createEditorTheme('vscode-dark'),
+  'vscode-light': createEditorTheme('vscode-light'),
+} satisfies Record<EditorThemeId, Extension>;

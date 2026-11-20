@@ -3,7 +3,7 @@ import type { ShikiPrimitive } from '@shikijs/primitive';
 import { createOnigurumaEngine } from '@shikijs/engine-oniguruma';
 import wasm from '@shikijs/engine-oniguruma/wasm-inlined';
 import type { EditorThemeId, LanguageId } from '../state/workspace';
-import { getBasicTheme } from './basicThemes';
+import { editorThemeIds, getBasicTheme } from './basicThemes';
 import { textMateTheme } from './syntaxHighlighting';
 import type { Highlighter, HighlightSpan, SyntaxStyle } from './syntaxHighlighting';
 
@@ -33,7 +33,7 @@ export function loadTextMate(id: keyof typeof grammars): Promise<Highlighter> {
   if (cached) return cached;
 
   engine ??= createShikiPrimitiveAsync({
-    engine: createOnigurumaEngine(wasm), langs: [], themes: [textMateTheme('dark'), textMateTheme('light')],
+    engine: createOnigurumaEngine(wasm), langs: [], themes: editorThemeIds.map(textMateTheme),
   }).catch((error: unknown) => {
     engine = undefined;
     throw error;

@@ -3,6 +3,7 @@ import type { Dispatch, Ref } from 'react';
 import { LanguageSelect } from '../editor/LanguageSelect';
 import type { LoadedLanguage } from '../editor/languages';
 import type { EditorSettings as Settings, LanguageId, WorkspaceAction } from '../state/workspace';
+import { editorThemeIds, getBasicTheme } from '../theme/basicThemes';
 import { IconButton } from './ui/IconButton';
 import { PropertyGroup, SnapshotStyleSettings } from './SnapshotStyleSettings';
 
@@ -39,12 +40,11 @@ export function EditorSettings({ settings, open, collapseRef, onCollapse, onLang
             name="syntax-theme"
             value={settings.themeId}
             onChange={(event) => {
-              const themeId = event.currentTarget.value;
-              if (themeId === 'dark' || themeId === 'light') dispatch({ type: 'themeChanged', themeId });
+              const themeId = editorThemeIds.find((id) => id === event.currentTarget.value);
+              if (themeId) dispatch({ type: 'themeChanged', themeId });
             }}
           >
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
+            {editorThemeIds.map((id) => <option key={id} value={id}>{getBasicTheme(id).label}</option>)}
           </select>
         </div>
         <label className="property-check">

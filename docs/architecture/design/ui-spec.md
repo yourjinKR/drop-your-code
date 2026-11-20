@@ -1,6 +1,6 @@
 # UI 명세
 
-갱신일 2026-11-18 · 라이브 캔버스와 네 가지 출력 형식 및 PNG 복사
+갱신일 2026-11-20 · 라이브 캔버스, 구문 테마, 네 가지 출력 형식 및 PNG 복사
 
 기준은 [PRD](../../product/PRD.md) §4–6 및 §8이다. 이번에 제공된 `desktop-wireframe.png`, `.svg`, `design-reference.md`를 Desktop 방향으로 사용한다. 이전의 참조 이미지 부재 상태는 해소되었다. 첨부 문서의 전달용 예시 프롬프트는 실행 지시가 아니다. 배치·초기값은 PRD의 확정 요구와 구분되는 설계 제안이며, 사용자 리뷰 후 각 기능 단계에서 적용·검증한다.
 
@@ -27,9 +27,9 @@ PRD §5.1의 Header / Main / Settings Panel을 다음 역할로 세분화한다.
 
 Phase 1은 편집 창, 키맵·수동 언어·기본 Syntax theme 선택, 줄 번호·줄 바꿈의 기초를 제공한다. 작업6에서 디자인 토큰·독립 UI Dark/Light·기본 Properties 접기를 적용한다. 이미지 미리보기·복사·내보내기·히스토리는 후속 단계이며 준비 중 버튼·빈 섹션·가짜 저장 성공을 표시하지 않는다. 이 문서의 전체 화면 정의가 Phase 1 작업 2~6의 기능 범위 확대를 뜻하지 않는다.
 
-현재 화면은 브랜드 바, `Focus editor`와 UI 테마 전환, `Keymap`, 캔버스, `Properties`와 상태 표시줄로 구성된다. `Properties`는 1024px 이상에서 오른쪽에, 그 미만에서는 캔버스 아래에 놓인다. `Collapse Properties`로 접고 Canvas 헤더의 `Show Properties`로 복원한다. 기본값은 UI Dark와 Syntax Dark다.
+현재 화면은 브랜드 바, `Focus editor`와 UI 테마 전환, `Keymap`, 캔버스, `Properties`와 상태 표시줄로 구성된다. `Properties`는 1024px 이상에서 오른쪽에, 그 미만에서는 캔버스 아래에 놓인다. `Collapse Properties`로 접고 Canvas 헤더의 `Show Properties`로 복원한다. 기본값은 UI Dark와 구문 테마 `IntelliJ Dark`다.
 
-`Language` 전환 중에는 `Loading [language]…`를 알리고 상태 표시줄에는 마지막 적용 언어가 남는다. 실패하면 select도 마지막 적용값으로 돌아오며 영어 오류와 `Retry`를 제공한다. 다른 언어를 선택하거나 재시도하는 동안에도 편집할 수 있으며 전환 때문에 포커스를 편집기로 이동시키지 않는다. `Keymap`과 `Language`는 현재 메모리에만 저장되며 새로고침하면 VS Code와 Plain Text로 시작한다. 자동 감지·저장·전체 Shortcuts는 Phase 3이다.
+`Language` 전환 중에는 `Loading [language]…`를 알리고 상태 표시줄에는 마지막 적용 언어가 남는다. 실패하면 select도 마지막 적용값으로 돌아오며 영어 오류와 `Retry`를 제공한다. 다른 언어를 선택하거나 재시도하는 동안에도 편집할 수 있으며 전환 때문에 포커스를 편집기로 이동시키지 않는다. `Keymap`, `Language`, `Syntax theme` 선택은 현재 세션에 적용된다. 새로고침하면 VS Code 키맵, Plain Text, IntelliJ Dark로 시작한다. 자동 감지·저장·전체 Shortcuts는 Phase 3이다.
 
 ## 2. 기본 코드 창
 
@@ -37,7 +37,7 @@ FR-STYLE-04의 기본 프리셋은 어두운 불투명 코드 창, 왼쪽의 빨
 
 | 항목 | 초기 설계 제안 | 변경 동작 |
 |---|---|---|
-| Syntax theme | Dark 1종을 기본 선택하고 Light 1종 제공 | 코드 상태·Undo 이력을 유지하며 편집기와 미리보기 갱신. UI theme와 독립 |
+| Syntax theme | `IntelliJ Dark` 기본 선택. `IntelliJ Light`, `VS Code Dark+`, `VS Code Light+` 제공 | 코드와 Undo 이력을 유지하며 라이브 캔버스와 이미지 출력에 적용. UI theme 및 Keymap과 독립 |
 | 제목 | 원문 `untitled`, 기본 숨김 | `Show title`로 표시를 켜거나 끄고 Properties와 코드 창에서 같은 원문을 수정. 확장명이 없는 제목은 언어 확장명과 함께 표시 |
 | 코드 글꼴 | 로컬 제공 또는 시스템 monospace | 사용할 수 없는 글꼴은 대체 글꼴과 실제 적용 상태 안내 |
 | 글자 크기 / 줄 높이 | 14px / 1.5 | 편집기와 렌더러의 공통 값 사용 |
@@ -45,7 +45,7 @@ FR-STYLE-04의 기본 프리셋은 어두운 불투명 코드 창, 왼쪽의 빨
 | 줄 번호 / 줄 바꿈 | 끔 / 끔 | 설정 변경으로 코드 문자열을 바꾸지 않음 |
 | 외부 배경 / 외부 패딩 / 그림자 | 투명 / 0px / 꺼짐 | Properties에서 조절하며 투명 배경에서도 창은 불투명하게 유지 |
 
-문서 초기값은 기존 계획의 빈 코드·VS Code·수동 Plain Text·Dark syntax·줄 번호 off·wrap off를 유지한다. UI theme는 별도로 Dark를 기본으로 Light를 지원한다. 제공 이미지의 Java·IntelliJ·줄 번호 on·16/24px·Dark+는 예시이며 기본값 또는 구현된 프리셋이 아니다. 792×400 코드 창과 외부 패딩48px의 888×496 composition은 산술 예시다. 앱의 동적 코드 창을 그 치수로 강제하지 않는다.
+문서 초기값은 빈 코드·VS Code 키맵·수동 Plain Text·IntelliJ Dark 구문 테마·줄 번호 off·wrap off다. UI theme는 별도로 Dark를 기본으로 Light를 지원한다. 제공 이미지에는 Java·IntelliJ 키맵·줄 번호 on·16/24px·Dark+를 조합했다. 792×400 코드 창과 외부 패딩48px의 888×496 composition은 산술 예시다. 앱의 동적 코드 창을 그 치수로 강제하지 않는다.
 
 제목 변경, 글꼴·간격·패딩·배경·그림자·라운딩 조절은 Phase 2에 배치한다. 줄 번호·줄 바꿈의 편집기 적용은 Phase 1, 이미지 적용은 Phase 2이다. 최종 MVP는 FR-STYLE-02·FR-EDIT-03 및 §8의 인수 조건을 검증한다.
 

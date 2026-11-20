@@ -2,9 +2,10 @@ import { pathToFileURL } from 'node:url';
 import { expect, test } from '@playwright/test';
 import { downloadImage } from './helpers/download';
 
-test('downloads PNG and standalone SVG with the canvas styling at 320px', async ({ page, context }, testInfo) => {
+test('downloads PNG and standalone SVG with VS Code Dark+ at 320px', async ({ page, context }, testInfo) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/');
+  await page.getByRole('combobox', { name: 'Syntax theme' }).selectOption({ label: 'VS Code Dark+' });
   await page.getByRole('combobox', { name: 'Language' }).selectOption('javascript');
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('JavaScript');
   await page.getByRole('textbox', { name: 'Code editor' }).focus();
@@ -33,10 +34,10 @@ test('downloads PNG and standalone SVG with the canvas styling at 320px', async 
     ctx.drawImage(image, 0, 0);
     const at = (x: number, y: number) => Array.from(ctx.getImageData(x, y, 1, 1).data);
     const pixels = ctx.getImageData(49, 134, 74, 35).data;
-    const hasKeyword = pixels.some((red, i) => i % 4 === 0 && red === 207 && pixels[i + 1] === 142 && pixels[i + 2] === 109);
+    const hasKeyword = pixels.some((red, i) => i % 4 === 0 && red === 86 && pixels[i + 1] === 156 && pixels[i + 2] === 214);
     return { width: canvas.width, height: canvas.height, corner: at(0, 0), window: at(320, 204), hasKeyword };
   }, png.bytes.toString('base64'));
-  expect(sample).toEqual({ width: 640, height: 230, corner: [0, 0, 0, 0], window: [29, 31, 36, 255], hasKeyword: true });
+  expect(sample).toEqual({ width: 640, height: 230, corner: [0, 0, 0, 0], window: [30, 30, 30, 255], hasKeyword: true });
   await expect(page.getByRole('status', { name: 'Image output status' })).toHaveText('Download started.');
 
   await settings.click();

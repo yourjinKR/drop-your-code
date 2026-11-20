@@ -9,7 +9,10 @@ const input = selectSnapshotInput(createInitialWorkspace());
 describe('whole-document syntax highlighting', () => {
   it('uses the syntax theme and highlights the last of 300 lines', async () => {
     const code = Array.from({ length: 300 }, (_, index) => `const item${index} = "value";`).join('\n');
-    for (const [themeId, color] of [['dark', '#cf8e6d'], ['light', '#0033b3']] as const) {
+    const palettes = [
+      ['dark', '#cf8e6d'], ['light', '#0033b3'], ['vscode-dark', '#569cd6'], ['vscode-light', '#0000ff'],
+    ] as const;
+    for (const [themeId, color] of palettes) {
       const tokens = await highlightSnapshot({ ...input, code, languageId: 'javascript', themeId });
       expect(tokens.find(({ from }) => from === code.lastIndexOf('const'))?.style.color).toBe(color);
     }
