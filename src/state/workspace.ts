@@ -4,7 +4,7 @@ import type { SnapshotPresentation } from '../snapshot/presentation';
 export type KeymapPreset = 'intellij' | 'vscode';
 
 /** Syntax theme only; the application UI theme is a separate preference. */
-export type EditorThemeId = 'dark' | 'light';
+export type EditorThemeId = 'dark' | 'light' | 'vscode-dark' | 'vscode-light';
 
 export type LanguageId =
   | 'plaintext'

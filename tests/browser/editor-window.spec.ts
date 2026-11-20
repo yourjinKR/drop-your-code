@@ -205,6 +205,14 @@ test('UI and syntax themes can be combined independently', async ({ page }) => {
   await expect(root).toHaveCSS('color-scheme', 'dark');
   await expect(canvas).toHaveCSS('background-color', 'rgb(255, 255, 255)');
   await expect(keyword).toHaveCSS('color', 'rgb(0, 51, 179)');
+  await syntax.selectOption({ label: 'VS Code Dark+' });
+  await expect(root).toHaveCSS('color-scheme', 'dark');
+  await expect(canvas).toHaveCSS('background-color', 'rgb(30, 30, 30)');
+  await expect(keyword).toHaveCSS('color', 'rgb(86, 156, 214)');
+  await page.getByRole('button', { name: 'Switch to light mode' }).click();
+  await expect(root).toHaveCSS('color-scheme', 'light');
+  await expect(canvas).toHaveCSS('background-color', 'rgb(30, 30, 30)');
+  await expect(keyword).toHaveCSS('color', 'rgb(86, 156, 214)');
 });
 
 test('wrap limits window width without changing logical lines on a narrow screen', async ({ page }) => {

@@ -35,6 +35,7 @@ function expectColor(pixel: number[], target: number[], tolerance: number) {
 
 test('JPG canvas and export composite the chosen color and preserve opaque snapshot backgrounds', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('combobox', { name: 'Syntax theme' }).selectOption({ label: 'VS Code Light+' });
   await page.getByText('Background', { exact: true }).click();
   const transparent = page.getByRole('checkbox', { name: 'Transparent' });
   await expect(transparent).toBeChecked();
@@ -59,7 +60,7 @@ test('JPG canvas and export composite the chosen color and preserve opaque snaps
   expect(decoded).toMatchObject({ width: 832, height: 422 });
   expectColor(decoded.pixels[0]!, [244, 210, 160], 5);
   expectColor(decoded.pixels[1]!, [211, 181, 138], 14);
-  expectColor(decoded.pixels[2]!, [29, 31, 36], 5);
+  expectColor(decoded.pixels[2]!, [255, 255, 255], 5);
 
   await settings.click();
   await format.selectOption('webp');
@@ -76,6 +77,7 @@ test('JPG canvas and export composite the chosen color and preserve opaque snaps
 
 test('WebP preserves alpha and the final row of a 300-line snapshot when the encoder is available', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('combobox', { name: 'Syntax theme' }).selectOption({ label: 'VS Code Dark+' });
   await page.getByRole('button', { name: 'Export settings' }).click();
   await page.getByRole('combobox', { name: 'Format' }).selectOption('webp');
   await page.getByRole('textbox', { name: 'Code editor' }).focus();
@@ -97,7 +99,7 @@ test('WebP preserves alpha and the final row of a 300-line snapshot when the enc
   expect(decoded).toMatchObject({ width: 640, height });
   const [corner, window, ...lastLine] = decoded.pixels;
   expect(corner![3]).toBe(0);
-  expect(window![3]).toBe(255);
+  expectColor(window!, [30, 30, 30], 5);
   expect(lastLine.some((pixel) => pixel[0]! > 170)).toBe(true);
 });
 
