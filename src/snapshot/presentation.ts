@@ -51,7 +51,13 @@ export const defaultSnapshotPresentation: SnapshotPresentation = Object.freeze({
 });
 
 export const titleFont = '"Segoe UI", -apple-system, BlinkMacSystemFont, system-ui, sans-serif';
-export const windowHeaderHeight = 44;
+export const windowHeaderHeight = 46;
+export const windowHeaderPadding = 16;
+export const windowLights = {
+  diameter: 10,
+  gap: 6,
+  colors: ['#ff5f57', '#febc2e', '#28c840'],
+} as const;
 export const minSnapshotWindowWidth = 320;
 export const snapshotTabSize = 2;
 

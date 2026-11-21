@@ -20,7 +20,7 @@
 
 `SnapshotInput`은 `code`, `revision`, `languageId`, `themeId`, `lineNumbers`, `wrap`만 가진 새 평면 객체다. readonly는 TypeScript 계약이며 runtime freeze를 제공하지 않는다. 모든 값이 primitive이므로 원본의 중첩 가변 객체를 공유하지 않는다. `themeId`는 Syntax theme이고 UI theme·패널·Zoom·키맵·커서·Undo·저장 상태는 출력 입력에 포함하지 않는다. 설정 변경의 렌더 경합은 아래 요청 ID 계약으로 구분하며 코드 revision만으로 최신 렌더를 판단하지 않는다.
 
-`getBasicTheme(themeId)`는 DOM에 의존하지 않는 색 데이터를 반환한다. 편집 창은 이 값으로 창 테두리와 제목을 그리고 CodeMirror는 구문색과 편집기 전경·배경을 적용한다. 구문 테마, 줄 번호와 줄 바꿈은 별도 compartment를 통해 같은 EditorView에 반영한다. UI 테마와 Properties 표시 여부는 App의 UI 상태로 관리한다.
+`getBasicTheme(themeId)`는 DOM에 의존하지 않는 색 데이터를 반환한다. 편집 창과 SVG는 제목 막대와 본문 팔레트 및 `presentation.ts`의 제목 막대 높이와 창 장식 값을 공유한다. CodeMirror는 구문색과 편집기 전경·배경을 적용한다. 구문 테마, 줄 번호와 줄 바꿈은 별도 compartment를 통해 같은 EditorView에 반영한다. UI 테마와 Properties 표시 여부는 App의 UI 상태로 관리한다.
 
 언어를 선택하면 편집 명령용 CodeMirror 언어 모듈과 Shiki의 TextMate 문법을 불러온다. Plain Text는 두 리소스를 로드하지 않는다. 편집기의 CodeMirror 범위 장식과 스냅샷은 IntelliJ Dark·Light 및 VS Code Dark+·Light+ 프리셋의 토큰 범위와 색상 규칙을 공유한다. 테마 ID는 색상 프리셋을 식별하고 밝기 모드는 CodeMirror와 TextMate에 전달한다. 입력 시 장식 갱신을 짧게 지연하고 최신 코드·언어·테마의 토큰만 메모리에 재사용한다. 엔진과 문법은 정적 자산이고 토큰화는 브라우저에서 실행한다.
 

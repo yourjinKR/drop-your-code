@@ -53,7 +53,7 @@ test('JPG canvas and export composite the chosen color and preserve opaque snaps
   await jpgBackground.fill('#f4d2a0');
   const composition = page.locator('.canvas-composition');
   await expect(composition).toHaveCSS('background-color', 'rgb(244, 210, 160)');
-  const points: [number, number][] = [[12, 12], [416, 332], [416, 300]];
+  const points: [number, number][] = [[12, 12], [416, 332], [416, 300], [416, 130]];
   const jpg = await readExport(page, 'jpg');
   expect(jpg.subarray(0, 3).toString('hex')).toBe('ffd8ff');
   const decoded = await readPixels(page, jpg, 'image/jpeg', points);
@@ -61,6 +61,7 @@ test('JPG canvas and export composite the chosen color and preserve opaque snaps
   expectColor(decoded.pixels[0]!, [244, 210, 160], 5);
   expectColor(decoded.pixels[1]!, [211, 181, 138], 14);
   expectColor(decoded.pixels[2]!, [255, 255, 255], 5);
+  expectColor(decoded.pixels[3]!, [241, 241, 241], 5);
 
   await settings.click();
   await format.selectOption('webp');
@@ -95,10 +96,11 @@ test('WebP preserves alpha and the final row of a 300-line snapshot when the enc
   expect(webp.toString('ascii', 8, 12)).toBe('WEBP');
   const height = (46 + 48 + 300 * 21) * 2;
   const bottom: [number, number][] = Array.from({ length: 20 * 20 }, (_, i) => [50 + i % 20, height - 89 + Math.floor(i / 20)]);
-  const decoded = await readPixels(page, webp, 'image/webp', [[0, 0], [320, 300], ...bottom]);
+  const decoded = await readPixels(page, webp, 'image/webp', [[0, 0], [320, 45], [320, 300], ...bottom]);
   expect(decoded).toMatchObject({ width: 640, height });
-  const [corner, window, ...lastLine] = decoded.pixels;
+  const [corner, header, window, ...lastLine] = decoded.pixels;
   expect(corner![3]).toBe(0);
+  expectColor(header!, [37, 37, 37], 5);
   expectColor(window!, [30, 30, 30], 5);
   expect(lastLine.some((pixel) => pixel[0]! > 170)).toBe(true);
 });

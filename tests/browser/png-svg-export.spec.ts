@@ -35,9 +35,13 @@ test('downloads PNG and standalone SVG with VS Code Dark+ at 320px', async ({ pa
     const at = (x: number, y: number) => Array.from(ctx.getImageData(x, y, 1, 1).data);
     const pixels = ctx.getImageData(49, 134, 74, 35).data;
     const hasKeyword = pixels.some((red, i) => i % 4 === 0 && red === 86 && pixels[i + 1] === 156 && pixels[i + 2] === 214);
-    return { width: canvas.width, height: canvas.height, corner: at(0, 0), window: at(320, 204), hasKeyword };
+    return { width: canvas.width, height: canvas.height, corner: at(0, 0),
+      headerEdge: at(0, 70), lastHeaderRow: at(200, 91), firstBodyRow: at(200, 92),
+      bodyEdge: at(0, 130), light: at(42, 46), hasKeyword };
   }, png.bytes.toString('base64'));
-  expect(sample).toEqual({ width: 640, height: 230, corner: [0, 0, 0, 0], window: [30, 30, 30, 255], hasKeyword: true });
+  expect(sample).toEqual({ width: 640, height: 230, corner: [0, 0, 0, 0],
+    headerEdge: [37, 37, 37, 255], lastHeaderRow: [37, 37, 37, 255], firstBodyRow: [30, 30, 30, 255],
+    bodyEdge: [30, 30, 30, 255], light: [255, 95, 87, 255], hasKeyword: true });
   await expect(page.getByRole('status', { name: 'Image output status' })).toHaveText('Download started.');
 
   await settings.click();
@@ -59,6 +63,7 @@ test('downloads PNG and standalone SVG with VS Code Dark+ at 320px', async ({ pa
   const root = reopened.locator('svg');
   await expect(root).toHaveAttribute('viewBox', '0 0 320 115');
   await expect(root.locator('#window-shadow')).toHaveCount(0);
+  await expect(root.locator('[stroke]')).toHaveCount(0);
   await expect(root.locator('.window-title')).toHaveText('example / code.js');
   await expect(root.locator('.code-row')).toContainText('const example');
   await expect(root.locator('[font-family]').last()).toHaveAttribute('font-family', /monospace$/);
