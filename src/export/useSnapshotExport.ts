@@ -7,7 +7,7 @@ import { downloadSnapshot, snapshotFilename } from './downloadSnapshot';
 import { encodeSnapshot, SnapshotExportError } from './encodeSnapshot';
 import type { SnapshotExportOptions } from './encodeSnapshot';
 
-type OutputAction = 'export' | 'copy';
+type OutputRequest = { type: 'export'; options: SnapshotExportOptions } | { type: 'copy' };
 
 export function useSnapshotExport(
   input: SnapshotInput,
@@ -15,7 +15,7 @@ export function useSnapshotExport(
   options: SnapshotExportOptions,
 ) {
   const running = useRef(false);
-  const [action, setAction] = useState<OutputAction | null>(null);
+  const [action, setAction] = useState<OutputRequest['type'] | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -26,23 +26,23 @@ export function useSnapshotExport(
     return encodeSnapshot(model, output);
   }
 
-  async function run(next: OutputAction) {
+  async function run(request: OutputRequest) {
     if (running.current) return;
     running.current = true;
-    setAction(next);
+    setAction(request.type);
     setMessage('');
     setError('');
     try {
-      if (next === 'copy') {
+      if (request.type === 'copy') {
         await copySnapshotPng(() => createImage({ format: 'png', scale: 4 }));
         setMessage('Image copied.');
       } else {
-        const blob = await createImage(options);
-        downloadSnapshot(blob, snapshotFilename(input.presentation.title, options.format));
+        const blob = await createImage(request.options);
+        downloadSnapshot(blob, snapshotFilename(input.presentation.title, request.options.format));
         setMessage('Download started.');
       }
     } catch (cause) {
-      setError(cause instanceof SnapshotExportError ? cause.message : next === 'copy'
+      setError(cause instanceof SnapshotExportError ? cause.message : request.type === 'copy'
         ? 'Could not copy the image. Export a PNG instead.'
         : 'Could not export the image. Try again.');
     } finally {
@@ -51,5 +51,12 @@ export function useSnapshotExport(
     }
   }
 
-  return { exportImage: () => run('export'), copyImage: () => run('copy'), action, busy: action !== null, message, error };
+  return {
+    exportImage: (requestedOptions = options) => run({ type: 'export', options: requestedOptions }),
+    copyImage: () => run({ type: 'copy' }),
+    action,
+    busy: action !== null,
+    message,
+    error,
+  };
 }

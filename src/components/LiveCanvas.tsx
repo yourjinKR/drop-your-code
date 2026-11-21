@@ -1,5 +1,5 @@
-import { useLayoutEffect, useRef, useState } from 'react';
-import type { PointerEvent, ReactNode } from 'react';
+import { useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
+import type { PointerEvent, ReactNode, Ref } from 'react';
 import { Hand, LocateFixed, Maximize, Minus, Plus } from 'lucide-react';
 import type { SnapshotModel } from '../snapshot/model';
 import { minSnapshotWindowWidth, snapshotInsets, windowHeaderHeight } from '../snapshot/presentation';
@@ -14,12 +14,13 @@ type Size = { width: number; height: number };
 type Viewport = Size & { left: number; top: number; scale: number };
 type Drag = { id: number; x: number; y: number; left: number; top: number };
 
-export function LiveCanvas({ presentation, model, failed, retry, jpgBackground, children }: {
+export function LiveCanvas({ presentation, model, failed, retry, jpgBackground, resetRef, children }: {
   presentation: SnapshotPresentation;
   model: SnapshotModel | null;
   failed: boolean;
   retry: () => void;
   jpgBackground?: string | undefined;
+  resetRef?: Ref<() => void>;
   children: ReactNode;
 }) {
   const viewport = useRef<HTMLDivElement>(null);
@@ -91,12 +92,17 @@ export function LiveCanvas({ presentation, model, failed, retry, jpgBackground, 
   }, [left, top, scale, space]);
 
   function centerAt(next: number | null) {
-    if (next === zoom) viewport.current?.scrollTo(space.width, space.height);
-    else {
-      recenter.current = true;
-      setZoom(next);
-    }
+    if ((next ?? initialScale) === scale) viewport.current?.scrollTo(space.width, space.height);
+    else recenter.current = true;
+    setZoom(next);
   }
+
+  function resetView() {
+    setPanMode(false);
+    centerAt(null);
+  }
+
+  useImperativeHandle(resetRef, () => resetView);
 
   function startDrag(event: PointerEvent<HTMLDivElement>) {
     // Touch pans with the browser's native scroll gesture, including in Pan mode.
@@ -161,7 +167,7 @@ export function LiveCanvas({ presentation, model, failed, retry, jpgBackground, 
           <IconButton label="Fit" onClick={() => centerAt(Math.min(1, usableWidth / naturalWidth, usableHeight / naturalHeight))}>
             <Maximize size={15} aria-hidden="true" />
           </IconButton>
-          <IconButton label="Reset view" onClick={() => { setPanMode(false); centerAt(null); }}>
+          <IconButton label="Reset view" onClick={resetView}>
             <LocateFixed size={15} aria-hidden="true" />
           </IconButton>
         </div>

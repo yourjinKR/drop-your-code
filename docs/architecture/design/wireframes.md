@@ -43,7 +43,7 @@ CodeSnap은 도구 중심 정보 밀도와 코드 이미지의 시각적 우선�
 | Left Activity Bar | x0, y56, 56 × 916 | Editor로 복귀, History 열기/닫기, Shortcuts 접근. 사용자 인터페이스 설정은 구현된 경우에만 하단 접근 제공 |
 | Left Context Panel | x56, y56, 224 × 916 | 브라우저 로컬의 최근 History 목록. 편집 문서 자체를 보관하는 영역이 아님 |
 | Main Workspace | x280, y56, 1020 × 916 | 모드 헤더와 독립 스크롤 작업면. 패널이 접히면 반환된 폭을 사용 |
-| Workspace header | x280, y56, 1020 × 48 | `Canvas`, `Keymap`, 접힌 Properties 복원 버튼 |
+| Workspace header | x280, y56, 1020 × 48 | `Canvas`, `Commands`, `Keymap`, 접힌 Properties 복원 버튼 |
 | Right Properties Panel | x1300, y56, 300 × 916 | Code·Window·Background·Typography 설정. 헤더와 내부 세로 스크롤 |
 | Status Bar | x0, y972, 1600 × 28 | 실제 언어와 논리 줄 수. 배율과 치수는 캔버스 하단에 표시 |
 
@@ -77,7 +77,7 @@ History의 기본 행은 제목 또는 구분 가능한 코드 일부, 언어, �
 
 구현된 필드만 있는 섹션을 표시하고 빈 아코디언은 숨긴다. Code를 기본으로 펼치며, 나머지는 첫 사용 때 접힌 상태로 시작한다. 사용자가 펼친 섹션은 여러 개를 동시에 유지할 수 있다. 참조 이미지처럼 모든 그룹을 열어 놓는 것은 예시이며 기본으로 강제하지 않는다. 각 섹션은 얇은 구분선으로 나누고 중첩 카드로 감싸지 않는다. 조밀한 Desktop에서는 라벨과 컨트롤을 두 열에 두며 긴 라벨·오류·큰 글자에서는 한 열로 재배치한다.
 
-Language 변경 컨트롤은 Properties에 한 번만 둔다. Status Bar의 언어는 읽기 전용이다. Keymap은 Workspace header에서 선택한다. Preview에서도 현재 Keymap은 확인·변경할 수 있지만 편집 명령이 동작하는 대상으로 취급하지 않는다. `UI theme`은 앱 설정이며 Code의 `Syntax theme`과 별개다.
+Language 선택기는 Properties에 두고, 커맨드 팔레트에서도 같은 언어를 변경할 수 있다. Status Bar의 언어는 읽기 전용이다. Keymap은 Workspace header와 커맨드 팔레트에서 선택한다. Preview에서도 현재 Keymap을 확인·변경할 수 있다. `UI theme`은 앱 설정이며 Code의 `Syntax theme`과 별개다.
 
 UI theme 선택은 작업6부터 rail 하단의 `Switch to light mode` / `Switch to dark mode` 버튼으로 제공하고 Mobile에서는 Menu의 `UI theme`으로 옮긴다. 버튼은 변경할 대상 모드를 이름으로 알린다. 이 단일 설정 때문에 별도 Settings 화면을 만들지 않는다. Phase3의 History 저장 제어 등 실제 앱 설정이 생기면 Settings 접근을 추가할 수 있다.
 

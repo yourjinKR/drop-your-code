@@ -21,7 +21,7 @@ PRD §5.1의 Header / Main / Settings Panel을 다음 역할로 세분화한다.
 | Right Properties Panel | `Code`, `Window`, `Background`, `Typography` accordion. 구현된 필드만 표시 | FR-LANG-01/03, FR-STYLE-01–03 |
 | Status Bar | 읽기 전용 언어와 논리 줄 수 | FR-EDIT-03 |
 
-캔버스의 코드 창에서 바로 편집하면서 스타일과 바깥 배경을 확인한다. 편집과 출력은 공통 코드·설정 상태를 읽는다. Language 선택은 Properties, Keymap은 Canvas 헤더, `Pan mode`, Zoom, `Fit`, `Reset view`는 캔버스 하단에 제공한다.
+캔버스의 코드 창에서 바로 편집하면서 스타일과 바깥 배경을 확인한다. 편집과 출력은 공통 코드·설정 상태를 읽는다. Properties에서 Language를 선택한다. Canvas 헤더에는 `Commands`와 Keymap을, 캔버스 하단에는 `Pan mode`, Zoom, `Fit`, `Reset view`를 제공한다.
 
 입력·키맵은 CodeMirror가 처리한다. 스타일은 즉시 라이브 코드 창에 적용한다. 출력은 사용자가 실행한 시점의 전체 코드·설정으로 생성하며 편집 커서, 선택색, 스크롤바, 검색 UI는 이미지 범위에서 제외한다.
 
@@ -115,6 +115,14 @@ Tab 들여쓰기와 키보드로 편집 영역을 벗어나는 경로를 함께 
 마우스로 코드 영역을 클릭하거나 드래그할 때 코드 둘레의 포커스 테두리를 숨긴다. 키보드로 편집기에 진입하면 강제 색상 모드를 포함해 포커스 테두리를 표시한다. 입력 커서와 선택 표시는 두 경우 모두 유지한다.
 
 설정·히스토리·내보내기 패널을 닫으면 이를 연 버튼으로 포커스를 돌린다. 모바일의 모달 패널은 열린 동안 포커스를 내부에 두고 닫기 버튼과 Escape를 제공한다. 모든 필드와 아이콘 버튼에 이름을 부여하고, 포커스 표시와 저장·출력 결과 안내를 키보드·보조 기술로 확인할 수 있게 한다.
+
+### 커맨드 팔레트
+
+- Windows/Linux의 `Ctrl+Shift+.`, macOS의 `Cmd+Shift+.`, 또는 Canvas 헤더의 `Commands`로 `All Commands`를 연다. `Commands`에 플랫폼별 단축키를 표시한다.
+- `All Commands`에서 `py`를 검색한 뒤 Enter를 누르면 Python을 적용한다. `Change Language` 명령이나 `Browse languages` 버튼으로 지원 언어 목록을 열 수 있다.
+- 화면 상단 근처에 최대 640px 폭의 모달을 표시한다. 좁거나 낮은 화면에서는 뷰포트 안에 맞추고 결과 목록을 스크롤한다. 열린 동안 배경 조작을 막고 검색 필드로 포커스를 이동한다.
+- 검색 결과에서 활성 행과 적용 중인 값을 구분한다. 방향키로 활성 행을 이동하고 Enter나 클릭으로 실행한다. Escape, 닫기 버튼, 배경 클릭으로 닫으면 이전 포커스를 복원한다. `Focus Editor`와 `Toggle Properties`는 각 명령의 대상에 포커스를 둔다.
+- 언어 로딩·실패·재시도는 Properties를 접은 상태에서도 상단 피드백 영역에서 확인할 수 있다. 형식별 출력 명령은 요청한 형식으로 저장하며 상단 Export의 선택을 유지한다.
 
 ## 7. 반응형과 단계별 검증
 
