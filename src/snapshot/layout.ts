@@ -2,7 +2,9 @@ import type { SnapshotInput } from '../state/workspace';
 import { getBasicTheme } from '../theme/basicThemes';
 import type { HighlightSpan, SyntaxStyle } from '../theme/syntaxHighlighting';
 import type { MeasureText } from './measureText';
-import { minSnapshotWindowWidth, snapshotFonts, snapshotInsets, snapshotShadows, snapshotTabSize, windowHeaderHeight } from './presentation';
+import {
+  minSnapshotWindowWidth, snapshotFonts, snapshotInsets, snapshotShadows, snapshotTabSize, windowHeaderHeight, windowHeaderPadding,
+} from './presentation';
 import { formatWindowTitle } from './windowTitle';
 
 export type SnapshotRun = Readonly<{ text: string; x: number; width: number; style?: SyntaxStyle | undefined }>;
@@ -96,8 +98,8 @@ export function layoutSnapshot(
   const lines = input.code.split(/\r\n?|\n/);
   const lineHeight = presentation.fontSize * presentation.lineHeight;
   const gutter = input.lineNumbers ? Math.ceil(measure('9'.repeat(String(lines.length).length))) + 25 : 0;
-  const left = 1 + gutter + presentation.codePadding;
-  const fixedWidth = left + presentation.codePadding + 1;
+  const left = gutter + presentation.codePadding;
+  const fixedWidth = left + presentation.codePadding;
   let offset = 0;
   let tokenIndex = 0;
   let longest = 0;
@@ -137,15 +139,15 @@ export function layoutSnapshot(
     wrapped.forEach((runs, row) => rows.push({
       lineNumber: index + 1,
       continuation: row > 0,
-      baseline: 1 + windowHeaderHeight + presentation.codePadding + baselineOffset + rows.length * lineHeight,
+      baseline: windowHeaderHeight + presentation.codePadding + baselineOffset + rows.length * lineHeight,
       runs: runs.map((run) => ({ ...run, x: run.x + left })),
     }));
   });
   const contentHeight = (count: number) => Math.ceil(2 * presentation.codePadding + count * lineHeight);
-  const windowHeight = 2 + windowHeaderHeight + contentHeight(rows.length);
+  const windowHeight = windowHeaderHeight + contentHeight(rows.length);
   const shadow = snapshotShadows[presentation.shadowStrength];
   const { x: insetX, top: insetTop, bottom: insetBottom } = snapshotInsets(presentation);
-  const titleLimit = (windowWidth - 34) / 2;
+  const titleLimit = (windowWidth - 2 * windowHeaderPadding) / 2;
   const title = presentation.showTitle ? formatWindowTitle(presentation.title, input.languageId) : '';
   const displayTitle = measureTitle(title) <= titleLimit ? title
     : `${title.slice(0, fitText(title, titleLimit - measureTitle('…'), measureTitle))}…`;

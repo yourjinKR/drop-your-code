@@ -16,6 +16,7 @@ async function clipboardImage(page: Page) {
       ctx.drawImage(image, 0, 0);
       return { type: png.type, width: canvas.width, height: canvas.height,
         outer: Array.from(ctx.getImageData(0, 0, 1, 1).data),
+        header: Array.from(ctx.getImageData(image.width / 2, 100, 1, 1).data),
         inner: Array.from(ctx.getImageData(image.width / 2, image.height - 32, 1, 1).data) };
     } finally {
       image.close();
@@ -48,7 +49,7 @@ test('copies transparent PNG from Editor with JPG selected and uses the latest d
   await expect(page.getByRole('button', { name: 'Export', exact: true })).toBeDisabled();
   await expect(page.getByRole('status', { name: 'Image output status' })).toHaveText('Image copied.');
   expect(await clipboardImage(page)).toEqual({ type: 'image/png', width: 1280, height: 628,
-    outer: [0, 0, 0, 0], inner: [29, 31, 36, 255] });
+    outer: [0, 0, 0, 0], header: [37, 37, 37, 255], inner: [30, 30, 30, 255] });
 
   await editor.focus();
   await page.keyboard.press('ControlOrMeta+a');
@@ -84,7 +85,7 @@ test('opens Export settings by keyboard and copies 4× PNG on a narrow screen', 
   await expect(settings).toHaveAttribute('aria-expanded', 'false');
   await expect(page.getByRole('status', { name: 'Image output status' })).toHaveText('Image copied.');
   expect(await clipboardImage(page)).toEqual({ type: 'image/png', width: 1280, height: 460,
-    outer: [0, 0, 0, 0], inner: [29, 31, 36, 255] });
+    outer: [0, 0, 0, 0], header: [37, 37, 37, 255], inner: [30, 30, 30, 255] });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
 });
 

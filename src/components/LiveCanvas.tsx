@@ -36,7 +36,7 @@ export function LiveCanvas({ presentation, model, failed, retry, jpgBackground, 
 
   const inset = snapshotInsets(presentation);
   const naturalWidth = (model?.window.width ?? minSnapshotWindowWidth) + 2 * inset.x;
-  const minimumHeight = windowHeaderHeight + 2 + (model?.editorContentHeight ??
+  const minimumHeight = windowHeaderHeight + (model?.editorContentHeight ??
     Math.ceil(2 * presentation.codePadding + presentation.fontSize * presentation.lineHeight)) + inset.top + inset.bottom;
   const naturalHeight = Math.max(minimumHeight, compositionHeight);
   const usableWidth = Math.max(1, space.width - 2 * canvasMargin);

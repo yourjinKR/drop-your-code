@@ -49,9 +49,16 @@ test('shows a text-only title on demand and edits the same value in both places'
   await page.goto('/');
   const window = page.locator('.code-window');
   await expect(window.locator('.window-lights')).toHaveAttribute('aria-hidden', 'true');
-  await expect(window.locator('.window-lights i')).toHaveCount(3);
+  const lights = window.locator('.window-lights i');
+  await expect(lights).toHaveCount(3);
+  await expect(lights.nth(0)).toHaveCSS('background-color', 'rgb(255, 95, 87)');
+  await expect(lights.nth(1)).toHaveCSS('background-color', 'rgb(254, 188, 46)');
+  await expect(lights.nth(2)).toHaveCSS('background-color', 'rgb(40, 200, 64)');
   await expect(window.getByRole('button')).toHaveCount(0);
-  await expect(window).toHaveCSS('background-color', 'rgb(29, 31, 36)');
+  await expect(window).toHaveCSS('background-color', 'rgb(30, 30, 30)');
+  await expect(window).toHaveCSS('border-top-width', '0px');
+  await expect(window.locator('.code-window-header')).toHaveCSS('background-color', 'rgb(37, 37, 37)');
+  await expect(window.locator('.code-window-header')).toHaveCSS('border-bottom-width', '0px');
   await expect(window).toHaveCSS('border-radius', '12px');
 
   await page.getByText('Window', { exact: true }).click();
@@ -191,7 +198,7 @@ test('UI and syntax themes can be combined independently', async ({ page }) => {
   const keyword = canvas.getByText('const', { exact: true });
 
   await expect(root).toHaveCSS('color-scheme', 'dark');
-  await expect(canvas).toHaveCSS('background-color', 'rgb(29, 31, 36)');
+  await expect(canvas).toHaveCSS('background-color', 'rgb(30, 30, 30)');
   await expect(keyword).toHaveCSS('color', 'rgb(207, 142, 109)');
   await page.getByRole('button', { name: 'Switch to light mode' }).click();
   await expect(root).toHaveCSS('color-scheme', 'light');

@@ -18,7 +18,7 @@ test('applies window and typography controls to the live canvas and exported SVG
   const frame = page.locator('.code-window');
   await editor.focus();
   await page.keyboard.insertText('const value = "한글 👩‍💻";\nlast line');
-  await expect(frame).toHaveCSS('background-color', 'rgb(29, 31, 36)');
+  await expect(frame).toHaveCSS('background-color', 'rgb(30, 30, 30)');
   await expect(frame.locator('.code-window-title')).toHaveCount(0);
   await page.getByText('Window', { exact: true }).click();
   const title = page.getByRole('textbox', { name: 'Title' });
@@ -48,6 +48,7 @@ test('applies window and typography controls to the live canvas and exported SVG
   await page.getByRole('combobox', { name: 'Syntax theme' }).selectOption('light');
   await page.getByRole('button', { name: 'Switch to light mode' }).click();
   await expect(frame).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await expect(frame.locator('.code-window-header')).toHaveCSS('background-color', 'rgb(241, 241, 241)');
   await page.getByRole('button', { name: 'Collapse Properties' }).click();
   await page.getByRole('button', { name: 'Show Properties' }).click();
   await expect(title).toHaveValue(longTitle);
@@ -56,12 +57,13 @@ test('applies window and typography controls to the live canvas and exported SVG
   await selectSvg(page);
   const source = (await downloadImage(page)).bytes.toString();
   expect(source).toContain('fill="#ffffff"');
+  expect(source).toContain('fill="#f1f1f1"');
   expect(source).toContain('rx="20"');
   expect(source).toContain('&lt;한글&gt;&amp;');
   expect(source).toContain('…');
   expect(source).toContain('&quot;Courier New&quot;, monospace');
   expect(source).toContain('font-size="22"');
-  const baselines = [...source.matchAll(/<g class="code-row"><text x="33" y="([.\d]+)"/g)].map((match) => Number(match[1]));
+  const baselines = [...source.matchAll(/<g class="code-row"><text x="32" y="([.\d]+)"/g)].map((match) => Number(match[1]));
   expect(baselines).toHaveLength(2);
   expect(baselines[1]! - baselines[0]!).toBeCloseTo(39.6);
   await showTitle.uncheck();
@@ -124,7 +126,7 @@ test('keeps a transparent edge, visible shadow and opaque code window at zero pa
   expect(pixels.edge[3]).toBe(0);
   expect(pixels.shadow[3]).toBeGreaterThan(0);
   expect(pixels.shadow[3]).toBeLessThan(255);
-  expect(pixels.window).toEqual([29, 31, 36, 255]);
+  expect(pixels.window).toEqual([30, 30, 30, 255]);
   await shadow.uncheck();
   await transparent.uncheck();
   const opaque = (await downloadImage(page)).bytes.toString();
