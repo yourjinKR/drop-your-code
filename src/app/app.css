@@ -136,9 +136,12 @@ button, select, input[type="checkbox"] { touch-action: manipulation; }
 
 .export-settings-panel .property-field { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 
-.export-feedback { grid-area: feedback; background: var(--ui-surface); }
-.export-feedback p:not(:empty) { padding: var(--space-1) var(--space-4); color: var(--ui-text-secondary); }
-.export-feedback p[role="alert"] { color: var(--ui-danger); }
+.workspace-feedback { grid-area: feedback; background: var(--ui-surface); }
+.workspace-feedback > p:not(:empty) {
+  padding: var(--space-1) var(--space-4);
+  color: var(--ui-text-secondary);
+}
+.workspace-feedback > p[role="alert"] { color: var(--ui-danger); }
 
 .brand-mark {
   display: grid;
@@ -274,10 +277,17 @@ button, select, input[type="checkbox"] { touch-action: manipulation; }
 
 .language-message:empty { position: absolute; }
 
+.language-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-4);
+}
+
 .language-error p {
   display: flex;
   gap: var(--space-2);
-  margin-bottom: var(--space-2);
   color: var(--ui-danger);
   overflow-wrap: anywhere;
 }
