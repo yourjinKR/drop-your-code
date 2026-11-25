@@ -2,9 +2,10 @@ import { pathToFileURL } from 'node:url';
 import { expect, test } from '@playwright/test';
 import { downloadImage } from './helpers/download';
 
-test('downloads PNG and standalone SVG with the canvas styling at 320px', async ({ page, context }, testInfo) => {
+test('downloads PNG and standalone SVG with VS Code Dark+ at 320px', async ({ page, context }, testInfo) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/');
+  await page.getByRole('combobox', { name: 'Syntax theme' }).selectOption({ label: 'VS Code Dark+' });
   await page.getByRole('combobox', { name: 'Language' }).selectOption('javascript');
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('JavaScript');
   await page.getByRole('textbox', { name: 'Code editor' }).focus();
@@ -12,14 +13,12 @@ test('downloads PNG and standalone SVG with the canvas styling at 320px', async 
   await page.getByText('Window', { exact: true }).click();
   await page.getByRole('textbox', { name: 'Title' }).fill('example / code');
   await page.getByRole('checkbox', { name: 'Show title' }).check();
-  await page.getByText('Background', { exact: true }).click();
-  await page.getByRole('checkbox', { name: 'Transparent' }).check();
   const settings = page.getByRole('button', { name: 'Export settings' });
   await settings.click();
   const format = page.getByRole('combobox', { name: 'Format' });
   await expect(format).toHaveValue('png');
-  await expect(page.getByText('Snapshot size 416 × 211 px')).toBeVisible();
-  await expect(page.getByText('2× output 832 × 422 px')).toBeVisible();
+  await expect(page.getByText('Snapshot size 320 × 115 px')).toBeVisible();
+  await expect(page.getByText('2× output 640 × 230 px')).toBeVisible();
 
   const png = await downloadImage(page);
   expect(png.filename).toBe('example _ code.png');
@@ -34,14 +33,15 @@ test('downloads PNG and standalone SVG with the canvas styling at 320px', async 
     const ctx = canvas.getContext('2d')!;
     ctx.drawImage(image, 0, 0);
     const at = (x: number, y: number) => Array.from(ctx.getImageData(x, y, 1, 1).data);
-    const pixels = ctx.getImageData(145, 230, 74, 35).data;
-    const hasKeyword = pixels.some((red, i) => i % 4 === 0 && red === 207 && pixels[i + 1] === 142 && pixels[i + 2] === 109);
-    return { width: canvas.width, height: canvas.height, corner: at(0, 0), shadow: at(416, 332),
-      window: at(416, 300), hasKeyword };
+    const pixels = ctx.getImageData(49, 134, 74, 35).data;
+    const hasKeyword = pixels.some((red, i) => i % 4 === 0 && red === 86 && pixels[i + 1] === 156 && pixels[i + 2] === 214);
+    return { width: canvas.width, height: canvas.height, corner: at(0, 0),
+      headerEdge: at(0, 70), lastHeaderRow: at(200, 91), firstBodyRow: at(200, 92),
+      bodyEdge: at(0, 130), light: at(42, 46), hasKeyword };
   }, png.bytes.toString('base64'));
-  expect(sample).toMatchObject({ width: 832, height: 422, corner: [0, 0, 0, 0], window: [29, 31, 36, 255], hasKeyword: true });
-  expect(sample.shadow[3]).toBeGreaterThan(0);
-  expect(sample.shadow[3]).toBeLessThan(255);
+  expect(sample).toEqual({ width: 640, height: 230, corner: [0, 0, 0, 0],
+    headerEdge: [37, 37, 37, 255], lastHeaderRow: [37, 37, 37, 255], firstBodyRow: [30, 30, 30, 255],
+    bodyEdge: [30, 30, 30, 255], light: [255, 95, 87, 255], hasKeyword: true });
   await expect(page.getByRole('status', { name: 'Image output status' })).toHaveText('Download started.');
 
   await settings.click();
@@ -61,7 +61,9 @@ test('downloads PNG and standalone SVG with the canvas styling at 320px', async 
   await svg.download.saveAs(savedPath);
   await reopened.goto(pathToFileURL(savedPath).href);
   const root = reopened.locator('svg');
-  await expect(root).toHaveAttribute('viewBox', '0 0 416 211');
+  await expect(root).toHaveAttribute('viewBox', '0 0 320 115');
+  await expect(root.locator('#window-shadow')).toHaveCount(0);
+  await expect(root.locator('[stroke]')).toHaveCount(0);
   await expect(root.locator('.window-title')).toHaveText('example / code.js');
   await expect(root.locator('.code-row')).toContainText('const example');
   await expect(root.locator('[font-family]').last()).toHaveAttribute('font-family', /monospace$/);
@@ -178,7 +180,7 @@ test('exports all 300 lines and the long row regardless of canvas scroll and zoo
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/');
   const editor = page.getByRole('textbox', { name: 'Code editor' });
-  const first = `FIRST_LINE_MARKER${'x'.repeat(178)}RIGHT_EDGE_MARKER`;
+  const first = `FIRST_LINE_MARKER${'x'.repeat(100)}RIGHT_EDGE_MARKER`;
   const code = [first, ...Array.from({ length: 298 }, (_, i) => `line ${i + 2}`), 'LAST_LINE_MARKER', ''].join('\n');
   await editor.focus();
   await page.keyboard.insertText(code);
@@ -197,17 +199,16 @@ test('exports all 300 lines and the long row regardless of canvas scroll and zoo
     const rows = [...root.querySelectorAll('.code-row')];
     const transform = root.querySelector('g[transform]')!.getAttribute('transform')!;
     const [x, y] = transform.match(/\d+/g)!.map(Number);
-    const firstRows = rows.slice(0, 2).map((row) => row.textContent).join('');
+    const firstRow = rows[0]!.querySelector('text')!;
     const last = rows.at(-2)!.querySelector('text')!;
-    const second = rows[1]!.querySelector('text')!;
-    return { firstRows, last: last.textContent, blank: rows.at(-1)!.textContent,
+    return { firstRow: firstRow.textContent, last: last.textContent, blank: rows.at(-1)!.textContent,
       width: Number(root.getAttribute('width')), height: Number(root.getAttribute('height')),
-      bottomY: y! + Number(last.getAttribute('y')), rightY: y! + Number(second.getAttribute('y')),
+      bottomY: y! + Number(last.getAttribute('y')), rightY: y! + Number(firstRow.getAttribute('y')),
       leftX: x! + Number(last.getAttribute('x')) };
   }, { source: svg.bytes.toString() });
-  expect(samples).toMatchObject({ firstRows: first, last: 'LAST_LINE_MARKER', blank: '' });
+  expect(samples).toMatchObject({ firstRow: first, last: 'LAST_LINE_MARKER', blank: '' });
 
-  const raster = await page.evaluate(async ({ base64, bottomY, rightY, leftX }) => {
+  const raster = await page.evaluate(async ({ base64, bottomY, rightY, leftX, width }) => {
     const image = new Image();
     image.src = `data:image/png;base64,${base64}`;
     await image.decode();
@@ -218,7 +219,7 @@ test('exports all 300 lines and the long row regardless of canvas scroll and zoo
     ctx.drawImage(image, 0, 0);
     const hasText = (x: number, y: number, width: number) => ctx.getImageData(x * 2, (y - 14) * 2, width * 2, 28).data
       .some((red, i) => i % 4 === 0 && red > 200);
-    return { width: canvas.width, height: canvas.height, bottom: hasText(leftX, bottomY, 125), right: hasText(750, rightY, 75) };
+    return { width: canvas.width, height: canvas.height, bottom: hasText(leftX, bottomY, 125), right: hasText(width - 100, rightY, 75) };
   }, { base64: before.bytes.toString('base64'), ...samples });
   expect(raster).toEqual({ width: samples.width * 2, height: samples.height * 2, bottom: true, right: true });
 

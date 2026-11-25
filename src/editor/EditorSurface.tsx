@@ -10,13 +10,17 @@ import type { KeymapPreset } from '../state/workspace';
 
 export type { EditorSurfaceProps } from './createEditor';
 
-export function EditorSurface(props: EditorSurfaceProps & { focusRef?: RefObject<(() => void) | null> }) {
+export function EditorSurface(props: EditorSurfaceProps & {
+  focusRef?: RefObject<(() => void) | null>;
+  windowSize?: Readonly<{ width: number; height: number }> | undefined;
+}) {
   const parentRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const compartmentsRef = useRef<EditorCompartments | null>(null);
   const appliedKeymapRef = useRef<KeymapPreset | null>(null);
   const committedProps = useRef(props);
-  const { focusRef } = props;
+  const { focusRef, windowSize } = props;
+  const { width, height } = windowSize ?? {};
 
   useLayoutEffect(() => {
     committedProps.current = props;
@@ -115,5 +119,21 @@ export function EditorSurface(props: EditorSurfaceProps & { focusRef?: RefObject
     });
   }, [props.code]);
 
-  return <div className="editor-surface" ref={parentRef} />;
+  useLayoutEffect(() => {
+    const view = viewRef.current;
+    if (width === undefined || height === undefined || !view?.hasFocus) return;
+    // The initial edit can request scrolling before the measured window has grown.
+    view.dispatch({ effects: EditorView.scrollIntoView(view.state.selection.main.head) });
+  }, [width, height]);
+
+  return <div className="editor-surface" ref={parentRef}
+    onMouseDownCapture={(event) => {
+      if (event.button !== 0 || !(event.target instanceof Element) || !event.target.closest('.cm-content')) return;
+      const surface = event.currentTarget;
+      surface.setAttribute('data-pointer-focus', '');
+      requestAnimationFrame(() => {
+        if (!surface.matches(':focus-within')) surface.removeAttribute('data-pointer-focus');
+      });
+    }}
+    onBlur={(event) => event.currentTarget.removeAttribute('data-pointer-focus')} />;
 }

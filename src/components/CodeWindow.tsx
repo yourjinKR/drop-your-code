@@ -2,7 +2,9 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 import type { EditorThemeId, LanguageId } from '../state/workspace';
 import type { SnapshotModel } from '../snapshot/model';
-import { minSnapshotWindowWidth, snapshotFonts, snapshotShadows, snapshotTabSize, windowHeaderHeight } from '../snapshot/presentation';
+import {
+  minSnapshotWindowWidth, snapshotFonts, snapshotShadows, snapshotTabSize, windowHeaderHeight, windowHeaderPadding, windowLights,
+} from '../snapshot/presentation';
 import type { SnapshotPresentation } from '../snapshot/presentation';
 import { formatWindowTitle } from '../snapshot/windowTitle';
 import { getBasicTheme } from '../theme/basicThemes';
@@ -67,11 +69,15 @@ export function CodeWindow({ presentation, languageId, themeId, model, onTitleCh
   const colors = {
     '--code-background': theme.background,
     '--code-header': theme.header,
-    '--code-border': theme.border,
+    '--code-title-border': theme.border,
     '--code-title': theme.muted,
     '--code-window-width': `${model?.window.width ?? minSnapshotWindowWidth}px`,
     '--code-content-height': `${model?.editorContentHeight ?? Math.ceil(2 * codePadding + fontSize * lineHeight)}px`,
+    '--code-gutter-width': model?.gutter ? `${model.gutter}px` : 'auto',
     '--code-header-height': `${windowHeaderHeight}px`,
+    '--code-header-padding': `${windowHeaderPadding}px`,
+    '--code-light-size': `${windowLights.diameter}px`,
+    '--code-light-gap': `${windowLights.gap}px`,
     '--code-font': snapshotFonts[fontId].family,
     '--code-font-size': `${fontSize}px`,
     '--code-line-height': lineHeight,
@@ -84,7 +90,9 @@ export function CodeWindow({ presentation, languageId, themeId, model, onTitleCh
   return (
     <div className="code-window" data-syntax-theme={themeId} style={colors}>
       <div className="code-window-header">
-        <span className="window-lights" aria-hidden="true"><i /><i /><i /></span>
+        <span className="window-lights" aria-hidden="true">
+          {windowLights.colors.map((color) => <i key={color} style={{ backgroundColor: color }} />)}
+        </span>
         {showTitle && <EditableWindowTitle title={title} displayTitle={formatWindowTitle(title, languageId)}
           onChange={onTitleChange} />}
       </div>

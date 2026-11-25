@@ -35,9 +35,15 @@ function expectColor(pixel: number[], target: number[], tolerance: number) {
 
 test('JPG canvas and export composite the chosen color and preserve opaque snapshot backgrounds', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('combobox', { name: 'Syntax theme' }).selectOption({ label: 'VS Code Light+' });
   await page.getByText('Background', { exact: true }).click();
   const transparent = page.getByRole('checkbox', { name: 'Transparent' });
-  await transparent.check();
+  await expect(transparent).toBeChecked();
+  const padding = page.getByRole('textbox', { name: 'Background padding' });
+  await padding.fill('48');
+  await padding.press('Enter');
+  await page.getByText('Window', { exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Shadow', exact: true }).check();
   const settings = page.getByRole('button', { name: 'Export settings' });
   await settings.click();
   const format = page.getByRole('combobox', { name: 'Format' });
@@ -47,14 +53,15 @@ test('JPG canvas and export composite the chosen color and preserve opaque snaps
   await jpgBackground.fill('#f4d2a0');
   const composition = page.locator('.canvas-composition');
   await expect(composition).toHaveCSS('background-color', 'rgb(244, 210, 160)');
-  const points: [number, number][] = [[12, 12], [416, 332], [416, 300]];
+  const points: [number, number][] = [[12, 12], [416, 332], [416, 300], [416, 130]];
   const jpg = await readExport(page, 'jpg');
   expect(jpg.subarray(0, 3).toString('hex')).toBe('ffd8ff');
   const decoded = await readPixels(page, jpg, 'image/jpeg', points);
   expect(decoded).toMatchObject({ width: 832, height: 422 });
   expectColor(decoded.pixels[0]!, [244, 210, 160], 5);
   expectColor(decoded.pixels[1]!, [211, 181, 138], 14);
-  expectColor(decoded.pixels[2]!, [29, 31, 36], 5);
+  expectColor(decoded.pixels[2]!, [255, 255, 255], 5);
+  expectColor(decoded.pixels[3]!, [241, 241, 241], 5);
 
   await settings.click();
   await format.selectOption('webp');
@@ -71,8 +78,7 @@ test('JPG canvas and export composite the chosen color and preserve opaque snaps
 
 test('WebP preserves alpha and the final row of a 300-line snapshot when the encoder is available', async ({ page }) => {
   await page.goto('/');
-  await page.getByText('Background', { exact: true }).click();
-  await page.getByRole('checkbox', { name: 'Transparent' }).check();
+  await page.getByRole('combobox', { name: 'Syntax theme' }).selectOption({ label: 'VS Code Dark+' });
   await page.getByRole('button', { name: 'Export settings' }).click();
   await page.getByRole('combobox', { name: 'Format' }).selectOption('webp');
   await page.getByRole('textbox', { name: 'Code editor' }).focus();
@@ -88,15 +94,14 @@ test('WebP preserves alpha and the final row of a 300-line snapshot when the enc
   const webp = await readExport(page, 'webp');
   expect(webp.toString('ascii', 0, 4)).toBe('RIFF');
   expect(webp.toString('ascii', 8, 12)).toBe('WEBP');
-  const height = (96 + 46 + 48 + 300 * 21) * 2;
-  const bottom: [number, number][] = Array.from({ length: 20 * 20 }, (_, i) => [146 + i % 20, height - 185 + Math.floor(i / 20)]);
-  const decoded = await readPixels(page, webp, 'image/webp', [[0, 0], [416, height - 90], [416, 300], ...bottom]);
-  expect(decoded).toMatchObject({ width: 832, height });
-  const [corner, shadow, window, ...lastLine] = decoded.pixels;
+  const height = (46 + 48 + 300 * 21) * 2;
+  const bottom: [number, number][] = Array.from({ length: 20 * 20 }, (_, i) => [50 + i % 20, height - 89 + Math.floor(i / 20)]);
+  const decoded = await readPixels(page, webp, 'image/webp', [[0, 0], [320, 45], [320, 300], ...bottom]);
+  expect(decoded).toMatchObject({ width: 640, height });
+  const [corner, header, window, ...lastLine] = decoded.pixels;
   expect(corner![3]).toBe(0);
-  expect(shadow![3]).toBeGreaterThan(0);
-  expect(shadow![3]).toBeLessThan(255);
-  expect(window![3]).toBe(255);
+  expectColor(header!, [37, 37, 37], 5);
+  expectColor(window!, [30, 30, 30], 5);
   expect(lastLine.some((pixel) => pixel[0]! > 170)).toBe(true);
 });
 

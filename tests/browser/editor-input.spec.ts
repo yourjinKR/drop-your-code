@@ -263,13 +263,14 @@ test('normalizes CRLF, preserves whitespace and Unicode, and treats HTML/URLs as
   await expect(editor.locator('script')).toHaveCount(0);
 });
 
-test('keeps a long unwrapped line inside the editor scroll area on a narrow screen', async ({ page }) => {
+test('keeps a very long unwrapped line on the canvas without growing the page', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto('/');
   const editor = page.getByRole('textbox', { name: 'Code editor' });
   const code = 'long-line '.repeat(2_000);
   await pasteCode(editor, code);
 
+  await expect.poll(() => page.locator('.code-window').evaluate((element) => element.clientWidth)).toBeGreaterThan(960);
   expect(await copyAllCode(page, editor)).toBe(code);
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('1 line');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);

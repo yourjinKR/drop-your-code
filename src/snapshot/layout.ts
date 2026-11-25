@@ -2,7 +2,9 @@ import type { SnapshotInput } from '../state/workspace';
 import { getBasicTheme } from '../theme/basicThemes';
 import type { HighlightSpan, SyntaxStyle } from '../theme/syntaxHighlighting';
 import type { MeasureText } from './measureText';
-import { minSnapshotWindowWidth, snapshotFonts, snapshotInsets, snapshotShadows, snapshotTabSize, windowHeaderHeight } from './presentation';
+import {
+  minSnapshotWindowWidth, snapshotFonts, snapshotInsets, snapshotShadows, snapshotTabSize, windowHeaderHeight, windowHeaderPadding,
+} from './presentation';
 import { formatWindowTitle } from './windowTitle';
 
 export type SnapshotRun = Readonly<{ text: string; x: number; width: number; style?: SyntaxStyle | undefined }>;
@@ -13,7 +15,16 @@ export type SnapshotRow = Readonly<{
   runs: readonly SnapshotRun[];
 }>;
 
-type CodePiece = { text: string; style?: SyntaxStyle | undefined };
+export type CodePiece = Readonly<{ text: string; style?: SyntaxStyle | undefined }>;
+export type MeasureWrappedLines = (lines: readonly (readonly CodePiece[])[], width: number) => readonly (readonly number[])[];
+
+type LayoutMeasurement = {
+  baselineOffset?: number;
+  measureTitle?: MeasureText;
+  measureWrap?: MeasureWrappedLines;
+};
+
+const maxWrapWindowWidth = 960;
 
 const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 
@@ -43,47 +54,36 @@ function fitGraphemes(text: string, starts: number[], start: number, limit: numb
   return low;
 }
 
-function placeLine(pieces: CodePiece[], measure: MeasureText, limit = Infinity): SnapshotRun[][] {
-  const rows: SnapshotRun[][] = [[]];
+function placeLine(pieces: readonly CodePiece[], measure: MeasureText): SnapshotRun[] {
+  const runs: SnapshotRun[] = [];
   const tab = snapshotTabSize * measure(' ');
   let x = 0;
-  function nextRow() {
-    rows.push([]);
-    x = 0;
-  }
-  function append(text: string, width: number, style?: SyntaxStyle) {
-    rows.at(-1)!.push({ text, x, width, style });
-    x += width;
-  }
   for (const { text, style } of pieces) {
     for (const part of text.split(/(\t)/)) {
       if (!part) continue;
-      if (part === '\t') {
-        if (x > 0 && x + (tab - x % tab) > limit) nextRow();
-        append(part, tab - x % tab, style);
-        continue;
-      }
-      const width = measure(part, style);
-      if (width <= limit - x) {
-        append(part, width, style);
-        continue;
-      }
-      const starts = [...Array.from(graphemes.segment(part), ({ index }) => index), part.length];
-      let start = 0;
-      while (start < starts.length - 1) {
-        const fitted = fitGraphemes(part, starts, start, limit - x, measure, style);
-        if (fitted === start && x > 0) {
-          nextRow();
-          continue;
-        }
-        // Keep an over-wide grapheme intact even if it alone exceeds the available width.
-        const end = Math.max(fitted, start + 1);
-        const chunk = part.slice(starts[start], starts[end]);
-        append(chunk, measure(chunk, style), style);
-        start = end;
-        if (start < starts.length - 1) nextRow();
-      }
+      const width = part === '\t' ? tab - x % tab : measure(part, style);
+      runs.push({ text: part, x, width, style });
+      x += width;
     }
+  }
+  return runs;
+}
+
+function splitAtBreaks(pieces: CodePiece[], breaks: readonly number[]) {
+  const rows: CodePiece[][] = [[]];
+  let offset = 0;
+  let nextBreak = 0;
+  for (const piece of pieces) {
+    let start = 0;
+    const end = offset + piece.text.length;
+    while (nextBreak < breaks.length && breaks[nextBreak]! < end) {
+      const split = breaks[nextBreak++]! - offset;
+      if (split > start) rows.at(-1)!.push({ ...piece, text: piece.text.slice(start, split) });
+      rows.push([]);
+      start = split;
+    }
+    rows.at(-1)!.push({ ...piece, text: piece.text.slice(start) });
+    offset = end;
   }
   return rows;
 }
@@ -92,15 +92,14 @@ export function layoutSnapshot(
   input: SnapshotInput,
   highlights: readonly HighlightSpan[],
   measure: MeasureText,
-  baselineOffset = input.presentation.fontSize * 1.15,
-  measureTitle: MeasureText = measure,
+  { baselineOffset = input.presentation.fontSize * 1.15, measureTitle = measure, measureWrap }: LayoutMeasurement = {},
 ) {
   const presentation = input.presentation;
   const lines = input.code.split(/\r\n?|\n/);
   const lineHeight = presentation.fontSize * presentation.lineHeight;
   const gutter = input.lineNumbers ? Math.ceil(measure('9'.repeat(String(lines.length).length))) + 25 : 0;
-  const left = 1 + gutter + presentation.codePadding;
-  const fixedWidth = left + presentation.codePadding + 1;
+  const left = gutter + presentation.codePadding;
+  const fixedWidth = left + presentation.codePadding;
   let offset = 0;
   let tokenIndex = 0;
   let longest = 0;
@@ -120,29 +119,35 @@ export function layoutSnapshot(
     }
     if (cursor < end) pieces.push({ text: line.slice(cursor - offset) });
     offset = end + 1;
-    const unwrapped = placeLine(pieces, measure)[0]!;
+    const unwrapped = placeLine(pieces, measure);
     const last = unwrapped.at(-1);
     const width = last ? last.x + last.width : 0;
     longest = Math.max(longest, width);
     return { pieces, unwrapped, width };
   });
-  const windowWidth = Math.min(960, Math.max(minSnapshotWindowWidth, Math.ceil(longest + fixedWidth)));
+  const naturalWidth = Math.max(minSnapshotWindowWidth, Math.ceil(longest + fixedWidth));
+  const windowWidth = input.wrap ? Math.min(maxWrapWindowWidth, naturalWidth) : naturalWidth;
   const availableWidth = windowWidth - fixedWidth;
+  const overflow = input.wrap ? laidOut.filter(({ width }) => width > availableWidth) : [];
+  const breaks = overflow.length ? measureWrap?.(overflow.map(({ pieces }) => pieces), availableWidth) : undefined;
+  if (overflow.length && !breaks) throw new Error('Wrapped lines require browser measurements.');
+  let wrapIndex = 0;
   const rows: SnapshotRow[] = [];
   laidOut.forEach(({ pieces, unwrapped, width }, index) => {
-    const wrapped = width > availableWidth ? placeLine(pieces, measure, availableWidth) : [unwrapped];
+    const lineBreaks = breaks && width > availableWidth ? breaks[wrapIndex++]! : [];
+    const wrapped = lineBreaks.length ? splitAtBreaks(pieces, lineBreaks).map((row) => placeLine(row, measure)) : [unwrapped];
     wrapped.forEach((runs, row) => rows.push({
       lineNumber: index + 1,
       continuation: row > 0,
-      baseline: 1 + windowHeaderHeight + presentation.codePadding + baselineOffset + rows.length * lineHeight,
+      baseline: windowHeaderHeight + presentation.codePadding + baselineOffset + rows.length * lineHeight,
       runs: runs.map((run) => ({ ...run, x: run.x + left })),
     }));
   });
   const contentHeight = (count: number) => Math.ceil(2 * presentation.codePadding + count * lineHeight);
-  const windowHeight = 2 + windowHeaderHeight + contentHeight(rows.length);
+  const windowHeight = windowHeaderHeight + contentHeight(rows.length);
   const shadow = snapshotShadows[presentation.shadowStrength];
   const { x: insetX, top: insetTop, bottom: insetBottom } = snapshotInsets(presentation);
-  const titleLimit = (windowWidth - 34) / 2;
+  const titleLimit = (windowWidth - 2 * windowHeaderPadding) / 2;
   const title = presentation.showTitle ? formatWindowTitle(presentation.title, input.languageId) : '';
   const displayTitle = measureTitle(title) <= titleLimit ? title
     : `${title.slice(0, fitText(title, titleLimit - measureTitle('…'), measureTitle))}…`;
@@ -155,8 +160,7 @@ export function layoutSnapshot(
     rows,
     gutter,
     lineHeight,
-    editorContentHeight: contentHeight(input.wrap ? rows.length : lines.length),
-    hasOverflowWrap: !input.wrap && rows.length > lines.length,
+    editorContentHeight: contentHeight(rows.length),
     theme: getBasicTheme(input.themeId),
     presentation,
     fontFamily: snapshotFonts[presentation.fontId].family,

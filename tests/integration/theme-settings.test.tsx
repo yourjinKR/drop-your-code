@@ -18,7 +18,11 @@ function edit(view: EditorView, code: string) {
 }
 
 describe('editor appearance settings', () => {
-  it('theme_preserves_document_history', () => {
+  it.each([
+    ['light', 'IntelliJ Light', false],
+    ['vscode-dark', 'VS Code Dark+', true],
+    ['vscode-light', 'VS Code Light+', false],
+  ] as const)('%s preserves document history', (themeId, label, dark) => {
     const { editor, view } = renderEditor();
     const code = 'const message = "한글";';
     edit(view, code);
@@ -26,10 +30,11 @@ describe('editor appearance settings', () => {
 
     const select = screen.getByRole('combobox', { name: 'Syntax theme' });
     select.focus();
-    fireEvent.change(select, { target: { value: 'light' } });
+    fireEvent.change(select, { target: { value: themeId } });
+    expect(screen.getByRole('option', { name: label, selected: true })).toBeInTheDocument();
     expect(select).toHaveFocus();
     expect(EditorView.findFromDOM(editor)).toBe(view);
-    expect(view.state.facet(EditorView.darkTheme)).toBe(false);
+    expect(view.state.facet(EditorView.darkTheme)).toBe(dark);
     expect(view.state.doc.toString()).toBe(code);
     expect(view.state.selection.main).toMatchObject({ anchor: 0, head: 4 });
     act(() => { expect(undo(view)).toBe(true); });

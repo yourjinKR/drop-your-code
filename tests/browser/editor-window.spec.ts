@@ -1,12 +1,64 @@
 import { expect, test } from '@playwright/test';
 
+test('hides the code outline for pointer editing and restores it on keyboard entry', async ({ page }) => {
+  await page.goto('/');
+  const editor = page.getByRole('textbox', { name: 'Code editor' });
+  const frame = page.locator('.cm-editor');
+  const canvas = page.getByRole('region', { name: 'Snapshot canvas' });
+  const keymap = page.getByRole('combobox', { name: 'Keymap' });
+
+  await canvas.focus();
+  await page.keyboard.press('Tab');
+  await expect(editor).toBeFocused();
+  await expect(frame).toHaveCSS('outline-style', 'solid');
+
+  await editor.click();
+  await expect(frame).toHaveCSS('outline-style', 'none');
+  await expect(editor).toHaveCSS('outline-style', 'none');
+  await page.keyboard.insertText('first line\nsecond line');
+  const line = editor.getByText('first line', { exact: true });
+  const text = await line.evaluate((element) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const { left, right, top, height } = range.getBoundingClientRect();
+    return { left, right, y: top + height / 2 };
+  });
+  await page.mouse.move(text.left + 1, text.y);
+  await page.mouse.down();
+  await page.mouse.move(text.right + 1, text.y, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(() => page.evaluate(() => getSelection()?.toString())).toBe('first line');
+  await expect(frame).toHaveCSS('outline-style', 'none');
+
+  await keymap.selectOption('intellij');
+  await page.getByRole('button', { name: 'Switch to light mode' }).click();
+  await page.emulateMedia({ forcedColors: 'active' });
+  await canvas.focus();
+  await page.keyboard.press('Tab');
+  await expect(editor).toBeFocused();
+  await expect(frame).toHaveCSS('outline-style', 'solid');
+  await expect(frame).toHaveCSS('outline-width', '2px');
+  await editor.click();
+  await expect(frame).toHaveCSS('outline-style', 'none');
+  await editor.press('Control+End');
+  await editor.press('Control+y');
+  await expect(editor).toHaveText('first line');
+});
+
 test('shows a text-only title on demand and edits the same value in both places', async ({ page }) => {
   await page.goto('/');
   const window = page.locator('.code-window');
   await expect(window.locator('.window-lights')).toHaveAttribute('aria-hidden', 'true');
-  await expect(window.locator('.window-lights i')).toHaveCount(3);
+  const lights = window.locator('.window-lights i');
+  await expect(lights).toHaveCount(3);
+  await expect(lights.nth(0)).toHaveCSS('background-color', 'rgb(255, 95, 87)');
+  await expect(lights.nth(1)).toHaveCSS('background-color', 'rgb(254, 188, 46)');
+  await expect(lights.nth(2)).toHaveCSS('background-color', 'rgb(40, 200, 64)');
   await expect(window.getByRole('button')).toHaveCount(0);
-  await expect(window).toHaveCSS('background-color', 'rgb(29, 31, 36)');
+  await expect(window).toHaveCSS('background-color', 'rgb(30, 30, 30)');
+  await expect(window).toHaveCSS('border-top-width', '0px');
+  await expect(window.locator('.code-window-header')).toHaveCSS('background-color', 'rgb(37, 37, 37)');
+  await expect(window.locator('.code-window-header')).toHaveCSS('border-bottom-width', '0px');
   await expect(window).toHaveCSS('border-radius', '12px');
 
   await page.getByText('Window', { exact: true }).click();
@@ -146,7 +198,7 @@ test('UI and syntax themes can be combined independently', async ({ page }) => {
   const keyword = canvas.getByText('const', { exact: true });
 
   await expect(root).toHaveCSS('color-scheme', 'dark');
-  await expect(canvas).toHaveCSS('background-color', 'rgb(29, 31, 36)');
+  await expect(canvas).toHaveCSS('background-color', 'rgb(30, 30, 30)');
   await expect(keyword).toHaveCSS('color', 'rgb(207, 142, 109)');
   await page.getByRole('button', { name: 'Switch to light mode' }).click();
   await expect(root).toHaveCSS('color-scheme', 'light');
@@ -160,25 +212,33 @@ test('UI and syntax themes can be combined independently', async ({ page }) => {
   await expect(root).toHaveCSS('color-scheme', 'dark');
   await expect(canvas).toHaveCSS('background-color', 'rgb(255, 255, 255)');
   await expect(keyword).toHaveCSS('color', 'rgb(0, 51, 179)');
+  await syntax.selectOption({ label: 'VS Code Dark+' });
+  await expect(root).toHaveCSS('color-scheme', 'dark');
+  await expect(canvas).toHaveCSS('background-color', 'rgb(30, 30, 30)');
+  await expect(keyword).toHaveCSS('color', 'rgb(86, 156, 214)');
+  await page.getByRole('button', { name: 'Switch to light mode' }).click();
+  await expect(root).toHaveCSS('color-scheme', 'light');
+  await expect(canvas).toHaveCSS('background-color', 'rgb(30, 30, 30)');
+  await expect(keyword).toHaveCSS('color', 'rgb(86, 156, 214)');
 });
 
-test('wrap removes horizontal scrolling without changing logical lines on a narrow screen', async ({ page }) => {
+test('wrap limits window width without changing logical lines on a narrow screen', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/');
   const editor = page.getByRole('textbox', { name: 'Code editor' });
   const code = 'long_example '.repeat(90) + '\nlast line';
   await editor.focus();
   await page.keyboard.insertText(code);
-  const scroller = page.locator('.cm-scroller');
-  const horizontalOverflow = () => scroller.evaluate((element) => element.scrollWidth > element.clientWidth + 1);
-  await expect.poll(horizontalOverflow).toBe(true);
+  const frame = page.locator('.code-window');
+  const width = () => frame.evaluate((element) => element.clientWidth);
+  await expect.poll(width).toBeGreaterThan(960);
   await page.getByRole('checkbox', { name: 'Line numbers' }).check();
   await expect(page.locator('.cm-lineNumbers')).toBeVisible();
   await page.getByRole('checkbox', { name: 'Wrap lines' }).check();
-  await expect.poll(horizontalOverflow).toBe(false);
+  await expect(frame).toHaveCSS('width', '960px');
   await expect(page.getByRole('status', { name: 'Editor status' })).toContainText('2 lines');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
   await page.getByRole('checkbox', { name: 'Wrap lines' }).uncheck();
-  await expect.poll(horizontalOverflow).toBe(true);
+  await expect.poll(width).toBeGreaterThan(960);
   expect((await editor.locator('.cm-line').allTextContents()).join('\n')).toBe(code);
 });

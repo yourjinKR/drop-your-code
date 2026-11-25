@@ -3,6 +3,7 @@ import { highlightSnapshot } from './highlight';
 import { layoutSnapshot } from './layout';
 import type { SnapshotModel } from './layout';
 import { prepareTextMeasurement } from './measureText';
+import { measureWrappedLines } from './measureWrappedLines';
 import { snapshotFonts } from './presentation';
 
 export type { SnapshotModel } from './layout';
@@ -14,5 +15,9 @@ export async function buildSnapshotModel(input: SnapshotInput, signal?: AbortSig
     prepareTextMeasurement(snapshotFonts[fontId].family, fontSize, fontSize * lineHeight),
   ]);
   signal?.throwIfAborted();
-  return layoutSnapshot(input, highlights, measure, baseline, measureTitle);
+  return layoutSnapshot(input, highlights, measure, {
+    baselineOffset: baseline,
+    measureTitle,
+    measureWrap: (lines, width) => measureWrappedLines(lines, width, input.presentation),
+  });
 }

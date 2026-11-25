@@ -1,8 +1,7 @@
 .code-window {
   width: var(--code-window-width);
-  border: 1px solid var(--code-border);
   border-radius: var(--code-radius);
-  overflow: hidden;
+  overflow: clip;
   background: var(--code-background);
   box-shadow: var(--code-shadow);
 }
@@ -12,26 +11,21 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr);
   align-items: center;
   min-height: var(--code-header-height);
-  padding-inline: var(--space-4);
-  border-bottom: 1px solid var(--code-border);
+  padding-inline: var(--code-header-padding);
   background: var(--code-header);
   color: var(--code-title);
 }
 
 .window-lights {
   display: flex;
-  gap: 6px;
+  gap: var(--code-light-gap);
 }
 
 .window-lights i {
-  width: 10px;
-  height: 10px;
+  width: var(--code-light-size);
+  height: var(--code-light-size);
   border-radius: 50%;
-  background: #f07168;
 }
-
-.window-lights i:nth-child(2) { background: #e9bf59; }
-.window-lights i:nth-child(3) { background: #76c77a; }
 
 .code-window-title {
   grid-column: 2;
@@ -56,12 +50,12 @@ button.code-window-title {
   cursor: text;
 }
 
-button.code-window-title:hover { border-color: var(--code-border); }
+button.code-window-title:hover { border-color: var(--code-title-border); }
 .code-window-title:focus-visible { outline-offset: calc(-1 * var(--focus-width)); }
 
 input.code-window-title {
   width: 100%;
-  border-color: var(--code-border);
+  border-color: var(--code-title-border);
   background: var(--code-background);
   text-align: center;
 }
@@ -73,7 +67,7 @@ input.code-window-title {
 .editor-surface .cm-scroller { min-height: var(--code-content-height); }
 
 .editor-surface .cm-scroller {
-  overflow: auto;
+  overflow: visible;
   font-family: var(--code-font);
   font-size: var(--code-font-size);
   line-height: var(--code-line-height);
@@ -83,9 +77,12 @@ input.code-window-title {
 
 .editor-surface .cm-content { padding-block: var(--code-padding); }
 .editor-surface .cm-line { padding-inline: var(--code-padding); }
+.editor-surface .cm-gutters { width: var(--code-gutter-width); flex-shrink: 0; }
 .editor-surface .cm-lineNumbers .cm-gutterElement { padding-inline: 12px; }
 
+.editor-surface[data-pointer-focus] .cm-editor.cm-focused,
+.editor-surface[data-pointer-focus] .cm-content:focus-visible { outline-style: none; }
+
 @media (forced-colors: active) {
-  .code-window { border-color: CanvasText; }
   .editor-surface .cm-editor.cm-focused { outline-color: Highlight; }
 }
