@@ -38,11 +38,30 @@ describe('image download', () => {
     act(() => { void view.result.current.exportImage(); });
     expect(view.result.current.busy).toBe(true);
     view.rerender({ input: { ...input, code: 'second', revision: 1 }, preview: null, options: { format: 'svg' } });
-    await act(async () => { await view.result.current.exportImage(); });
+    await act(async () => { await view.result.current.exportImage({ format: 'svg' }); });
     expect(build).toHaveBeenCalledExactlyOnceWith(input);
     await act(async () => { finish(model); });
     expect(encodeSnapshot).toHaveBeenCalledExactlyOnceWith(model, pngOptions);
     expect(downloadSnapshot).toHaveBeenCalledExactlyOnceWith(png, 'first _ file.png');
+    expect(view.result.current).toMatchObject({ busy: false, message: 'Download started.', error: '' });
+  });
+
+  it.each([
+    { format: 'png', scale: 2 },
+    { format: 'svg' },
+    { format: 'jpg', scale: 2, backgroundColor: '#123456' },
+    { format: 'webp', scale: 2 },
+  ] satisfies SnapshotExportOptions[])('uses the explicit $format options instead of the toolbar format', async (options) => {
+    const blob = new Blob();
+    vi.mocked(encodeSnapshot).mockResolvedValueOnce(blob);
+    vi.mocked(downloadSnapshot).mockImplementation(() => {});
+    const toolbarOptions: SnapshotExportOptions = options.format === 'svg' ? pngOptions : { format: 'svg' };
+    const view = renderOutput({ input, preview: model, options: toolbarOptions });
+
+    await act(async () => { await view.result.current.exportImage(options); });
+
+    expect(encodeSnapshot).toHaveBeenCalledExactlyOnceWith(model, options);
+    expect(downloadSnapshot).toHaveBeenCalledExactlyOnceWith(blob, `first _ file.${options.format}`);
     expect(view.result.current).toMatchObject({ busy: false, message: 'Download started.', error: '' });
   });
 

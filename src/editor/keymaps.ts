@@ -16,6 +16,9 @@ import type { KeymapPreset } from '../state/workspace';
 
 export type EditorPlatform = 'windows' | 'macos' | 'other';
 
+export const keymapLabels = { vscode: 'VS Code', intellij: 'IntelliJ' } satisfies Record<KeymapPreset, string>;
+export const keymapPresets = Object.keys(keymapLabels) as KeymapPreset[];
+
 export function detectPlatform(): EditorPlatform {
   if (typeof navigator === 'undefined') return 'other';
   if (/Mac/.test(navigator.platform)) return 'macos';

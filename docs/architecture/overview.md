@@ -38,7 +38,7 @@
 
 keymap/language/theme/lineNumbers/wrap Compartment는 생성 시 한 번 등록한다. keymap은 preset 변경 때 그 slot만 reconfigure하고 같은 view·문서·선택·Undo를 유지한다. 이미 적용한 preset은 다시 구성하지 않는다. 나머지 slot은 비어 있으며 작업 5~6의 연결 지점이다. Escape는 바인딩하지 않아 선택이 있는 경우에도 내장 Escape 다음 Tab 탈출을 사용한다.
 
-`src/editor/keymaps.ts`는 Windows PRD 목표와 별도로 조사한 macOS 조합을 구성한다. `other`는 Windows 목표 fallback이다. 공통 historyKeymap을 덧붙이지 않아 IntelliJ Ctrl+Y가 Redo로 fall through하지 않는다. preset과 기본 탐색 명령 모두 editor focus·composition 상태를 확인하고 처리하지 않은 키의 default 동작을 강제로 막지 않는다. Cut/Copy는 native clipboard handler를 유지한다. 전역 키 listener·키맵 저장은 없다.
+`src/editor/keymaps.ts`는 Windows PRD 목표와 별도로 조사한 macOS 조합을 구성한다. `other`는 Windows 목표 fallback이다. 공통 historyKeymap을 덧붙이지 않아 IntelliJ Ctrl+Y가 Redo로 fall through하지 않는다. preset과 기본 탐색 명령 모두 editor focus·composition 상태를 확인하고 처리하지 않은 키의 default 동작을 강제로 막지 않는다. Cut/Copy는 native clipboard handler를 유지한다.
 
 줄 삭제·잘라내기·이동·복제·들여쓰기/내어쓰기 transaction은 `isolateHistory('full')`로 타이핑 그룹과 분리한다. 빠른 입력 직후 줄 삭제/내어쓰기를 Undo해도 입력 원문이 복원된다. 이 정책은 문서가 바뀐 특정 userEvent에만 적용하며 preset/selection 변경·일반 타이핑·외부 문서 복원 정책을 바꾸지 않는다. 언어 주석 이력은 작업 5의 언어 통합에서 별도로 검증한다.
 
@@ -78,9 +78,11 @@ FR-EDIT-02의 Windows 표를 구현 목표로 삼는다. 특히 `Ctrl+Y`는 Inte
 
 macOS는 Windows의 Ctrl를 일괄 Cmd로 바꾸지 않는다. IDE 공식 기본 키맵과 비교한 명령별 매핑표를 작성하고 실제 macOS 브라우저로 확인한다. 운영체제/브라우저가 선점하는 조합은 강제로 가로챌 수 있다고 약속하지 않는다. 대체 메뉴 또는 조합, 안내를 기록한다. Windows Chrome/Edge를 먼저 검증하되 macOS·Firefox·Safari 검증은 MVP 완료 전 필요하다.
 
+커맨드 팔레트는 앱 수준에서 Windows/Linux의 `Ctrl+Shift+.`와 macOS의 `Cmd+Shift+.`를 처리한다. 브라우저의 인쇄 같은 기본 단축키는 브라우저가 처리하며, 앱까지 키 이벤트가 전달되지 않는 환경에서는 `Commands` 버튼으로 팔레트를 연다. `src/commands`의 레지스트리가 App의 기존 상태·동작을 호출하고, 하나의 모달에서 전체 명령과 언어·구문 테마·키맵 목록을 표시한다. 형식별 저장 명령은 같은 출력 훅에 해당 형식의 옵션을 전달한다. 캔버스 도구와 팔레트는 같은 초기화 함수를 호출한다.
+
 ## 지연 로딩과 열린 페이지 오프라인
 
-작업 5의 `languages.ts`는 지원 ID를 각 CodeMirror 로더에 명시적으로 연결한다. 열린 페이지에서 성공한 `LanguageSupport`를 재사용하며 실패한 Promise는 캐시에서 제거한다. `LanguageSelect`는 최신 성공만 workspace의 수동 언어와 편집기의 language compartment에 전달한다. 입력 문서, 선택, Undo를 소유하는 `EditorView`는 유지된다. 검증 결과와 실패한 모듈의 재시도 제약은 [작업 5 기록](../verification/task-5-languages.md)에 있다.
+작업 5의 `languages.ts`는 지원 ID를 각 CodeMirror 로더에 명시적으로 연결한다. 열린 페이지에서 성공한 `LanguageSupport`를 재사용하며 실패한 Promise는 캐시에서 제거한다. Properties와 커맨드 팔레트는 App의 `useLanguageChange`를 공유한다. 이 훅은 최신 성공만 workspace의 수동 언어와 편집기의 language compartment에 전달하고 실패한 최신 요청을 재시도할 수 있게 한다. 입력 문서, 선택, Undo를 소유하는 `EditorView`는 유지된다. 검증 결과와 실패한 모듈의 재시도 제약은 [작업 5 기록](../verification/task-5-languages.md)에 있다.
 
 PRD §6.2는 초기 로드 후 **열린 페이지**에서 주요 기능의 오프라인 사용을 요구한다. 새 오프라인 방문·오프라인 새로고침까지의 PWA 보장은 별도 범위다. `import()`만 사용하면 아직 불러오지 않은 청크가 오프라인에서 실패할 수 있으므로 요구 충족으로 간주하지 않는다.
 

@@ -1,8 +1,8 @@
 import { PanelRightClose } from 'lucide-react';
 import type { Dispatch, Ref } from 'react';
 import { LanguageSelect } from '../editor/LanguageSelect';
-import type { LoadedLanguage } from '../editor/languages';
-import type { EditorSettings as Settings, LanguageId, WorkspaceAction } from '../state/workspace';
+import type { LanguageChangeController } from '../editor/useLanguageChange';
+import type { EditorSettings as Settings, WorkspaceAction } from '../state/workspace';
 import { editorThemeIds, getBasicTheme } from '../theme/basicThemes';
 import { IconButton } from './ui/IconButton';
 import { PropertyGroup, SnapshotStyleSettings } from './SnapshotStyleSettings';
@@ -12,11 +12,14 @@ type EditorSettingsProps = {
   open: boolean;
   collapseRef: Ref<HTMLButtonElement>;
   onCollapse: () => void;
-  onLanguageApplied: (id: LanguageId, language: LoadedLanguage | null) => void;
+  languageChange: LanguageChangeController;
+  languageSelectRef: Ref<HTMLSelectElement>;
   dispatch: Dispatch<WorkspaceAction>;
 };
 
-export function EditorSettings({ settings, open, collapseRef, onCollapse, onLanguageApplied, dispatch }: EditorSettingsProps) {
+export function EditorSettings({
+  settings, open, collapseRef, onCollapse, languageChange, languageSelectRef, dispatch,
+}: EditorSettingsProps) {
   return (
     <aside id="properties" className="properties-panel" aria-labelledby="properties-heading" hidden={!open}>
       <div className="properties-header">
@@ -32,7 +35,8 @@ export function EditorSettings({ settings, open, collapseRef, onCollapse, onLang
         </IconButton>
       </div>
       <PropertyGroup label="Code" initiallyOpen>
-        <LanguageSelect appliedId={settings.language.languageId} onApplied={onLanguageApplied} />
+        <LanguageSelect appliedId={settings.language.languageId} languageChange={languageChange}
+          selectRef={languageSelectRef} />
         <div className="property-field">
           <label htmlFor="syntax-theme">Syntax theme</label>
           <select
